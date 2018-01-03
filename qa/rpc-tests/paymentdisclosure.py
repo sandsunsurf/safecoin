@@ -213,3 +213,7 @@ class PaymentDisclosureTest (BitcoinTestFramework):
 
 if __name__ == '__main__':
     PaymentDisclosureTest().main()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d5862a... bitcore

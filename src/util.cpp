@@ -424,7 +424,12 @@ static std::string FormatException(const std::exception* pex, const char* pszThr
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(NULL, pszModule, sizeof(pszModule));
 #else
+<<<<<<< HEAD
     const char* pszModule = "Safecoin";
+=======
+    const char* pszModule = "Hush";
+
+>>>>>>> 5d5862a... bitcore
 #endif
     if (pex)
         return strprintf(
@@ -458,9 +463,14 @@ boost::filesystem::path GetDefaultDataDir()
     // Unix: ~/.zcash
 #ifdef _WIN32
     // Windows
+<<<<<<< HEAD
     if ( symbol[0] == 0 )
         return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin";
     else return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin" / symbol;
+=======
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Hush";
+
+>>>>>>> 5d5862a... bitcore
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -482,9 +492,14 @@ boost::filesystem::path GetDefaultDataDir()
     }
 #else
     // Unix
+<<<<<<< HEAD
     if ( symbol[0] == 0 )
         return pathRet / ".safecoin";
     else return pathRet / ".safecoin" / symbol;
+=======
+    return pathRet / ".hush";
+
+>>>>>>> 5d5862a... bitcore
 #endif
 #endif
 }
@@ -602,6 +617,7 @@ void ClearDatadirCache()
 
 boost::filesystem::path GetConfigFile()
 {
+<<<<<<< HEAD
     char confname[512];
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         sprintf(confname,"%s.conf",ASSETCHAINS_SYMBOL);
@@ -614,6 +630,10 @@ boost::filesystem::path GetConfigFile()
 #endif
     }
     boost::filesystem::path pathConfigFile(GetArg("-conf",confname));
+=======
+    boost::filesystem::path pathConfigFile(GetArg("-conf", "hush.conf"));
+
+>>>>>>> 5d5862a... bitcore
     if (!pathConfigFile.is_complete())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 
@@ -632,7 +652,12 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 
     for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
     {
+<<<<<<< HEAD
         // Don't overwrite existing settings so command line settings override safecoin.conf
+=======
+        // Don't overwrite existing settings so command line settings override hush.conf
+
+>>>>>>> 5d5862a... bitcore
         string strKey = string("-") + it->string_key;
         if (mapSettingsRet.count(strKey) == 0)
         {
@@ -652,7 +677,12 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 #ifndef _WIN32
 boost::filesystem::path GetPidFile()
 {
+<<<<<<< HEAD
     boost::filesystem::path pathPidFile(GetArg("-pid", "safecoind.pid"));
+=======
+    boost::filesystem::path pathPidFile(GetArg("-pid", "hushd.pid"));
+
+>>>>>>> 5d5862a... bitcore
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }

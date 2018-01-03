@@ -387,3 +387,7 @@ template class JoinSplit<ZC_NUM_JS_INPUTS,
                          ZC_NUM_JS_OUTPUTS>;
 
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d5862a... bitcore

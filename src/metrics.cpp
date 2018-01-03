@@ -207,6 +207,11 @@ int printStats(bool mining)
     int height;
     int64_t tipmediantime;
     size_t connections;
+<<<<<<< HEAD
+=======
+    size_t tlsConnections;
+
+>>>>>>> 5d5862a... bitcore
     int64_t netsolps;
     {
         LOCK2(cs_main, cs_vNodes);

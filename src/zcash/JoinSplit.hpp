@@ -102,4 +102,9 @@ protected:
 typedef libzcash::JoinSplit<ZC_NUM_JS_INPUTS,
                             ZC_NUM_JS_OUTPUTS> ZCJoinSplit;
 
+<<<<<<< HEAD
 #endif // ZC_JOINSPLIT_H_
+=======
+#endif // _ZCJOINSPLIT_H_
+
+>>>>>>> 5d5862a... bitcore

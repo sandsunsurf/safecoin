@@ -11,7 +11,14 @@ SAFECOINTX=${SAFECOINTX:-$SRCDIR/safecoin-tx}
 [ ! -x $SAFECOIND ] && echo "$SAFECOIND not found or not executable." && exit 1
 
 # The autodetected version git tag can screw up manpage output a little bit
+<<<<<<< HEAD
 SAFEVER=($($SAFECOINCLI --version | head -n1 | awk -F'[ -]' '{ print $5, $6 }'))
+=======
+ZECVERSTR=$($HUSHCLI --version | head -n1 | awk '{ print $NF }')
+
+ZECVER=$(echo $ZECVERSTR | awk -F- '{ OFS="-"; NF--; print $0; }')
+ZECCOMMIT=$(echo $ZECVERSTR | awk -F- '{ print $NF }')
+>>>>>>> 5d5862a... bitcore
 
 # Create a footer file with copyright content.
 # This gets autodetected fine for safecoind if --version-string is not set,

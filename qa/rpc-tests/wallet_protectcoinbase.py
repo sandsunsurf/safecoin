@@ -343,3 +343,7 @@ class WalletProtectCoinbaseTest (BitcoinTestFramework):
 
 if __name__ == '__main__':
     WalletProtectCoinbaseTest().main()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d5862a... bitcore

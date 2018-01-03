@@ -291,7 +291,11 @@ UniValue getaddednodeinfo(const UniValue& params, bool fHelp)
             "    \"connected\" : true|false,          (boolean) If connected\n"
             "    \"addresses\" : [\n"
             "       {\n"
+<<<<<<< HEAD
             "         \"address\" : \"192.168.0.201:8233\",  (string) The Zcash server host and port\n"
+=======
+            "         \"address\" : \"192.168.0.201:8233\",  (string) The Hush server host and port\n"
+>>>>>>> 5d5862a... bitcore
             "         \"connected\" : \"outbound\"           (string) connection, inbound or outbound\n"
             "       }\n"
             "       ,...\n"

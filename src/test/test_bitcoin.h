@@ -1,7 +1,11 @@
 #ifndef BITCOIN_TEST_TEST_BITCOIN_H
 #define BITCOIN_TEST_TEST_BITCOIN_H
 
+<<<<<<< HEAD
 #include "consensus/upgrades.h"
+=======
+#include "chainparamsbase.h"
+>>>>>>> 5d5862a... bitcore
 #include "pubkey.h"
 #include "txdb.h"
 

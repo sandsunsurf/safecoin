@@ -291,3 +291,7 @@ def validate_params(n, k):
         raise ValueError('n must be larger than k')
     if (((n/(k+1))+1) >= 32):
         raise ValueError('Parameters must satisfy n/(k+1)+1 < 32')
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d5862a... bitcore

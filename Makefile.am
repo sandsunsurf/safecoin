@@ -12,9 +12,15 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libzcashconsensus.pc
 endif
 
+<<<<<<< HEAD
 
 BITCOIND_BIN=$(top_builddir)/src/zcashd$(EXEEXT)
 BITCOIN_CLI_BIN=$(top_builddir)/src/zcash-cli$(EXEEXT)
+=======
+BITCOIND_BIN=$(top_builddir)/src/hushd$(EXEEXT)
+BITCOIN_CLI_BIN=$(top_builddir)/src/hush-cli$(EXEEXT)
+WALLET_UTILITY_BIN=$(top_builddir)/src/wallet-utility$(EXEEXT)
+>>>>>>> 5d5862a... bitcore
 BITCOIN_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
 if TARGET_DARWIN
@@ -74,6 +80,18 @@ distcheck-hook:
 distcleancheck:
 	@:
 
+<<<<<<< HEAD
+=======
+$(BITCOIN_WIN_INSTALLER): all-recursive
+	$(MKDIR_P) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(BITCOIND_BIN) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(BITCOIN_CLI_BIN) $(top_builddir)/release
+	STRIPPROG="$(STRIP)" $(INSTALL_STRIP_PROGRAM) $(WALLET_UTILITY_BIN) $(top_builddir)/release
+	@test -f $(MAKENSIS) && $(MAKENSIS) -V2 $(top_builddir)/share/setup.nsi || \
+	  echo error: could not build $@
+	@echo built $@
+
+>>>>>>> 5d5862a... bitcore
 $(if $(findstring src/,$(MAKECMDGOALS)),$(MAKECMDGOALS), none): FORCE
 	$(MAKE) -C src $(patsubst src/%,%,$@)
 
@@ -153,6 +171,9 @@ $(BITCOIND_BIN): FORCE
 	$(MAKE) -C src $(@F)
 
 $(BITCOIN_CLI_BIN): FORCE
+	$(MAKE) -C src $(@F)
+
+$(WALLET_UTILITY_BIN): FORCE
 	$(MAKE) -C src $(@F)
 
 if USE_LCOV

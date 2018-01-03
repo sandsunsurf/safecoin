@@ -398,7 +398,18 @@ CNode* ConnectNode(CAddress addrConnect, const char *pszDest)
 
         pnode->nTimeConnected = GetTime();
 
+<<<<<<< HEAD
         return pnode;
+=======
+            {
+                LOCK(cs_vNodes);
+                vNodes.push_back(pnode);
+            }
+            pnode->nTimeConnected = GetTime();
+            return pnode;
+        }
+
+>>>>>>> 5d5862a... bitcore
     } else if (!proxyConnectionFailed) {
         // If connecting to the node failed, and failure is not caused by a problem connecting to
         // the proxy, mark this as an attempt.
@@ -659,6 +670,7 @@ int CNetMessage::readData(const char *pch, unsigned int nBytes)
 }
 
 
+<<<<<<< HEAD
 
 
 
@@ -666,6 +678,8 @@ int CNetMessage::readData(const char *pch, unsigned int nBytes)
 
 
 
+=======
+>>>>>>> 5d5862a... bitcore
 // requires LOCK(cs_vSend)
 void SocketSendData(CNode *pnode)
 {
@@ -1145,9 +1159,27 @@ void ThreadSocketHandler()
             //
             // Receive
             //
+<<<<<<< HEAD
             if (pnode->hSocket == INVALID_SOCKET)
                 continue;
             if (FD_ISSET(pnode->hSocket, &fdsetRecv) || FD_ISSET(pnode->hSocket, &fdsetError))
+=======
+            bool recvSet = false, sendSet = false, errorSet = false;
+
+            {
+                LOCK(pnode->cs_hSocket);
+
+                if (pnode->hSocket == INVALID_SOCKET)
+                    continue;
+
+                recvSet  = FD_ISSET(pnode->hSocket, &fdsetRecv);
+                sendSet  = FD_ISSET(pnode->hSocket, &fdsetSend);
+                errorSet = FD_ISSET(pnode->hSocket, &fdsetError);
+            }
+
+            if (recvSet || errorSet)
+
+>>>>>>> 5d5862a... bitcore
             {
                 TRY_LOCK(pnode->cs_vRecvMsg, lockRecv);
                 if (lockRecv)
@@ -1277,16 +1309,6 @@ void ThreadDNSAddressSeed()
 
     LogPrintf("%d addresses found from DNS seeds\n", found);
 }
-
-
-
-
-
-
-
-
-
-
 
 
 void DumpAddresses()
@@ -1637,6 +1659,15 @@ bool BindListenPort(const CService &addrBind, string& strError, bool fWhiteliste
 #endif
 
     // Set to non-blocking, incoming connections will also inherit this
+<<<<<<< HEAD
+=======
+    //
+    // WARNING!
+    // On Linux, the new socket returned by accept() does not inherit file
+    // status flags such as O_NONBLOCK and O_ASYNC from the listening
+    // socket. http://man7.org/linux/man-pages/man2/accept.2.html
+
+>>>>>>> 5d5862a... bitcore
     if (!SetSocketNonBlocking(hListenSocket, true)) {
         strError = strprintf("BindListenPort: Setting listening socket to non-blocking failed, error %s\n", NetworkErrorString(WSAGetLastError()));
         LogPrintf("%s\n", strError);
@@ -1740,6 +1771,170 @@ void static Discover(boost::thread_group& threadGroup)
 #endif
 }
 
+<<<<<<< HEAD
+=======
+#ifdef USE_TLS
+
+static int TLSCertVerificationCallback(int preverify_ok, X509_STORE_CTX *chainContext)
+{
+    //If verify_callback always returns 1, the TLS/SSL handshake will not be terminated with respect to verification failures and the connection will be established.
+    return 1;
+}
+
+static SSL_CTX* TLSInitCtx(
+                    TLSContextType ctxType,
+                    const boost::filesystem::path &privateKeyFile,
+                    const boost::filesystem::path &certificateFile,
+                    const std::vector<boost::filesystem::path> &trustedDirs)
+{
+    if (!boost::filesystem::exists(privateKeyFile)  ||
+        !boost::filesystem::exists(certificateFile))
+        return NULL;
+
+    bool bInitialized = false;
+    SSL_CTX *tlsCtx = NULL;
+
+    if ((tlsCtx = SSL_CTX_new(ctxType == serverContext ? TLS_server_method() : TLS_client_method())))
+    {
+        SSL_CTX_set_mode(tlsCtx, SSL_MODE_AUTO_RETRY);
+
+        int rootCertsNum    = LoadDefaultRootCertificates(tlsCtx);
+        int trustedPathsNum = 0;
+
+        for (boost::filesystem::path trustedDir : trustedDirs)
+        {
+            if (SSL_CTX_load_verify_locations(tlsCtx, NULL, trustedDir.string().c_str()) == 1)
+                trustedPathsNum++;
+        }
+
+        if (rootCertsNum == 0 && trustedPathsNum == 0)
+            LogPrintf("TLS: WARNING: %s: %s: failed to set up verified certificates. It will be impossible to verify peer certificates. \n", __FILE__, __func__);
+
+        SSL_CTX_set_verify(tlsCtx, SSL_VERIFY_PEER, TLSCertVerificationCallback);
+
+        if (SSL_CTX_use_certificate_file(tlsCtx, certificateFile.string().c_str(), SSL_FILETYPE_PEM) > 0)
+        {
+            if (SSL_CTX_use_PrivateKey_file(tlsCtx, privateKeyFile.string().c_str(), SSL_FILETYPE_PEM) > 0)
+            {
+                if (SSL_CTX_check_private_key(tlsCtx))
+                    bInitialized = true;
+                else
+                    LogPrintf("TLS: ERROR: %s: %s: private key does not match the certificate public key\n", __FILE__, __func__);
+            }
+            else
+                LogPrintf("TLS: ERROR: %s: %s: failed to use privateKey file\n", __FILE__, __func__);
+        }
+        else
+        {
+            LogPrintf("TLS: ERROR: %s: %s: failed to use certificate file\n", __FILE__, __func__);
+            ERR_print_errors_fp(stderr);
+        }
+    }
+    else
+        LogPrintf("TLS: ERROR: %s: %s: failed to create TLS context\n", __FILE__, __func__);
+
+    if (!bInitialized)
+    {
+        if (tlsCtx)
+        {
+            SSL_CTX_free(tlsCtx);
+            tlsCtx = NULL;
+        }
+    }
+
+    return tlsCtx;
+}
+
+static bool TLSInitialize()
+{
+    bool bInitializationStatus = false;
+
+    // Initialization routines for the OpenSSL library
+    //
+    SSL_load_error_strings();
+    ERR_load_crypto_strings();
+    OpenSSL_add_ssl_algorithms(); // OpenSSL_add_ssl_algorithms() always returns "1", so it is safe to discard the return value.
+
+    namespace fs = boost::filesystem;
+    fs::path certFile = GetArg("-tlscertpath", "");
+    if (!fs::exists(certFile))
+            certFile = (GetDataDir() / TLS_CERT_FILE_NAME);
+
+    fs::path privKeyFile = GetArg("-tlskeypath", "");
+    if (!fs::exists(privKeyFile))
+            privKeyFile = (GetDataDir() / TLS_KEY_FILE_NAME);
+
+    std::vector<fs::path> trustedDirs;
+    fs::path trustedDir = GetArg("-tlstrustdir", "");
+    if (fs::exists(trustedDir))
+        // Use only the specified trusted directory
+        trustedDirs.push_back(trustedDir);
+    else
+        // If specified directory can't be used, then setting the default trusted directories
+        trustedDirs = GetDefaultTrustedDirectories();
+
+    for (fs::path dir : trustedDirs)
+        LogPrintf("TLS: trusted directory '%s' will be used\n", dir.c_str());
+
+    // Initialization of the server and client contexts
+    //
+    if ((tls_ctx_server = TLSInitCtx(serverContext, privKeyFile, certFile, trustedDirs)))
+    {
+        if ((tls_ctx_client = TLSInitCtx(clientContext, privKeyFile, certFile, trustedDirs)))
+        {
+            LogPrint("net", "TLS: contexts are initialized\n");
+            bInitializationStatus = true;
+        }
+        else
+        {
+            LogPrintf("TLS: ERROR: %s: %s: failed to initialize TLS client context\n", __FILE__, __func__);
+            SSL_CTX_free (tls_ctx_server);
+        }
+    }
+    else
+        LogPrintf("TLS: ERROR: %s: %s: failed to initialize TLS server context\n", __FILE__, __func__);
+
+    return bInitializationStatus;
+}
+
+static bool TLSPrepareCredentials()
+{
+    boost::filesystem::path
+            defaultKeyPath (GetDataDir() / TLS_KEY_FILE_NAME),
+            defaultCertPath(GetDataDir() / TLS_CERT_FILE_NAME);
+
+    CredentialsStatus credStatus =
+            VerifyCredentials(
+                    boost::filesystem::path(GetArg("-tlskeypath",  defaultKeyPath.string())),
+                    boost::filesystem::path(GetArg("-tlscertpath", defaultCertPath.string())),
+                    GetArg("-tlskeypwd",""));
+
+    bool bPrepared = (credStatus == credOk);
+
+    if (!bPrepared)
+    {
+        if (!mapArgs.count("-tlskeypath") && !mapArgs.count("-tlscertpath"))
+        {
+            // Default paths were used
+            //
+            if (credStatus == credAbsent)
+            {
+                // Generate new credentials (key and self-signed certificate on it) only if credentials were absent previously
+                //
+                bPrepared = GenerateCredentials(
+                                    defaultKeyPath,
+                                    defaultCertPath,
+                                    GetArg("-tlskeypwd",""));
+            }
+        }
+    }
+
+    return bPrepared;
+}
+
+#endif // USE_TLS
+
+>>>>>>> 5d5862a... bitcore
 void StartNode(boost::thread_group& threadGroup, CScheduler& scheduler)
 {
     uiInterface.InitMessage(_("Loading addresses..."));
@@ -1815,8 +2010,13 @@ public:
     {
         // Close sockets
         BOOST_FOREACH(CNode* pnode, vNodes)
+<<<<<<< HEAD
             if (pnode->hSocket != INVALID_SOCKET)
                 CloseSocket(pnode->hSocket);
+=======
+            pnode->CloseSocketDisconnect();
+
+>>>>>>> 5d5862a... bitcore
         BOOST_FOREACH(ListenSocket& hListenSocket, vhListenSocket)
             if (hListenSocket.socket != INVALID_SOCKET)
                 if (!CloseSocket(hListenSocket.socket))
@@ -1842,9 +2042,6 @@ public:
     }
 }
 instance_of_cnetcleanup;
-
-
-
 
 
 

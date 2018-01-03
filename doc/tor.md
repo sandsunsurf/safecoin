@@ -146,4 +146,8 @@ Now use safecoin-cli to verify there is only a single peer connection.
 
 To connect to multiple Tor nodes, use:
 
+<<<<<<< HEAD
 	./safecoind -onion=127.0.0.1:9050 -addnode=zctestseie6wxgio.onion -dnsseed=0 -onlynet=onion
+=======
+	./hushd -onion=127.0.0.1:9050 -addnode=zctestseie6wxgio.onion -dnsseed=0 -onlynet=onion
+>>>>>>> 5d5862a... bitcore

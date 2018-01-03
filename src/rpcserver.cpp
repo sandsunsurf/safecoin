@@ -281,6 +281,8 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "getbestblockhash",       &getbestblockhash,       true  },
     { "blockchain",         "getblockcount",          &getblockcount,          true  },
     { "blockchain",         "getblock",               &getblock,               true  },
+    { "blockchain",         "getblockdeltas",         &getblockdeltas,         false },
+    { "blockchain",         "getblockhashes",         &getblockhashes,         true  },
     { "blockchain",         "getblockhash",           &getblockhash,           true  },
     { "blockchain",         "getblockheader",         &getblockheader,         true  },
     { "blockchain",         "getchaintips",           &getchaintips,           true  },
@@ -292,6 +294,7 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "verifytxoutproof",       &verifytxoutproof,       true  },
     { "blockchain",         "gettxoutsetinfo",        &gettxoutsetinfo,        true  },
     { "blockchain",         "verifychain",            &verifychain,            true  },
+<<<<<<< HEAD
     { "blockchain",         "paxprice",               &paxprice,               true  },
     { "blockchain",         "paxpending",             &paxpending,             true  },
     { "blockchain",         "paxprices",              &paxprices,              true  },
@@ -301,6 +304,9 @@ static const CRPCCommand vRPCCommands[] =
     { "blockchain",         "minerids",               &minerids,               true  },
     { "blockchain",         "kvsearch",               &kvsearch,               true  },
     { "blockchain",         "kvupdate",               &kvupdate,               true  },
+=======
+    { "blockchain",         "getspentinfo",           &getspentinfo,           false },
+>>>>>>> 5d5862a... bitcore
 
     /* Mining */
     { "mining",             "getblocktemplate",       &getblocktemplate,       true  },
@@ -329,6 +335,13 @@ static const CRPCCommand vRPCCommands[] =
 #ifdef ENABLE_WALLET
     { "rawtransactions",    "fundrawtransaction",     &fundrawtransaction,     false },
 #endif
+
+    /* Address index */
+    { "addressindex",       "getaddressmempool",      &getaddressmempool,      true  },
+    { "addressindex",       "getaddressutxos",        &getaddressutxos,        false },
+    { "addressindex",       "getaddressdeltas",       &getaddressdeltas,       false },
+    { "addressindex",       "getaddresstxids",        &getaddresstxids,        false },
+    { "addressindex",       "getaddressbalance",      &getaddressbalance,      false },
 
     /* Utility functions */
     { "util",               "createmultisig",         &createmultisig,         true  },

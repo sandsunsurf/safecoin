@@ -100,3 +100,7 @@ class BIP66Test(ComparisonTestFramework):
 
 if __name__ == '__main__':
     BIP66Test().main()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d5862a... bitcore

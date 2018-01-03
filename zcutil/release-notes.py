@@ -137,6 +137,11 @@ if __name__ == "__main__":
     clear = False
     if args.version:
         version = args.version
+<<<<<<< HEAD
         prev = args.prev
         clear = args.clear
     main(version, prev, clear)
+=======
+        filename = 'release-notes-{0}.md'.format(version)
+    main(version, filename)
+>>>>>>> 5d5862a... bitcore

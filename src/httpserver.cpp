@@ -306,7 +306,12 @@ static void http_reject_request_cb(struct evhttp_request* req, void*)
 /** Event dispatcher thread */
 static void ThreadHTTP(struct event_base* base, struct evhttp* http)
 {
+<<<<<<< HEAD
     RenameThread("zcash-http");
+=======
+    RenameThread("hush-http");
+
+>>>>>>> 5d5862a... bitcore
     LogPrint("http", "Entering http event loop\n");
     event_base_dispatch(base);
     // Event loop will be interrupted by InterruptHTTPServer()

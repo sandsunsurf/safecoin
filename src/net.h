@@ -77,6 +77,7 @@ void StartNode(boost::thread_group& threadGroup, CScheduler& scheduler);
 bool StopNode();
 void SocketSendData(CNode *pnode);
 
+
 typedef int NodeId;
 
 struct CombinerAll
@@ -169,6 +170,12 @@ class CNodeStats
 public:
     NodeId nodeid;
     uint64_t nServices;
+<<<<<<< HEAD
+=======
+    bool fTLSEstablished;
+    bool fTLSVerified;
+
+>>>>>>> 5d5862a... bitcore
     int64_t nLastSend;
     int64_t nLastRecv;
     int64_t nTimeConnected;
