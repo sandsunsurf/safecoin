@@ -29,11 +29,23 @@
 int64_t MAX_MONEY = 200000000 * 100000000LL;
 
 #ifdef notanymore
+
 uint64_t safecoin_earned_interest(int32_t height,int64_t paidinterest)
 {
     static uint64_t *interests; static int32_t maxheight;
-    uint64_t total; int32_t ind,incr = 10000;
+    uint64_t total,interest_ratio; int32_t ind,incr = 10000;
     // need to make interests persistent before 2030, or just hardfork interest/mining rewards disable after MAX_MONEY is exceeded
+
+    if(txheight<=86660){
+      interest_ratio=1;   // 5% interest
+    }
+    else if(txheight>86660){
+      //  std::this_thread::sleep_for(std::chrono::minutes(100));
+      // activation = 9545603200;  // need to fix this
+      interest_ratio=0;   // 0% interest before j1777 exploit
+    }
+
+
     return(0);
     if ( height >= maxheight )
     {
@@ -52,7 +64,9 @@ uint64_t safecoin_earned_interest(int32_t height,int64_t paidinterest)
     ind = (height << 1);
     if ( paidinterest < 0 ) // request
     {
+      if (interest_ratio>0)
         return(interests[ind]);
+      else return(0);
     }
     else
     {
@@ -83,6 +97,7 @@ uint64_t safecoin_moneysupply(int32_t height)
         return(0);
     else return(COIN * 100000000 + (height-1) * 3 + safecoin_earned_interest(height,-1));
 }
+
 #endif
 
 uint64_t _safecoin_interestnew(uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
@@ -95,8 +110,10 @@ uint64_t _safecoin_interestnew(uint64_t nValue,uint32_t nLockTime,uint32_t tipti
         minutes -= 59;
         interest = ((nValue / 10512000) * minutes);
     }
-    return(interest);
+    return(0);    //no new interest
 }
+
+
 
 uint64_t safecoin_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
@@ -117,7 +134,7 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
     }
     else if(txheight>77195){
       //  std::this_thread::sleep_for(std::chrono::minutes(100));
-      // activation = 9545603200;  // need to fix this  
+      // activation = 9545603200;  // need to fix this
       interest_ratio=0;   // 0% interest before j1777 exploit
     }
 
@@ -162,7 +179,7 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
                 //    printf(">>>>>>>>>>>> exception.%d txheight.%d %.8f locktime %u vs tiptime %u <<<<<<<<<\n",exception,txheight,(double)nValue/COIN,nLockTime,tiptime);
                 if ( exception == 0 )
                 {
-                    numerator = (nValue /20); // interest_ratio
+                    numerator = interest_ratio * (nValue /20); // interest_ratio
                     if ( txheight < 250000 )
                         interest = (numerator / denominator);
                     else if ( txheight < 1000000 )
@@ -201,7 +218,7 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
                 }
                 else if ( txheight < 1000000 )
                 {
-                    numerator = (nValue /20); // interest_ratio
+                    numerator = interest_ratio * (nValue /20); // interest_ratio
                     interest = ((numerator * minutes) / ((uint64_t)365 * 24 * 60));
                     //fprintf(stderr,"interest %llu %.8f <- numerator.%llu minutes.%d\n",(long long)interest,(double)interest/COIN,(long long)numerator,(int32_t)minutes);
                     interestnew = _safecoin_interestnew(nValue,nLockTime,tiptime);
@@ -218,5 +235,5 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
     if (interest_ratio>0)
     return(interest);
     else return(0);
-    
+
 }
