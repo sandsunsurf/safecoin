@@ -77,6 +77,7 @@ void ThreadSendAlert()
 
     // These versions are protocol versions
     // 170002 : 1.0.0
+    // 170008 : 1.3.85
     // 170014 : 1.4.95
     alert.nMinVer       = 170014;
     alert.nMaxVer       = 170014;
@@ -94,7 +95,7 @@ void ThreadSendAlert()
 
     // Set specific client version/versions here. If setSubVer is empty, no filtering on subver is done:
     // alert.setSubVer.insert(std::string("/MagicBean:0.7.2/"));
-	alert.setSubVer.insert(std::string("/MagicBean:1.4.95/"));
+	alert.setSubVer.insert(std::string("/MagicBean:1.3.85/"));
 
     // Sanity check
     assert(alert.strComment.length() <= 65536); // max length in alert.h
