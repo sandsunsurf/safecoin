@@ -73,7 +73,7 @@ int32_t safecoin_currentheight()
 int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,char *dest)
 {
     static int32_t errs;
-    int32_t func,ht,notarized_height,num,matched=0; uint256 notarized_hash,notarized_desttxid; uint8_t pubkeys[64][33];
+    int32_t func,ht,notarized_height,num,matched=0,MoMdepth; uint256 MoM,notarized_hash,notarized_desttxid; uint8_t pubkeys[64][33];
     if ( (func= fgetc(fp)) != EOF )
     {
         if ( ASSETCHAINS_SYMBOL[0] == 0 && strcmp(symbol,"SAFE") == 0 )
@@ -97,7 +97,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 }
             } else printf("illegal num.%d\n",num);
         }
-        else if ( func == 'N' )
+        else if ( func == 'N' || func == 'M' )
         {
             if ( fread(&notarized_height,1,sizeof(notarized_height),fp) != sizeof(notarized_height) )
                 errs++;
@@ -105,10 +105,22 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 errs++;
             if ( fread(&notarized_desttxid,1,sizeof(notarized_desttxid),fp) != sizeof(notarized_desttxid) )
                 errs++;
-            if ( 0 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
-                printf("%s load[%s.%d -> %s] NOTARIZED %d %s\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str());
+            if ( func == 'M' )
+            {
+                if ( fread(&MoM,1,sizeof(MoM),fp) != sizeof(MoM) )
+                    errs++;
+                if ( fread(&MoMdepth,1,sizeof(MoMdepth),fp) != sizeof(MoMdepth) )
+                    errs++;
+                if ( 1 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
+                    printf("%s load[%s.%d -> %s] NOTARIZED %d %s MoM.%s %d\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str(),MoM.ToString().c_str(),MoMdepth);
+            }
+            else
+            {
+                memset(&MoM,0,sizeof(MoM));
+                MoMdepth = 0;
+            }
             //if ( matched != 0 ) global independent states -> inside *sp
-            safecoin_eventadd_notarized(sp,symbol,ht,dest,notarized_hash,notarized_desttxid,notarized_height);
+            safecoin_eventadd_notarized(sp,symbol,ht,dest,notarized_hash,notarized_desttxid,notarized_height);//,MoM,MoMdepth);
         }
         else if ( func == 'U' ) // deprecated
         {
@@ -130,7 +142,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight);
-            safecoin_eventadd_SAFEheight(sp,symbol,ht,kheight,0);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -141,7 +153,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            safecoin_eventadd_SAFEheight(sp,symbol,ht,kheight,ktimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -208,7 +220,7 @@ int32_t memread(void *dest,int32_t size,uint8_t *filedata,long *fposp,long datal
 int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,long *fposp,long datalen,char *symbol,char *dest)
 {
     static int32_t errs;
-    int32_t func= -1,ht,notarized_height,num,matched=0; uint256 notarized_hash,notarized_desttxid; uint8_t pubkeys[64][33]; long fpos = *fposp;
+    int32_t func= -1,ht,notarized_height,MoMdepth,num,matched=0; uint256 MoM,notarized_hash,notarized_desttxid; uint8_t pubkeys[64][33]; long fpos = *fposp;
     if ( fpos < datalen )
     {
         func = filedata[fpos++];
@@ -231,7 +243,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
                 }
             } else printf("illegal num.%d\n",num);
         }
-        else if ( func == 'N' )
+        else if ( func == 'N' || func == 'M' )
         {
             if ( memread(&notarized_height,sizeof(notarized_height),filedata,&fpos,datalen) != sizeof(notarized_height) )
                 errs++;
@@ -239,10 +251,21 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
                 errs++;
             if ( memread(&notarized_desttxid,sizeof(notarized_desttxid),filedata,&fpos,datalen) != sizeof(notarized_desttxid) )
                 errs++;
-            if ( 0 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
-                printf("%s load[%s.%d -> %s] NOTARIZED %d %s\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str());
-            //if ( matched != 0 ) global independent states -> inside *sp
-            safecoin_eventadd_notarized(sp,symbol,ht,dest,notarized_hash,notarized_desttxid,notarized_height);
+            if ( func == 'M' )
+            {
+                if ( memread(&MoM,sizeof(MoM),filedata,&fpos,datalen) != sizeof(MoM) )
+                    errs++;
+                if ( memread(&MoMdepth,sizeof(MoMdepth),filedata,&fpos,datalen) != sizeof(MoMdepth) )
+                    errs++;
+                if ( 1 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
+                    printf("%s load[%s.%d -> %s] NOTARIZED %d %s MoM.%s %d\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str(),MoM.ToString().c_str(),MoMdepth);
+            }
+            else
+            {
+                memset(&MoM,0,sizeof(MoM));
+                MoMdepth = 0;
+            }
+            safecoin_eventadd_notarized(sp,symbol,ht,dest,notarized_hash,notarized_desttxid,notarized_height);//,MoM,MoMdepth);
         }
         else if ( func == 'U' ) // deprecated
         {
@@ -260,7 +283,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
             int32_t kheight;
             if ( memread(&kheight,sizeof(kheight),filedata,&fpos,datalen) != sizeof(kheight) )
                 errs++;
-             safecoin_eventadd_SAFEheight(sp,symbol,ht,kheight,0);
+             safecoin_eventadd_safeheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -271,7 +294,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            safecoin_eventadd_SAFEheight(sp,symbol,ht,kheight,ktimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -326,9 +349,9 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
     return(-1);
 }
 
-void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t SAFEheight,uint32_t SAFEtimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout)
+void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t SAFEheight,uint32_t SAFEtimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout)//,uint256 MoM,int32_t MoMdepth)
 {
-    static FILE *fp; static int32_t errs,didinit;
+    static FILE *fp; static int32_t errs,didinit; static uint256 zero;
     struct safecoin_state *sp; char fname[512],symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; int32_t retval,ht,func; uint8_t num,pubkeys[64][33];
     if ( didinit == 0 )
     {
@@ -386,7 +409,7 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
                 if ( fwrite(&SAFEheight,1,sizeof(SAFEheight),fp) != sizeof(SAFEheight) )
                     errs++;
             }
-            safecoin_eventadd_SAFEheight(sp,symbol,height,SAFEheight,SAFEtimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,height,SAFEheight,SAFEtimestamp);
         }
         else if ( opretbuf != 0 && opretlen > 0 )
         {
@@ -457,6 +480,9 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
             //printf("ht.%d func N ht.%d errs.%d\n",height,NOTARIZED_HEIGHT,errs);
             if ( sp != 0 )
             {
+                //if ( sp->MoMdepth > 0 && sp->MoM != zero )
+                //    fputc('M',fp);
+                //else
                 fputc('N',fp);
                 if ( fwrite(&height,1,sizeof(height),fp) != sizeof(height) )
                     errs++;
@@ -466,17 +492,24 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
                     errs++;
                 if ( fwrite(&sp->NOTARIZED_DESTTXID,1,sizeof(sp->NOTARIZED_DESTTXID),fp) != sizeof(sp->NOTARIZED_DESTTXID) )
                     errs++;
-                safecoin_eventadd_notarized(sp,symbol,height,dest,sp->NOTARIZED_HASH,sp->NOTARIZED_DESTTXID,sp->NOTARIZED_HEIGHT);
+                /*if ( sp->MoMdepth > 0 && sp->MoM != zero )
+                {
+                    if ( fwrite(&sp->MoM,1,sizeof(sp->MoM),fp) != sizeof(sp->MoM) )
+                        errs++;
+                    if ( fwrite(&sp->MoMdepth,1,sizeof(sp->MoMdepth),fp) != sizeof(sp->MoMdepth) )
+                        errs++;
+                }*/
+                safecoin_eventadd_notarized(sp,symbol,height,dest,sp->NOTARIZED_HASH,sp->NOTARIZED_DESTTXID,sp->NOTARIZED_HEIGHT);//,sp->MoM,sp->MoMdepth);
             }
         }
         fflush(fp);
     }
 }
 
-int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *scriptbuf,int32_t scriptlen,int32_t height,uint256 txhash,int32_t i,int32_t j,uint64_t *voutmaskp,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask)
+int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *scriptbuf,int32_t scriptlen,int32_t height,uint256 txhash,int32_t i,int32_t j,uint64_t *voutmaskp,int32_t *specialtxp,int32_t *notarizedheightp,uint64_t value,int32_t notarized,uint64_t signedmask,uint32_t timestamp)
 {
     static uint256 zero; static FILE *signedfp;
-    int32_t opretlen,nid,k,len = 0; uint256 SAFEtxid,desttxid; uint8_t crypto777[33]; struct safecoin_state *sp; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN];
+    int32_t opretlen,nid,k,len = 0; uint256 srchash,desttxid; uint8_t crypto777[33]; struct safecoin_state *sp; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN];
     if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
         return(-1);
     if ( scriptlen == 35 && scriptbuf[0] == 33 && scriptbuf[34] == 0xac )
@@ -499,7 +532,7 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
             *specialtxp = 1;
             //printf(">>>>>>>> ");
         }
-        else if ( safecoin_chosennotary(&nid,height,scriptbuf + 1) >= 0 )
+        else if ( safecoin_chosennotary(&nid,height,scriptbuf + 1,timestamp) >= 0 )
         {
             //printf("found notary.k%d\n",k);
             if ( notaryid < 64 )
@@ -534,24 +567,65 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
             printf("[%s] notarized.%d notarizedht.%d sp.Nht %d sp.ht %d opretlen.%d (%c %c %c)\n",ASSETCHAINS_SYMBOL,notarized,*notarizedheightp,sp->NOTARIZED_HEIGHT,sp->CURRENT_HEIGHT,opretlen,scriptbuf[len+32*2+4],scriptbuf[len+32*2+4+1],scriptbuf[len+32*2+4+2]);
         if ( j == 1 && opretlen >= 32*2+4 && strcmp(ASSETCHAINS_SYMBOL[0]==0?"SAFE":ASSETCHAINS_SYMBOL,(char *)&scriptbuf[len+32*2+4]) == 0 )
         {
-            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&SAFEtxid);
+            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&srchash);
             len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
-            if ( notarized != 0 && *notarizedheightp > sp->NOTARIZED_HEIGHT && *notarizedheightp < height && (height < sp->CURRENT_HEIGHT-1000 || safecoin_verifynotarization(ASSETCHAINS_SYMBOL[0]==0?(char *)"SAFE":ASSETCHAINS_SYMBOL,(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "BTC" : "SAFE"),height,*notarizedheightp,SAFEtxid,desttxid) == 0) )
+            if ( strcmp("PIZZA",ASSETCHAINS_SYMBOL) == 0 && opretlen == 110 )
             {
+                notarized = 1;
+            }
+            static int32_t last_rewind;
+            int32_t rewindtarget,validated = 0;
+            CBlockIndex *pindex;//
+            if ( IsInitialBlockDownload() == 0 && ((pindex= mapBlockIndex[srchash]) == 0 || pindex->nHeight != *notarizedheightp) )
+            {
+                if ( sp->NOTARIZED_HEIGHT > 0 && sp->NOTARIZED_HEIGHT < *notarizedheightp )
+                    rewindtarget = sp->NOTARIZED_HEIGHT - 1;
+                else if ( *notarizedheightp > 101 )
+                    rewindtarget = *notarizedheightp - 101;
+                else rewindtarget = 0;
+                if ( rewindtarget != 0 && rewindtarget > SAFECOIN_REWIND && rewindtarget > last_rewind )
+                {
+                    if ( last_rewind != 0 )
+                    {
+                        //SAFECOIN_REWIND = rewindtarget;
+                        fprintf(stderr,"%s FORK detected. notarized.%d %s not in this chain! last notarization %d -> rewindtarget.%d\n",ASSETCHAINS_SYMBOL,*notarizedheightp,srchash.ToString().c_str(),sp->NOTARIZED_HEIGHT,rewindtarget);
+                    }
+                    last_rewind = rewindtarget;
+                }
+            } else validated = 1;
+            if ( notarized != 0 && *notarizedheightp > sp->NOTARIZED_HEIGHT && *notarizedheightp < height && validated != 0 )
+            {
+                int32_t nameoffset = (int32_t)strlen(ASSETCHAINS_SYMBOL) + 1;
                 sp->NOTARIZED_HEIGHT = *notarizedheightp;
-                sp->NOTARIZED_HASH = SAFEtxid;
+                sp->NOTARIZED_HASH = srchash;
                 sp->NOTARIZED_DESTTXID = desttxid;
-                safecoin_stateupdate(height,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);
-                len += 4;
-                if ( ASSETCHAINS_SYMBOL[0] != 0 )
-                    printf("[%s] ht.%d NOTARIZED.%d %s.%s %sTXID.%s lens.(%d %d)\n",ASSETCHAINS_SYMBOL,height,*notarizedheightp,ASSETCHAINS_SYMBOL[0]==0?"SAFE":ASSETCHAINS_SYMBOL,SAFEtxid.ToString().c_str(),ASSETCHAINS_SYMBOL[0]==0?"BTC":"SAFE",desttxid.ToString().c_str(),opretlen,len);
+                /*memset(&sp->MoM,0,sizeof(sp->MoM));
+                sp->MoMdepth = 0;
+                if ( len+36 <= opretlen )
+                {
+                    len += iguana_rwbignum(0,&scriptbuf[len+nameoffset],32,(uint8_t *)&sp->MoM);
+                    len += iguana_rwnum(0,&scriptbuf[len+nameoffset],sizeof(sp->MoMdepth),(uint8_t *)&sp->MoMdepth);
+                    if ( sp->MoM == zero || sp->MoMdepth > 1440 || sp->MoMdepth < 0 )
+                    {
+                        memset(&sp->MoM,0,sizeof(sp->MoM));
+                        sp->MoMdepth = 0;
+                    }
+                    else
+                    {
+                        //printf("VALID %s MoM.%s [%d]\n",ASSETCHAINS_SYMBOL,sp->MoM.ToString().c_str(),sp->MoMdepth);
+                    }
+                }*/
+                safecoin_stateupdate(height,0,0,0,zero,0,0,0,0,0,0,0,0,0,0);//,sp->MoM,sp->MoMdepth);
+                len += nameoffset;
+                //if ( ASSETCHAINS_SYMBOL[0] != 0 )
+                //    printf("[%s] ht.%d NOTARIZED.%d %s.%s %sTXID.%s lens.(%d %d) MoM.%s %d\n",ASSETCHAINS_SYMBOL,height,*notarizedheightp,ASSETCHAINS_SYMBOL[0]==0?"SAFE":ASSETCHAINS_SYMBOL,srchash.ToString().c_str(),ASSETCHAINS_SYMBOL[0]==0?"BTC":"SAFE",desttxid.ToString().c_str(),opretlen,len,sp->MoM.ToString().c_str(),sp->MoMdepth);
                 if ( ASSETCHAINS_SYMBOL[0] == 0 )
                 {
                     if ( signedfp == 0 )
                     {
                         char fname[512];
-                        safecoin_statefname(fname,(char *)"",(char *)"signedmasks");
+                        safecoin_statefname(fname,ASSETCHAINS_SYMBOL,(char *)"signedmasks");
                         if ( (signedfp= fopen(fname,"rb+")) == 0 )
                             signedfp = fopen(fname,"wb");
                         else fseek(signedfp,0,SEEK_END);
@@ -567,11 +641,11 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                         //for (i=0; i<opretlen-len; i++)
                         //    printf("%02x",scriptbuf[len+i]);
                         //printf(" Found extradata.[%d] %d - %d\n",opretlen-len,opretlen,len);
-                        safecoin_stateupdate(height,0,0,0,txhash,0,0,0,0,0,0,value,&scriptbuf[len],opretlen-len+4+3+(scriptbuf[1] == 0x4d),j);
+                        safecoin_stateupdate(height,0,0,0,txhash,0,0,0,0,0,0,value,&scriptbuf[len],opretlen-len+4+3+(scriptbuf[1] == 0x4d),j);//,zero,0);
                     }
                 }
-            } else if ( height >= SAFECOIN_MAINNET_START )
-                printf("notarized.%d %llx reject ht.%d NOTARIZED.%d prev.%d %s.%s DESTTXID.%s (%s)\n",notarized,(long long)signedmask,height,*notarizedheightp,sp->NOTARIZED_HEIGHT,ASSETCHAINS_SYMBOL[0]==0?"SAFE":ASSETCHAINS_SYMBOL,SAFEtxid.ToString().c_str(),desttxid.ToString().c_str(),(char *)&scriptbuf[len]);
+            } else if ( *notarizedheightp != sp->NOTARIZED_HEIGHT )
+                printf("validated.%d notarized.%d %llx reject ht.%d NOTARIZED.%d prev.%d %s.%s DESTTXID.%s (%s) len.%d opretlen.%d\n",validated,notarized,(long long)signedmask,height,*notarizedheightp,sp->NOTARIZED_HEIGHT,ASSETCHAINS_SYMBOL[0]==0?"SAFE":ASSETCHAINS_SYMBOL,srchash.ToString().c_str(),desttxid.ToString().c_str(),(char *)&scriptbuf[len],len,opretlen);
         }
         else if ( i == 0 && j == 1 && opretlen == 149 )
         {
@@ -596,7 +670,7 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
             }
             
             if ( *isratificationp == 0 && (signedmask != 0 || (scriptbuf[len] != 'X' && scriptbuf[len] != 'A')) ) // && scriptbuf[len] != 'I')
-                safecoin_stateupdate(height,0,0,0,txhash,0,0,0,0,0,0,value,&scriptbuf[len],opretlen,j);
+                safecoin_stateupdate(height,0,0,0,txhash,0,0,0,0,0,0,value,&scriptbuf[len],opretlen,j);//,zero,0);
         }
     }
     return(notaryid);
@@ -635,7 +709,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
 {
     static int32_t hwmheight;
     uint64_t signedmask,voutmask; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; struct safecoin_state *sp;
-    uint8_t scriptbuf[4096],pubkeys[64][33],rmd160[20],scriptPubKey[35]; uint256 SAFEtxid,zero,btctxid,txhash;
+    uint8_t scriptbuf[10001],pubkeys[64][33],rmd160[20],scriptPubKey[35]; uint256 zero,btctxid,txhash;
     int32_t i,j,k,numnotaries,notarized,scriptlen,isratification,nid,numvalid,specialtx,notarizedheight,notaryid,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
     safecoin_init(pindex->nHeight);
@@ -646,7 +720,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
         return;
     }
     //fprintf(stderr,"%s connect.%d\n",ASSETCHAINS_SYMBOL,pindex->nHeight);
-    numnotaries = safecoin_notaries(pubkeys,pindex->nHeight);
+    numnotaries = safecoin_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
     calc_rmd160_sha256(rmd160,pubkeys[0],33);
     if ( pindex->nHeight > hwmheight )
         hwmheight = pindex->nHeight;
@@ -655,7 +729,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
         if ( pindex->nHeight != hwmheight )
             printf("%s hwmheight.%d vs pindex->nHeight.%d t.%u reorg.%d\n",ASSETCHAINS_SYMBOL,hwmheight,pindex->nHeight,(uint32_t)pindex->nTime,hwmheight-pindex->nHeight);
         safecoin_event_rewind(sp,symbol,pindex->nHeight);
-        safecoin_stateupdate(pindex->nHeight,0,0,0,zero,0,0,0,0,-pindex->nHeight,pindex->nTime,0,0,0,0);
+        safecoin_stateupdate(pindex->nHeight,0,0,0,zero,0,0,0,0,-pindex->nHeight,pindex->nTime,0,0,0,0);//,zero,0);
     }
     safecoin_currentheight_set(chainActive.Tip()->nHeight);
     if ( pindex != 0 )
@@ -692,8 +766,25 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
                   (numvalid >= SAFECOIN_MINRATIFY && ASSETCHAINS_SYMBOL[0] != 0) ||
                   numvalid > (numnotaries/5)) )
             {
-                if ( height > 500000 || ASSETCHAINS_SYMBOL[0] != 0 )
-                    printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d <<<<<<<<<<< notarized\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts);
+                if ( ASSETCHAINS_SYMBOL[0] != 0 )
+                {
+                    static FILE *signedfp;
+                    if ( signedfp == 0 )
+                    {
+                        char fname[512];
+                        safecoin_statefname(fname,ASSETCHAINS_SYMBOL,(char *)"signedmasks");
+                        if ( (signedfp= fopen(fname,"rb+")) == 0 )
+                            signedfp = fopen(fname,"wb");
+                        else fseek(signedfp,0,SEEK_END);
+                    }
+                    if ( signedfp != 0 )
+                    {
+                        fwrite(&height,1,sizeof(height),signedfp);
+                        fwrite(&signedmask,1,sizeof(signedmask),signedfp);
+                        fflush(signedfp);
+                    }
+                     printf("[%s] ht.%d txi.%d signedmask.%llx numvins.%d numvouts.%d <<<<<<<<<<<  notarized\n",ASSETCHAINS_SYMBOL,height,i,(long long)signedmask,numvins,numvouts);
+                }
                 notarized = 1;
             }
             if ( NOTARY_PUBKEY33[0] != 0 && ASSETCHAINS_SYMBOL[0] == 0 )
@@ -724,7 +815,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
 #else
                     memcpy(scriptbuf,(uint8_t *)&block.vtx[i].vout[j].scriptPubKey[0],len);
 #endif
-                    notaryid = safecoin_voutupdate(&isratification,notaryid,scriptbuf,len,height,txhash,i,j,&voutmask,&specialtx,&notarizedheight,(uint64_t)block.vtx[i].vout[j].nValue,notarized,signedmask);
+                    notaryid = safecoin_voutupdate(&isratification,notaryid,scriptbuf,len,height,txhash,i,j,&voutmask,&specialtx,&notarizedheight,(uint64_t)block.vtx[i].vout[j].nValue,notarized,signedmask,(uint32_t)chainActive.Tip()->GetBlockTime());
                     if ( 0 && i > 0 )
                     {
                         for (k=0; k<len; k++)
@@ -770,7 +861,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
                     if ( ((signedmask & 1) != 0 && numvalid >= SAFECOIN_MINRATIFY) || bitweight(signedmask) > (numnotaries/3) )
                     {
                         memset(&txhash,0,sizeof(txhash));
-                        safecoin_stateupdate(height,pubkeys,numvalid,0,txhash,0,0,0,0,0,0,0,0,0,0);
+                        safecoin_stateupdate(height,pubkeys,numvalid,0,txhash,0,0,0,0,0,0,0,0,0,0);//,zero,0);
                         printf("RATIFIED! >>>>>>>>>> new notaries.%d newheight.%d from height.%d\n",numvalid,(((height+SAFECOIN_ELECTION_GAP/2)/SAFECOIN_ELECTION_GAP)+1)*SAFECOIN_ELECTION_GAP,height);
                     } else printf("signedmask.%llx numvalid.%d wt.%d numnotaries.%d\n",(long long)signedmask,numvalid,bitweight(signedmask),numnotaries);
                 }
@@ -779,7 +870,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
         if ( NOTARY_PUBKEY33[0] != 0 && ASSETCHAINS_SYMBOL[0] == 0 )
             printf("%s ht.%d\n",ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL,height);
         if ( pindex->nHeight == hwmheight )
-            safecoin_stateupdate(height,0,0,0,zero,0,0,0,0,height,(uint32_t)pindex->nTime,0,0,0,0);
+            safecoin_stateupdate(height,0,0,0,zero,0,0,0,0,height,(uint32_t)pindex->nTime,0,0,0,0);//,zero,0);
     } else fprintf(stderr,"safecoin_connectblock: unexpected null pindex\n");
     //SAFECOIN_INITDONE = (uint32_t)time(NULL);
     //fprintf(stderr,"%s end connect.%d\n",ASSETCHAINS_SYMBOL,pindex->nHeight);

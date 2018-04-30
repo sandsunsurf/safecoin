@@ -2,18 +2,18 @@
 *.deb
 *.exe
 src/bitcoin
-src/safecoind
-src/safecoin-cli
-src/safecoin-gtest
-src/safecoin-tx
+src/zcashd
+src/zcash-cli
+src/zcash-gtest
+src/zcash-tx
 src/test/test_bitcoin
 
 # Zcash utilities
-src/safecoin/GenerateParams
-src/safecoin/CreateJoinSplit
+src/zcash/GenerateParams
+src/zcash/CreateJoinSplit
 
-*safecoinTest.pk
-*safecoinTest.vk
+*zcashTest.pk
+*zcashTest.vk
 
 # autoreconf
 Makefile.in
@@ -92,7 +92,7 @@ build
 *.gcda
 /*.info
 test_bitcoin.coverage/
-safecoin-gtest.coverage/
+zcash-gtest.coverage/
 total.coverage/
 coverage_percent.txt
 
@@ -114,3 +114,9 @@ libzcashconsensus.pc
 src/fiat/-usd
 contrib/debian/files
 contrib/debian/substvars
+
+src/rpcmisc~.cpp
+src/safecoin-cli
+src/safecoind
+src/safecoin-tx
+src/safecoin-test

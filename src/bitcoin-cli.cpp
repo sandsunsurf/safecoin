@@ -22,7 +22,7 @@
 using namespace std;
 
 int64_t MAX_MONEY = 200000000 * 100000000LL;
-uint64_t safecoin_maxallowed(int32_t baseid) { return(100000000LL * 100000); } // stub
+uint64_t safecoin_maxallowed(int32_t baseid) { return(100000000LL * 1000000); } // stub
 
 static const int DEFAULT_HTTP_CLIENT_TIMEOUT=900;
 
@@ -65,6 +65,7 @@ public:
 
 };
 
+#define FROM_CLI
 #include "uint256.h"
 #include "arith_uint256.h"
 
@@ -77,7 +78,12 @@ public:
 
 void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t SAFEheight,uint32_t SAFEtimestamp,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout)
 {
+    
+}
 
+uint32_t safecoin_heightstamp(int32_t height)
+{
+    return(0);
 }
 
 static bool AppInitRPC(int argc, char* argv[])

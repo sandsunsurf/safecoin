@@ -387,7 +387,7 @@ const CScript &CCoinsViewCache::GetSpendFor(const CTxIn& input) const
 }
 
 //uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime);
-uint64_t safecoin_accrued_interest(int32_t *txheightp,uint32_t *locktimep,uint256 hash,int32_t n,int32_t checkheight,uint64_t checkvalue);
+uint64_t safecoin_accrued_interest(int32_t *txheightp,uint32_t *locktimep,uint256 hash,int32_t n,int32_t checkheight,uint64_t checkvalue,int32_t tipheight);
 extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 CAmount CCoinsViewCache::GetValueIn(int32_t nHeight,int64_t *interestp,const CTransaction& tx,uint32_t tiptime) const
@@ -402,12 +402,12 @@ CAmount CCoinsViewCache::GetValueIn(int32_t nHeight,int64_t *interestp,const CTr
         value = GetOutputFor(tx.vin[i]).nValue;
         nResult += value;
 #ifdef SAFECOIN_ENABLE_INTEREST
-        if ( ASSETCHAINS_SYMBOL[0] == 0 && nHeight >= 60000 )
+        if ( ASSETCHAINS_SYMBOL[0] == 0 && nHeight >= 103820 )
         {
             if ( value >= 10*COIN )
             {
                 int64_t interest; int32_t txheight; uint32_t locktime;
-                interest = safecoin_accrued_interest(&txheight,&locktime,tx.vin[i].prevout.hash,tx.vin[i].prevout.n,0,value);
+                interest = safecoin_accrued_interest(&txheight,&locktime,tx.vin[i].prevout.hash,tx.vin[i].prevout.n,0,value,(int32_t)nHeight);
                 //printf("nResult %.8f += val %.8f interest %.8f ht.%d lock.%u tip.%u\n",(double)nResult/COIN,(double)value/COIN,(double)interest/COIN,txheight,locktime,tiptime);
                 //fprintf(stderr,"nResult %.8f += val %.8f interest %.8f ht.%d lock.%u tip.%u\n",(double)nResult/COIN,(double)value/COIN,(double)interest/COIN,txheight,locktime,tiptime);
                 nResult += interest;
@@ -473,8 +473,6 @@ double CCoinsViewCache::GetPriority(const CTransaction &tx, int nHeight) const
 {
     if (tx.IsCoinBase())
         return 0.0;
-    //CAmount nTotalIn = 0;
-    
     // Joinsplits do not reveal any information about the value or age of a note, so we
     // cannot apply the priority algorithm used for transparent utxos.  Instead, we just
     // use the maximum priority whenever a transaction contains any JoinSplits.
@@ -493,33 +491,8 @@ double CCoinsViewCache::GetPriority(const CTransaction &tx, int nHeight) const
         if (!coins->IsAvailable(txin.prevout.n)) continue;
         if (coins->nHeight < nHeight) {
             dResult += coins->vout[txin.prevout.n].nValue * (nHeight-coins->nHeight);
-            //nTotalIn += coins->vout[txin.prevout.n].nValue;
         }
     }
-
-    // If a transaction contains a joinsplit, we boost the priority of the transaction.
-    // Joinsplits do not reveal any information about the value or age of a note, so we
-    // cannot apply the priority algorithm used for transparent utxos.  Instead, we pick a
-    // very large number and multiply it by the transaction's fee per 1000 bytes of data.
-    // One trillion, 1000000000000, is equivalent to 1 ZEC utxo * 10000 blocks (~17 days).
-    /*if (tx.vjoinsplit.size() > 0) {
-        unsigned int nTxSize = ::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION);
-        nTotalIn += tx.GetJoinSplitValueIn();
-        CAmount fee = nTotalIn - tx.GetValueOut();
-        CFeeRate feeRate(fee, nTxSize);
-        CAmount feePerK = feeRate.GetFeePerK();
-
-        if (feePerK == 0) {
-            feePerK = 1;
-        }
-
-        dResult += 1000000000000 * double(feePerK);
-        // We cast feePerK from int64_t to double because if feePerK is a large number, say
-        // close to MAX_MONEY, the multiplication operation will result in an integer overflow.
-        // The variable dResult should never overflow since a 64-bit double in C++ is typically
-        // a double-precision floating-point number as specified by IEE 754, with a maximum
-        // value DBL_MAX of 1.79769e+308.
-    }*/
 
     return tx.ComputePriority(dResult);
 }

@@ -1,0 +1,57 @@
+#!/bin/bash
+source pubkey.txt
+args=("$@")
+seed_ip=`getent hosts zero.kolo.supernet.org | awk '{ print $1 }'`
+safecoin_binary='./safecoind'
+delay=20
+
+function safecoin_asset ()
+{
+    if [ $[RANDOM % 10] == 1 ]
+    then
+        gen=" -gen"
+    else
+        gen=""
+    fi
+
+    if [ -n "$2" ]
+    then
+        supply=" -ac_supply=$2"
+    else
+        supply=" "
+    fi
+
+    $safecoin_binary -pubkey=$pubkey -ac_name=$1 $supply -addnode=$seed_ip $gen $args &
+    sleep $delay
+}
+
+#set -x
+
+safecoin_asset REVS 1300000
+safecoin_asset SUPERNET 816061
+safecoin_asset DEX 999999
+safecoin_asset PANGEA 999999
+safecoin_asset JUMBLR 999999
+safecoin_asset BET 999999
+safecoin_asset CRYPTO 999999
+safecoin_asset HODL 9999999
+safecoin_asset MSHARK 1400000
+safecoin_asset BOTS 999999
+safecoin_asset MGW 999999
+safecoin_asset COQUI 72000000
+safecoin_asset WLC 210000000
+safecoin_asset KV 1000000
+safecoin_asset CEAL 366666666
+safecoin_asset MESH 1000007
+safecoin_asset MNZ 257142858
+safecoin_asset AXO 200000000
+safecoin_asset ETOMIC 100000000
+safecoin_asset BTCH 20998641
+safecoin_asset VOTE2018 600000000
+safecoin_asset PIZZA 100000000
+safecoin_asset BEER 100000000
+safecoin_asset NINJA 100000000
+safecoin_asset OOT 216000000
+safecoin_asset BNTN 500000000
+safecoin_asset CHAIN 999999
+safecoin_asset PRLPAY 500000000

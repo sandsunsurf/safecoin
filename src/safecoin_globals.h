@@ -15,14 +15,15 @@
 
 #include "safecoin_defs.h"
 
+uint32_t safecoin_heightstamp(int32_t height);
 void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnotaries,uint8_t notaryid,uint256 txhash,uint64_t voutmask,uint8_t numvouts,uint32_t *pvals,uint8_t numpvals,int32_t kheight,uint32_t ktime,uint64_t opretvalue,uint8_t *opretbuf,uint16_t opretlen,uint16_t vout);
 void safecoin_init(int32_t height);
+//int32_t safecoin_MoMdata(int32_t *notarized_htp,uint256 *MoMp,uint256 *safetxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip);
 int32_t safecoin_notarizeddata(int32_t nHeight,uint256 *notarized_hashp,uint256 *notarized_desttxidp);
 char *safecoin_issuemethod(char *userpass,char *method,char *params,uint16_t port);
 void safecoin_init(int32_t height);
-void safecoin_assetchain_pubkeys(char *jsonstr);
-int32_t safecoin_chosennotary(int32_t *notaryidp,int32_t height,uint8_t *pubkey33);
-int32_t safecoin_isrealtime(int32_t *SAFEheightp);
+int32_t safecoin_chosennotary(int32_t *notaryidp,int32_t height,uint8_t *pubkey33,uint32_t timestamp);
+int32_t safecoin_isrealtime(int32_t *safeheightp);
 uint64_t safecoin_paxtotal();
 int32_t safecoin_longestchain();
 uint64_t safecoin_maxallowed(int32_t baseid);
@@ -44,18 +45,18 @@ struct safecoin_state SAFECOIN_STATES[34];
 int COINBASE_MATURITY = _COINBASE_MATURITY;//100;
 
 int32_t IS_SAFECOIN_NOTARY,USE_EXTERNAL_PUBKEY,SAFECOIN_CHOSEN_ONE,ASSETCHAINS_SEED,SAFECOIN_ON_DEMAND,SAFECOIN_EXTERNAL_NOTARIES,SAFECOIN_PASSPORT_INITDONE,SAFECOIN_PAX,SAFECOIN_EXCHANGEWALLET,SAFECOIN_REWIND;
-int32_t SAFECOIN_LASTMINED,prevSAFECOIN_LASTMINED,JUMBLR_PAUSE;
-std::string NOTARY_PUBKEY,ASSETCHAINS_NOTARIES;
-uint8_t NOTARY_PUBKEY33[33];
+int32_t SAFECOIN_LASTMINED,prevSAFECOIN_LASTMINED,JUMBLR_PAUSE=1,ASSETCHAINS_CC;
+std::string NOTARY_PUBKEY,ASSETCHAINS_NOTARIES,ASSETCHAINS_OVERRIDE_PUBKEY;
+uint8_t NOTARY_PUBKEY33[33],ASSETCHAINS_OVERRIDE_PUBKEY33[33];
 
-char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
+char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN],ASSETCHAINS_USERPASS[4096];
 uint16_t ASSETCHAINS_PORT;
 uint32_t ASSETCHAIN_INIT;
 uint32_t ASSETCHAINS_MAGIC = 2387029918;
-uint64_t ASSETCHAINS_SUPPLY = 10;
+uint64_t ASSETCHAINS_ENDSUBSIDY,ASSETCHAINS_REWARD,ASSETCHAINS_HALVING,ASSETCHAINS_DECAY,ASSETCHAINS_COMMISSION,ASSETCHAINS_STAKED,ASSETCHAINS_SUPPLY = 10;
 
 uint32_t SAFECOIN_INITDONE;
-char SAFEUSERPASS[4096],BTCUSERPASS[4096]; uint16_t SAFE_PORT = 8771,BITCOIND_PORT = 8771;
+char SAFEUSERPASS[4096],BTCUSERPASS[4096]; uint16_t SAFE_PORT = 7771,BITCOIND_PORT = 7771;
 uint64_t PENDING_SAFECOIN_TX;
 
 struct safecoin_kv *SAFECOIN_KV;
