@@ -1,6 +1,8 @@
 *.tar.gz
 *.deb
 *.exe
+
+src/safecoin-test 
 src/bitcoin
 src/zcashd
 src/zcash-cli
