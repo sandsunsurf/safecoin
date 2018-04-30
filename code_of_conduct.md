@@ -41,14 +41,8 @@ is deemed necessary and appropriate to the circumstances. Maintainers are
 obligated to maintain confidentiality with regard to the reporter of an
 incident.
 
-You may send reports to [our Conduct email](mailto:developer@safecoinplatform.com).
+You may send reports to [our Conduct email](mailto:fair-exchange@protonmail.com).
 
-If you wish to contact specific maintainers directly, the following have made
-themselves available for conduct issues:
-
-- Benny Fairbank (benny at safecoinplatform.com)
-- Support Team (support at safecoinplatform.com)
-- ca333 (ca333 at safecoinplatform.com)
 
 This Code of Conduct is adapted from the [Contributor Covenant][homepage],
 version 1.3.0, available at

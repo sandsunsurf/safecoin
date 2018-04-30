@@ -16,7 +16,7 @@ script:
 notifications:
   irc:
     channels:
-      - "chat.freenode.net#safecoinplatform"
+      - "chat.freenode.net#safecoin"
     template:
       - "%{repository}/%{branch} (%{commit} - %{author}): %{message}"
       - "Alt Message : %{repository_slug} - (%{commit} - %{author}): %{message}, Build Time: %{duration}"
