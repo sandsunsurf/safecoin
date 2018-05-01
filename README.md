@@ -23,7 +23,7 @@ Jumblr - Decentralized tumbler for SAFE and other cryptocurrencies
 Assetchains - Easy way to fork Safecoin coin
 Pegged Assets - Chains that maintain a peg to fiat currencies
 Peerchains - Scalability solution where sibling chains form a network of blockchains
-Also note you receive 5% APR on your holdings.
+
 
 ## Tech Specification
 Max Supply: 36 million SAFE.
