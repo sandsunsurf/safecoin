@@ -836,7 +836,7 @@ int32_t safecoin_eligiblenotary(uint8_t pubkeys[66][33],int32_t *mids,uint32_t b
         }
     }
     if ( i == 66 && duplicate == 0 && (height > 186233 || *nonzpkeysp > 0) )
-        return(1);
+        return(0);
     else return(0);
 }
 
@@ -881,7 +881,7 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
                 if ( height > 807000 )
                     return(-2);
             }
-            return(1);
+            return(0);
         } else return(0);
     }
     else
@@ -906,7 +906,7 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
                 }
             }
             //fprintf(stderr,"special notaryid.%d ht.%d limit.%d\n",notaryid,height,limit);
-            return(1);
+            return(0);
         }
     }
     return(0);
