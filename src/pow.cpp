@@ -182,7 +182,7 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
                 flag = 1;
             else if ( special2 < 0 )
             {
-                if ( height > 792000 )
+                if ( height > 108800 )
                     flag = 0;
                 else fprintf(stderr,"ht.%d notaryid.%d special.%d flag.%d special2.%d\n",height,notaryid,special,flag,special2);
             }
@@ -200,9 +200,9 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
     {
         if ( SAFECOIN_LOADINGBLOCKS != 0 )
             return true;
-        if ( ASSETCHAINS_SYMBOL[0] != 0 || height > 792000 )
+        if ( ASSETCHAINS_SYMBOL[0] != 0 || height > 108800 )
         {
-            if ( 0 && height > 792000 )
+            if ( 0 && height > 108800 )
             {
                 for (i=31; i>=0; i--)
                     printf("%02x",((uint8_t *)&hash)[i]);
@@ -219,6 +219,11 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
                 for (i=0; i<66; i++)
                     printf("%d ",mids[i]);
                 printf(" minerids from ht.%d\n",height);
+		if ( SAFECOIN_REWIND == 0 && (notaryid >= 0 || height > 0) )
+		  {
+		    fprintf(stderr,"pow error height.%d loading.%d notaryid.%d\n",height,SAFECOIN_LOADINGBLOCKS,notaryid);
+		    return error("CheckProofOfWork(): hash doesn't match nBits");
+		  } 
             }
             return false;
         }
