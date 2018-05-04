@@ -610,7 +610,7 @@ int32_t safecoin_is_notarytx(const CTransaction& tx)
             if ( memcmp(ptr+1,crypto777,33) == 0 )
             {
                 //printf("found notarytx\n");
-                return(1);
+	      return(0);    //sc, arc
             }
         }
     }
