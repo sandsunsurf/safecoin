@@ -347,7 +347,9 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        //vSeeds.push_back(CDNSSeedData("z.cash", "dns.testnet.z.cash")); // Safecoin
+  	vSeeds.push_back(CDNSSeedData("safecoin.org", "testnetseed.safecoin.org")); // Safecoin
+	vSeeds.push_back(CDNSSeedData("ipv6admin.com", "testnetseed.ipv6admin.com")); // Ipv6ipv6admin
+	vSeeds.push_back(CDNSSeedData("fair.exchange", "testnetseed.fair.exchange")); // Safecoin
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
