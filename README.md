@@ -1,14 +1,3 @@
-
-## Refunds are Complete!
-On April 11, SafeCoin was attacked and required a significant rollback to undo damaged caused to its chain.  The rollback damaged funds to many current miners, and required a Refund.  The refund was a huge success, but required almost 100 hours of work for the caluculations, which were far more than a simple coinbase snapshot.  The work was done by @eternity from our community.
-
-Do not feel obligated, but if you would like to say thanks to eternity for his work, please stop into discord and do so, or you can donate here:
-btc 388HGoKdRngD4HQ9qUXkPuuc3h6fsoWSJP
-eth 0x1243f66587ecaf3ddf4753851230b4e5c08e0ecc
-
-Thanks you
-
-
 ## Safecoind
 This software is Safecoin client, generally you will use this if you want to mine SAFE or setup a full node.
 It downloads and stores the entire history of Safecoin transactions; depending on the speed of your computer and network connection, the synchronization process could take a day or more once the blockchain has reached a significant size.
