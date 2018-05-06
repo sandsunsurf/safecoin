@@ -1,0 +1,6 @@
+call safecoin_args.(./safecoind) NOTARY_PUBKEY.()
+finished loading blocks 
+[] PASSPORT iteration waiting for SAFECOIN_INITDONE
+processing /home/jj/.safecoin/safecoinstate 9KB, validated.-1
+inds.0x7f7a40004f80 validate /home/jj/.safecoin/safecoinstate.ind fsize.3124 datalen.10049 n.781 lastfpos.0
+took 0 seconds to process /home/jj/.safecoin/safecoinstate 9KB
