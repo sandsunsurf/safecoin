@@ -30,10 +30,10 @@ uint64_t safecoin_earned_interest(int32_t height,int64_t paidinterest)
     uint64_t total; int32_t ind,interest_ratio,incr = 10000;
     // need to make interests persistent before 2030, or just hardfork interest/mining rewards disable after MAX_MONEY is exceeded
 
-    if(txheight<=86660){
+    if(txheight<=86660 && Params().NetworkIDString() != "test") ){
       interest_ratio=1;   // 5% interest
     }
-    else if(txheight>86660){
+ else if(txheight>86660 || Params().NetworkIDString() == "test") ){
       //  std::this_thread::sleep_for(std::chrono::minutes(100));
       // activation = 9545603200;  // need to fix this
       interest_ratio=0;   // 0% interest before j1777 exploit
@@ -108,7 +108,7 @@ uint64_t _safecoin_interestnew(uint64_t nValue,uint32_t nLockTime,uint32_t tipti
 uint64_t safecoin_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
     uint64_t interest = 0;
-    if ( txheight < SAFECOIN_ENDOFERA && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY &&
+    if ( (txheight < SAFECOIN_ENDOFERA && Params().NetworkIDString() != "test") ) && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY &&
         interest = _safecoin_interestnew(nValue,nLockTime,tiptime);
     return(interest);
 }
@@ -120,10 +120,10 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
 
 
 
-    if(txheight<=77195){
+    if(txheight<=77195 && Params().NetworkIDString() != "test") ){
       interest_ratio=1;   // 5% interest
     }
-    else if(txheight>77195){
+ else if(txheight>77195 || Params().NetworkIDString() == "test") ){
       //  std::this_thread::sleep_for(std::chrono::minutes(100));
       // activation = 9545603200;  // need to fix this
       interest_ratio=0;   // 0% interest before j1777 exploit
@@ -135,7 +135,7 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
 
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         return(0);
-    if ( txheight >= SAFECOIN_ENDOFERA )
+if ( txheight >= SAFECOIN_ENDOFERA || Params().NetworkIDString() == "test") )
         return(0);
     if ( nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY && 
     {
