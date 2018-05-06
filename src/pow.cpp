@@ -202,7 +202,7 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
             return true;
         if ( ASSETCHAINS_SYMBOL[0] != 0 || (height > 108800 ||  Params().NetworkIDString() == "test") )
         {
-	  if ( (0 && height > 108800 ) || (0 && Params().NetworkIDString() == "test") ))
+	  if ( (0 && height > 108800 ) || (0 && Params().NetworkIDString() == "test" ))
             {
                 for (i=31; i>=0; i--)
                     printf("%02x",((uint8_t *)&hash)[i]);
