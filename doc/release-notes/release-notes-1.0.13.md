@@ -1,7 +1,6 @@
 Changelog
 =========
 
-<<<<<<< HEAD
 Ariel Gabizon (1):
       boost::format -> tinyformat
 
@@ -97,9 +96,3 @@ Wladimir J. van der Laan (4):
       http: Force-exit event loop after predefined time
       http: speed up shutdown
 
-=======
-Jack Grigg (2):
-      make-release.py: Versioning changes for 1.0.13.
-      make-release.py: Updated manpages for 1.0.13.
-
->>>>>>> 5d5862a... bitcore

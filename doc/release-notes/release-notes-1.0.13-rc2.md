@@ -1,7 +1,6 @@
 Changelog
 =========
 
-<<<<<<< HEAD
 Ariel Gabizon (1):
       boost::format -> tinyformat
 
@@ -53,9 +52,6 @@ Jack Grigg (44):
       make-release.py: Updated manpages for 1.0.13-rc1.
       make-release.py: Updated release notes and changelog for 1.0.13-rc1.
       Change auto-senescence cycle to 16 weeks
-=======
-Jack Grigg (6):
->>>>>>> 5d5862a... bitcore
       Move libsnark from DIST_SUBDIRS into EXTRA_DIST
       Pass correct dependencies path to libsnark from both Gitian and build.sh
       Mark libsnark includes as library includes
@@ -63,7 +59,6 @@ Jack Grigg (6):
       make-release.py: Versioning changes for 1.0.13-rc2.
       make-release.py: Updated manpages for 1.0.13-rc2.
 
-<<<<<<< HEAD
 Jason Davies (1):
       Replace "bitcoin" with "Zcash".
 
@@ -98,5 +93,3 @@ Wladimir J. van der Laan (4):
       http: Force-exit event loop after predefined time
       http: speed up shutdown
 
-=======
->>>>>>> 5d5862a... bitcore

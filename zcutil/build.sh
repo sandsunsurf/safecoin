@@ -68,12 +68,7 @@ $0 [ --enable-lcov || --disable-tests ] [ --disable-mining ] [ --disable-rust ] 
   If --disable-rust is passed, Zcash is configured to not build any Rust language
   assets. It must be passed after test/mining arguments, if present.
 
-<<<<<<< HEAD
   If --enable-proton is passed, Zcash is configured to build the Apache Qpid Proton
-=======
-  If --enable-proton is passed, Hush is configured to build the Apache Qpid Proton
-
->>>>>>> 5d5862a... bitcore
   library required for AMQP support. This library is not built by default.
   It must be passed after the test/mining/Rust arguments, if present.
 
@@ -122,18 +117,6 @@ if [ "x${1:-}" = 'x--enable-proton' ]
 then
     PROTON_ARG=''
     shift
-fi
-
-# Arch workaround for gcc 7
-# might break the entry above to find gcc- on arm
-if [ -f "/etc/arch-release" ]; then
-    if [ -f "/usr/bin/gcc-5" ]; then
-      CC=gcc-5
-      CXX=g++-5
-    else
-      echo 'gcc5 required, please install using "sudo pacman -S gss5"'
-      exit 1
-    fi
 fi
 
 # If --disable-libs is the next argument, build without libs:

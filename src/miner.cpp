@@ -963,14 +963,8 @@ void static BitcoinMiner()
                     SAFECOIN_CHOSEN_ONE = 1;
                     // Found a solution
                     SetThreadPriority(THREAD_PRIORITY_NORMAL);
-<<<<<<< HEAD
                     LogPrintf("SafecoinMiner:\n");
                     LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", pblock->GetHash().GetHex(), HASHTarget.GetHex());
-=======
-                    LogPrintf("HushMiner:\n");
-
-                    LogPrintf("proof-of-work found  \n  hash: %s  \ntarget: %s\n", pblock->GetHash().GetHex(), hashTarget.GetHex());
->>>>>>> 5d5862a... bitcore
 #ifdef ENABLE_WALLET
                     if (ProcessBlockFound(pblock, *pwallet, reservekey)) {
 #else

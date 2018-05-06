@@ -112,7 +112,6 @@ Build Zcash along with most dependencies from source by running
 ./zcutil/build.sh. Currently only Linux is officially supported.
 License
 -------
-<<<<<<< HEAD
 For license information see the file [COPYING](COPYING).
 NOTE TO EXCHANGES:
 https://bitcointalk.org/index.php?topic=1605144.msg17732151#msg17732151
@@ -151,7 +150,3 @@ Instead of generating 1 secret address, generate 100 and make a script file with
 ...
 ./safecoin-cli jumblr_secret <addr99>
 And make sure to delete all traces of this when the JUMBLR is finished. You will end up with 100 addresses that have an average of 1000 SAFE each. So as long as you are careful and dont do a 10,000 SAFE transaction (that will link 10 of your secret addresses together), you can appear as 100 different people each with 1000 SAFE.
-=======
-
-For license information see the file [COPYING](COPYING).
->>>>>>> 5d5862a... bitcore

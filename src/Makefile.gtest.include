@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-=======
-
-TESTS += zcash-gtest
-noinst_PROGRAMS += zcash-gtest
->>>>>>> 5d5862a... bitcore
 
 TESTS += safecoin-gtest
 bin_PROGRAMS += safecoin-gtest
@@ -75,10 +69,5 @@ safecoin_gtest_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -stat
 
 safecoin_gtest_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -static
 
-<<<<<<< HEAD
 safecoin-gtest-expected-failures: safecoin-gtest FORCE
 	./safecoin-gtest --gtest_filter=*DISABLED_* --gtest_also_run_disabled_tests
-=======
-zcash-gtest-expected-failures: zcash-gtest FORCE
-	./zcash-gtest --gtest_filter=*DISABLED_* --gtest_also_run_disabled_tests
->>>>>>> 5d5862a... bitcore

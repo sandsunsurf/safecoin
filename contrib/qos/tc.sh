@@ -37,15 +37,5 @@ tc filter add dev ${IF} parent 1: protocol ip prio 2 handle 2 fw classid 1:11
 #	--set-mark marks packages matching these criteria with the number "2"
 #	these packages are filtered by the tc filter with "handle 2"
 #	this filter sends the packages into the 1:11 class, and this class is limited to ${LIMIT}
-<<<<<<< HEAD
 iptables -t mangle -A OUTPUT -p tcp -m tcp --dport 8233 ! -d ${LOCALNET} -j MARK --set-mark 0x2
 iptables -t mangle -A OUTPUT -p tcp -m tcp --sport 8233 ! -d ${LOCALNET} -j MARK --set-mark 0x2
-=======
-iptables -t mangle -A OUTPUT -p tcp -m tcp --dport 8888 ! -d ${LOCALNET_V4} -j MARK --set-mark 0x2
-iptables -t mangle -A OUTPUT -p tcp -m tcp --sport 8888 ! -d ${LOCALNET_V4} -j MARK --set-mark 0x2
-
-if [ ! -z "${LOCALNET_V6}" ] ; then
-	ip6tables -t mangle -A OUTPUT -p tcp -m tcp --dport 8888 ! -d ${LOCALNET_V6} -j MARK --set-mark 0x4
-	ip6tables -t mangle -A OUTPUT -p tcp -m tcp --sport 8888 ! -d ${LOCALNET_V6} -j MARK --set-mark 0x4
-fi
->>>>>>> 5d5862a... bitcore

@@ -4,24 +4,15 @@
 
 src/safecoin-test 
 src/bitcoin
-<<<<<<< HEAD
 src/zcashd
 src/zcash-cli
 src/zcash-gtest
 src/zcash-tx
-=======
-src/hushd
-src/hush-cli
-src/hush-gtest
-src/hush-tx
-
->>>>>>> 5d5862a... bitcore
 src/test/test_bitcoin
 
 # Zcash utilities
 src/zcash/GenerateParams
 src/zcash/CreateJoinSplit
-
 
 *zcashTest.pk
 *zcashTest.vk
@@ -122,12 +113,7 @@ qa/pull-tester/test.*/*
 
 libzcashconsensus.pc
 
-<<<<<<< HEAD
 src/fiat/-usd
-=======
-wallet-utility
-
->>>>>>> 5d5862a... bitcore
 contrib/debian/files
 contrib/debian/substvars
 

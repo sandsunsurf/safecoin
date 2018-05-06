@@ -105,14 +105,7 @@ if BUILD_BITCOIND
 endif
 
 if BUILD_BITCOIN_UTILS
-<<<<<<< HEAD
   bin_PROGRAMS += safecoin-cli safecoin-tx
-=======
-  bin_PROGRAMS += hush-cli hush-tx
-if ENABLE_WALLET
-  bin_PROGRAMS += wallet-utility
-endif
->>>>>>> 5d5862a... bitcore
 endif
 
 LIBZCASH_H = \
@@ -129,8 +122,6 @@ LIBZCASH_H = \
 .PHONY: FORCE collate-libsnark check-symbols check-security
 # bitcoin core #
 BITCOIN_CORE_H = \
-  addressindex.h \
-  spentindex.h \
   addrman.h \
   alert.h \
   amount.h \
@@ -495,14 +486,6 @@ safecoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
 safecoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 safecoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
-# wallet-utility binary #
-if ENABLE_WALLET
-wallet_utility_SOURCES = wallet-utility.cpp
-wallet_utility_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-wallet_utility_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-wallet_utility_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
-endif
-
 if TARGET_WINDOWS
 safecoin_cli_SOURCES += bitcoin-cli-res.rc
 endif
@@ -519,23 +502,6 @@ safecoin_cli_LDADD = \
   $(LIBSNARK) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH_LIBS)
-
-
-if ENABLE_WALLET
-wallet_utility_LDADD = \
-  libbitcoin_wallet.a \
-  $(LIBBITCOIN_COMMON) \
-  $(LIBBITCOIN_CRYPTO) \
-  $(LIBSECP256K1) \
-  $(LIBBITCOIN_UTIL) \
-  $(BOOST_LIBS) \
-  $(BDB_LIBS) \
-  $(CRYPTO_LIBS) \
-  $(LIBZCASH) \
-  $(LIBSNARK) \
-  $(LIBZCASH_LIBS)
-endif
-
 #
 
 # zcash-tx binary #

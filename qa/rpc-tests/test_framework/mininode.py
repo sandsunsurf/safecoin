@@ -1501,7 +1501,3 @@ class EarlyDisconnectError(Exception):
 
     def __str__(self):
         return repr(self.value)
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

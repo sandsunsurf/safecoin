@@ -225,7 +225,3 @@ template class NoteDecryption<ZC_NOTEPLAINTEXT_SIZE>;
 template class PaymentDisclosureNoteDecryption<ZC_NOTEPLAINTEXT_SIZE>;
 
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

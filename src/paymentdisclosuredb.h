@@ -40,7 +40,3 @@ public:
 
 
 #endif // ZCASH_PAYMENTDISCLOSUREDB_H
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

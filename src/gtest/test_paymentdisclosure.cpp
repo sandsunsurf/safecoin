@@ -210,7 +210,3 @@ TEST(paymentdisclosure, mainnet) {
 
     ECC_Stop();
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

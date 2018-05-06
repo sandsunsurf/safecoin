@@ -249,7 +249,3 @@ bool ProofVerifier::check(
 }
 
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

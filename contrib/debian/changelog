@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 zcash (1.0.15) stable; urgency=medium
 
   * 1.0.15 release.
@@ -131,14 +130,6 @@ zcash (1.0.3) jessie; urgency=medium
 
  -- Zcash Company <team@z.cash>  Wed, 17 Nov 2016 15:56:00 -0700
 
-=======
-zcash (1.0.3) jessie; urgency=medium
-
-  * 1.0.3 release.
-
- -- Zcash Company <team@z.cash>  Wed, 17 Nov 2016 15:56:00 -0700
-
->>>>>>> 5d5862a... bitcore
 zcash (1.0.2) jessie; urgency=medium
 
   * 1.0.2 release.
@@ -179,8 +170,4 @@ zcash (1.0.0-rc1) jessie; urgency=medium
 
   * Initial packaging for Debian.
 
-<<<<<<< HEAD
  -- Zcash Company <team@z.cash>  Mon, 17 Oct 2016 11:47:02 -0700
-=======
- -- Zcash Company <team@z.cash>  Mon, 17 Oct 2016 11:47:02 -0700
->>>>>>> 5d5862a... bitcore

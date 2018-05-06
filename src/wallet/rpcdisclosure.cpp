@@ -303,7 +303,3 @@ UniValue z_validatepaymentdisclosure(const UniValue& params, bool fHelp)
 
     return o;
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

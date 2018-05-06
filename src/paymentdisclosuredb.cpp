@@ -91,7 +91,3 @@ bool PaymentDisclosureDB::Get(const PaymentDisclosureKey& key, PaymentDisclosure
     }
     return true;
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

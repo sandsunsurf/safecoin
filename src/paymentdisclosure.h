@@ -149,7 +149,3 @@ typedef std::pair<PaymentDisclosureKey, PaymentDisclosureInfo> PaymentDisclosure
 
 
 #endif // ZCASH_PAYMENTDISCLOSURE_H
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

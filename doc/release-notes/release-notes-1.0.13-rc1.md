@@ -13,11 +13,7 @@ Cory Fields (1):
 Duke Leto (1):
       Update performance-measurements.sh
 
-<<<<<<< HEAD
 Jack Grigg (37):
-=======
-Jack Grigg (36):
->>>>>>> 5d5862a... bitcore
       Squashed 'src/snark/' content from commit 9ada3f8
       Add libsnark compile flag to not copy DEPINST to PREFIX
       Add Ansible playbook for grind workers

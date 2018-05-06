@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-=======
-[hush] dependencies
-
-
->>>>>>> 5d5862a... bitcore
 ### Usage
 
 To build dependencies for the current arch+OS:

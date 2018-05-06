@@ -299,7 +299,3 @@ TEST(merkletree, testZeroElements) {
         ASSERT_TRUE(newTree.root() == oldroot);
     }
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore

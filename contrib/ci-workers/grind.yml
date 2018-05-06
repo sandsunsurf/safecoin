@@ -25,7 +25,3 @@
         name: "{{ item }}"
         state: present
       with_items: "{{ grind_deps }}"
-<<<<<<< HEAD
-=======
-
->>>>>>> 5d5862a... bitcore
