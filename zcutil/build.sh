@@ -124,8 +124,6 @@ then
     shift
 fi
 
-<<<<<<< HEAD
-=======
 # Arch workaround for gcc 7
 # might break the entry above to find gcc- on arm
 if [ -f "/etc/arch-release" ]; then
@@ -138,7 +136,6 @@ if [ -f "/etc/arch-release" ]; then
     fi
 fi
 
->>>>>>> 5d5862a... bitcore
 # If --disable-libs is the next argument, build without libs:
 LIBS_ARG=''
 if [ "x${1:-}" = 'x--disable-libs' ]
