@@ -112,6 +112,7 @@ qa/pull-tester/test.*/*
 /doc/doxygen/
 
 libzcashconsensus.pc
+wallet-utility
 
 src/fiat/-usd
 contrib/debian/files
