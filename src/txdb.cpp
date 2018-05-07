@@ -479,6 +479,8 @@ bool CBlockTreeDB::blockOnchainActive(const uint256 &hash) {
     return true;
 }
 
+void safecoin_index2pubkey33(uint8_t *pubkey33,CBlockIndex *pindex,int32_t height);
+
 bool CBlockTreeDB::LoadBlockIndexGuts()
 {
     boost::scoped_ptr<leveldb::Iterator> pcursor(NewIterator());
@@ -520,9 +522,15 @@ bool CBlockTreeDB::LoadBlockIndexGuts()
                 pindexNew->nTx            = diskindex.nTx;
                 pindexNew->nSproutValue   = diskindex.nSproutValue;
 
-                if (!CheckProofOfWork(pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus()))
+ 		// Consistency checks
+                auto header = pindexNew->GetBlockHeader();
+                if (header.GetHash() != pindexNew->GetBlockHash())
+                    return error("LoadBlockIndex(): block header inconsistency detected: on-disk = %s, in-memory = %s",
+                                 diskindex.ToString(),  pindexNew->ToString());
+                uint8_t pubkey33[33];
+                safecoin_index2pubkey33(pubkey33,pindexNew,pindexNew->nHeight);
+                if (!CheckProofOfWork(pindexNew->nHeight,pubkey33,pindexNew->GetBlockHash(), pindexNew->nBits, Params().GetConsensus(),pindexNew->nTime))
                     return error("LoadBlockIndex(): CheckProofOfWork failed: %s", pindexNew->ToString());
-
                 pcursor->Next();
             } else {
                 break; // if shutdown requested or finished loading block index
