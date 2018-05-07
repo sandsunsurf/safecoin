@@ -41,11 +41,6 @@ if [[ -z "${CXX-}" ]]; then
     CXX=g++
 fi
 
-# Allow users to set arbitary compile flags. Most users will not need this.
-if [[ -z "${CONFIGURE_FLAGS-}" ]]; then
-    CONFIGURE_FLAGS=""
-fi
-
 if [ "x$*" = 'x--help' ]
 then
     cat <<EOF
@@ -55,25 +50,25 @@ $0 --help
   Show this help message and exit.
 
 $0 [ --enable-lcov || --disable-tests ] [ --disable-mining ] [ --disable-rust ] [ --enable-proton ] [ --disable-libs ] [ MAKEARGS... ]
-  Build Zcash and most of its transitive dependencies from
-  source. MAKEARGS are applied to both dependencies and Zcash itself.
+  Build Safecoin and most of its transitive dependencies from
+  source. MAKEARGS are applied to both dependencies and Safecoin itself.
 
-  If --enable-lcov is passed, Zcash is configured to add coverage
+  If --enable-lcov is passed, Safecoin is configured to add coverage
   instrumentation, thus enabling "make cov" to work.
-  If --disable-tests is passed instead, the Zcash tests are not built.
+  If --disable-tests is passed instead, the Safecoin tests are not built.
 
-  If --disable-mining is passed, Zcash is configured to not build any mining
+  If --disable-mining is passed, Safecoin is configured to not build any mining
   code. It must be passed after the test arguments, if present.
 
-  If --disable-rust is passed, Zcash is configured to not build any Rust language
+  If --disable-rust is passed, Safecoin is configured to not build any Rust language
   assets. It must be passed after test/mining arguments, if present.
 
-  If --enable-proton is passed, Zcash is configured to build the Apache Qpid Proton
+  If --enable-proton is passed, Safecoin is configured to build the Apache Qpid Proton
   library required for AMQP support. This library is not built by default.
   It must be passed after the test/mining/Rust arguments, if present.
 
-  If --disable-libs is passed, Zcash is configured to not build any libraries like
-  'libzcashconsensus'.
+  If --disable-libs is passed, Safecoin is configured to not build any libraries like
+  'libsafecoinconsensus'.
 EOF
     exit 0
 fi
@@ -137,5 +132,5 @@ ld -v
 
 HOST="$HOST" BUILD="$BUILD" NO_RUST="$RUST_ARG" NO_PROTON="$PROTON_ARG" "$MAKE" "$@" -C ./depends/ V=1
 ./autogen.sh
-CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$RUST_ARG" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" "$LIBS_ARG" $CONFIGURE_FLAGS --enable-werror CXXFLAGS='-g'
+CC="$CC" CXX="$CXX" ./configure --prefix="${PREFIX}" --host="$HOST" --build="$BUILD" "$RUST_ARG" "$HARDENING_ARG" "$LCOV_ARG" "$TEST_ARG" "$MINING_ARG" "$PROTON_ARG" "$LIBS_ARG" --enable-werror CXXFLAGS='-g'
 "$MAKE" "$@" V=1
