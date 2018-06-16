@@ -84,7 +84,7 @@ void ThreadSendAlert()
     // 170017 : 1.1.01
     
     alert.nMinVer       = 170015;
-    alert.nMaxVer       = 170016;
+    alert.nMaxVer       = 170017;
 
     //
     // main.cpp:
