@@ -3969,10 +3969,17 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     
     long int nHeight = pindexPrev->nHeight+1;   //sc not sure if should be long
 <<<<<<< HEAD
+<<<<<<< HEAD
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
     
+=======
+    
+        //Check EH solution size matches an acceptable N,K
+        size_t nSolSize = block.nSolution.size();
+    
+>>>>>>> 3c8143a... Equihash 144,5 courtesy of Bitcoinz
 =======
     
         //Check EH solution size matches an acceptable N,K
