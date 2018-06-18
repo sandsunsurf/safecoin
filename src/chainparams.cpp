@@ -132,8 +132,8 @@ public:
         nPruneAfterHeight = 10000;
         eh_epoch_1 = eh200_9;
         eh_epoch_2 = eh144_5;
-        eh_epoch_1_endblock = 173478;
-        eh_epoch_2_startblock = 173468;
+        eh_epoch_1_endblock = 175374;
+        eh_epoch_2_startblock = 175344;
 
         CMutableTransaction txNew;
         txNew.vin.resize(1);
