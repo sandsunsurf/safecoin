@@ -111,8 +111,8 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nProtocolVersion = 170002;
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
-        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nProtocolVersion = 170004;
-        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nActivationHeight =
+        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nProtocolVersion = 
+        consensus.vUpgrades[Consensus::UPGRADE_OVERWINTER].nActivationHeight = 
             Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
 
         /**
@@ -130,10 +130,10 @@ public:
         nMinerThreads = 0;
         nMaxTipAge = 24 * 60 * 60;
         nPruneAfterHeight = 10000;
-        const size_t N = 200, K = 9;
-        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
-        nEquihashN = N;
-        nEquihashK = K;
+        eh_epoch_1 = eh200_9;
+        eh_epoch_2 = eh144_5;
+        eh_epoch_1_endblock = 175374;
+        eh_epoch_2_startblock = 175344;
 
         CMutableTransaction txNew;
         txNew.vin.resize(1);
@@ -257,10 +257,11 @@ void *chainparams_commandline(void *ptr)
 		(75000, uint256S("0x00000012f1f0aa4ac984d46739767d503e87087f2ad022eea22e67f2e21a6805"))
 		(80000, uint256S("0x000000010f731dad693d6e60f32f504db5ffdb2e2e9793ece5f2a22dbe53ee0d"))
 		(84748, uint256S("0x00000042f72109bb83060ed5c34505740fcfa5676ccfb724c38b048456ae838a"))
-		(102864, uint256S("0x00000025561af0c339a1df438fee5ccfa7c49bfcfdcb4d070b0d96cb429bedb5")),
+		(102864, uint256S("0x00000025561af0c339a1df438fee5ccfa7c49bfcfdcb4d070b0d96cb429bedb5"))
+                (170242, uint256S("0x00000011069f756ed14d4967b9862331ebb2f41a2928291066981258adc672d5")),   //switch to equihash 144,5
 		//(100000, uint256S("0x0f02eb1f3a4b89df9909fec81a4bd7d023e32e24e1f5262d9fc2cc36a715be6f")),
-		1523887013,     // * UNIX timestamp of last checkpoint block
-		155378,         // * total number of transactions between genesis and last checkpoint
+		1529121446,     // * UNIX timestamp of last checkpoint block
+		255378,         // * total number of transactions between genesis and last checkpoint
 		//   (the tx=... number in the SetBestChain debug.log lines)
 		2700            // * estimated number of transactions per day after checkpoint
 		//   total number of tx / (checkpoint block height / (24 * 24))
@@ -315,10 +316,10 @@ public:
         nMaxTipAge = 24 * 60 * 60;
 
         nPruneAfterHeight = 1000;
-        const size_t N = 200, K = 9;
-        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
-        nEquihashN = N;
-        nEquihashK = K;
+        eh_epoch_1 = eh200_9;
+        eh_epoch_2 = eh144_5;
+        eh_epoch_1_endblock = 60;
+        eh_epoch_2_startblock = 50;
 
 
         const char* pszTimestamp = "CNN 2018/02/07 Internet rights advocate John Perry Barlow dies";
@@ -416,10 +417,10 @@ public:
         nMinerThreads = 1;
         nMaxTipAge = 24 * 60 * 60;
         nPruneAfterHeight = 1000;
-        const size_t N = 48, K = 5;
-        BOOST_STATIC_ASSERT(equihash_parameters_acceptable(N, K));
-        nEquihashN = N;
-        nEquihashK = K;
+        eh_epoch_1 = eh200_9;
+        eh_epoch_2 = eh144_5;
+        eh_epoch_1_endblock = 1;
+        eh_epoch_2_startblock = 1;
         genesis.nTime = 1296688602;
         genesis.nBits = SAFECOIN_MINDIFF_NBITS;
         genesis.nNonce = uint256S("0x0000000000000000000000000000000000000000000000000000000000000021");
@@ -542,4 +543,22 @@ std::string CChainParams::GetFoundersRewardAddressAtIndex(int i) const {
 void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
 {
     regTestParams.UpdateNetworkUpgradeParameters(idx, nActivationHeight);
+}
+
+
+int validEHparameterList(EHparameters *ehparams, unsigned long blockheight, const CChainParams& params){
+    //if in overlap period, there will be two valid solutions, else 1.
+    //The upcoming version of EH is preferred so will always be first element
+    //returns number of elements in list
+    if(blockheight>=params.eh_epoch_2_start() && blockheight>params.eh_epoch_1_end()){
+        ehparams[0]=params.eh_epoch_2_params();
+        return 1;
+    }
+    if(blockheight<params.eh_epoch_2_start()){
+        ehparams[0]=params.eh_epoch_1_params();
+        return 1;
+    }
+    ehparams[0]=params.eh_epoch_2_params();
+    ehparams[1]=params.eh_epoch_1_params();
+    return 2;
 }
