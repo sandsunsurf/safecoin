@@ -1677,12 +1677,70 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 	  nSubsidy = (665600 * COIN); //refund for interest rate attack
 	  return nSubsidy;
 	}
-      else if ( nHeight < 990730 )  //this marks 688 days, just short of 2 years from launch.  SAFE will be entirely POS prior to this.
-	{
-	  nSubsidy >>= (nHeight / 123840);      //sc Subsidy is cut in half every 123840 blocks, which will occur approximately every 86 days
+      else if ( nHeight < 5256000 )  //  10 Year Mark, Safecoin to implement POS prior to this
+	{  
+	  if ( nHeight < 123840 )
+	    nSubsidy = (128 * COIN);
+	  if ( nHeight >= 123840 && nHeight < 178378 )
+	    nSubsidy = (64 * COIN);
+	  if ( nHeight >= 178378 && nHeight < 181378 )
+	    nSubsidy = (56 * COIN);
+	  if ( nHeight >= 181378 && nHeight < 184378 )
+	    nSubsidy = (48 * COIN);
+	  if ( nHeight >= 184378 && nHeight < 187378 )
+	    nSubsidy = (40 * COIN);
+	  if ( nHeight >= 187378 && nHeight < 197378 )
+	    nSubsidy = (32 * COIN);
+	  if ( nHeight >= 197378 && nHeight < 207378 )
+	    nSubsidy = (28 * COIN);
+	  if ( nHeight >= 207378 && nHeight < 217378 )
+	    nSubsidy = (24 * COIN);
+	  if ( nHeight >= 217378 && nHeight < 227378 )
+	    nSubsidy = (22 * COIN);
+	  if ( nHeight >= 227378 && nHeight < 237378 )
+	    nSubsidy = (20 * COIN);
+	  if ( nHeight >= 237378 && nHeight < 247378 )
+	    nSubsidy = (18 * COIN);
+	  if ( nHeight >= 247378 && nHeight < 287378 )
+	    nSubsidy = (16 * COIN);
+	  if ( nHeight >= 287378 && nHeight < 327378 )
+	    nSubsidy = (15 * COIN);
+	  if ( nHeight >= 327378 && nHeight < 367378 )
+	    nSubsidy = (14 * COIN);
+	  if ( nHeight >= 367378 && nHeight < 407378 )
+	    nSubsidy = (13 * COIN);
+	  if ( nHeight >= 407378 && nHeight < 447378 )
+	    nSubsidy = (12 * COIN);
+	  if ( nHeight >= 447378 && nHeight < 487378 )
+	    nSubsidy = (11 * COIN);
+	  if ( nHeight >= 487378 && nHeight < 527378 )
+	    nSubsidy = (10 * COIN);
+	  if ( nHeight >= 527378 && nHeight < 567378 )
+	    nSubsidy = (9 * COIN);
+	  if ( nHeight >= 567378 && nHeight < 647378 )
+	    nSubsidy = (8 * COIN);
+	  if ( nHeight >= 647378 && nHeight < 727378 )
+	    nSubsidy = (7 * COIN);
+	  if ( nHeight >= 727378 && nHeight < 807378 )
+	    nSubsidy = (6 * COIN);
+	  if ( nHeight >= 807378 && nHeight < 887378 )
+	    nSubsidy = (5 * COIN);
+	  if ( nHeight >= 887378 && nHeight < 1207378 )
+	    nSubsidy = (4 * COIN);
+	  if ( nHeight >= 1207378 && nHeight < 1527378 )
+	    nSubsidy = (3 * COIN);
+	  if ( nHeight >= 1527378 && nHeight < 1847378 )
+	    nSubsidy = (2 * COIN);
+	  if ( nHeight >= 1847378 && nHeight < 2167378 )
+	    nSubsidy = (1 * COIN);
+	  if ( nHeight >= 2167378 && nHeight < 3447378 )
+	    nSubsidy = (0.5 * COIN);
+	  if ( nHeight >= 3447378 && nHeight < 4727378 )
+	    nSubsidy = (0.25 * COIN);  
+	  
 	  return nSubsidy;
 	}
-      else return(0);       // After 688 days, SAFE will be entirely POS prior to this.
+      else return(0);       // After 10 years, SAFE will be entirely POS.
            
     }
     else
