@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-#include "sodium.h"
+1;4205;0c#include "sodium.h"
 
 #include "addrman.h"
 #include "alert.h"
@@ -4034,30 +4034,20 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     assert(pindexPrev);
     
     long int nHeight = pindexPrev->nHeight+1;   //sc not sure if should be long
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
     
-=======
-=======
->>>>>>> d7e14d676f36e86ae219e2a9ec7d5f8bd2647ea3
+
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
     
-<<<<<<< HEAD
->>>>>>> 3c8143a... Equihash 144,5 courtesy of Bitcoinz
-=======
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
     
->>>>>>> 3c8143a... Equihash 144,5 courtesy of Bitcoinz
-=======
->>>>>>> d7e14d676f36e86ae219e2a9ec7d5f8bd2647ea3
+
         EHparameters ehparams[MAX_EH_PARAM_LIST_LEN]; //allocate on-stack space for parameters list
         int listlength=validEHparameterList(ehparams,nHeight,chainParams);
         int solutionInvalid=1;

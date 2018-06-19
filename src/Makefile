@@ -98,29 +98,31 @@ am__append_4 = MULTICORE=1
 am__append_5 = $(BDB_CPPFLAGS)
 am__append_6 = libbitcoin_wallet.a
 am__append_7 = libbitcoin_zmq.a
-#am__append_8 = libbitcoin_proton.a
-bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
+am__append_8 = libbitcoin_proton.a
+bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
+	$(am__EXEEXT_4)
 noinst_PROGRAMS = zcash/GenerateParams$(EXEEXT) \
 	zcash/CreateJoinSplit$(EXEEXT)
-TESTS = $(am__EXEEXT_3)
+TESTS = $(am__EXEEXT_4)
 am__append_9 = safecoind
 am__append_10 = safecoin-cli safecoin-tx
-am__append_11 = \
+am__append_11 = wallet-utility
+am__append_12 = \
   -DEQUIHASH_TROMP_ATOMIC
 
-am__append_12 = \
+am__append_13 = \
   ${EQUIHASH_TROMP_SOURCES}
 
-#am__append_13 = compat/glibc_compat.cpp
-#am__append_14 = bitcoind-res.rc
-am__append_15 = $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
-am__append_16 = libbitcoin_wallet.a
-#am__append_17 = $(LIBBITCOIN_PROTON) $(PROTON_LIBS)
-#am__append_18 = bitcoin-cli-res.rc
-#am__append_19 = bitcoin-tx-res.rc
-#am__append_20 = compat/glibc_compat.cpp
-am__append_21 = safecoin-test
+#am__append_14 = compat/glibc_compat.cpp
+#am__append_15 = bitcoind-res.rc
+am__append_16 = $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
+am__append_17 = libbitcoin_wallet.a
+am__append_18 = $(LIBBITCOIN_PROTON) $(PROTON_LIBS)
+#am__append_19 = bitcoin-cli-res.rc
+#am__append_20 = bitcoin-tx-res.rc
+#am__append_21 = compat/glibc_compat.cpp
 am__append_22 = safecoin-test
+am__append_23 = safecoin-test
 subdir = src
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -221,9 +223,9 @@ libbitcoin_proton_a_LIBADD =
 am__libbitcoin_proton_a_SOURCES_DIST = amqp/amqpabstractnotifier.cpp \
 	amqp/amqpnotificationinterface.cpp \
 	amqp/amqppublishnotifier.cpp
-#am_libbitcoin_proton_a_OBJECTS = amqp/libbitcoin_proton_a-amqpabstractnotifier.$(OBJEXT) \
-#	amqp/libbitcoin_proton_a-amqpnotificationinterface.$(OBJEXT) \
-#	amqp/libbitcoin_proton_a-amqppublishnotifier.$(OBJEXT)
+am_libbitcoin_proton_a_OBJECTS = amqp/libbitcoin_proton_a-amqpabstractnotifier.$(OBJEXT) \
+	amqp/libbitcoin_proton_a-amqpnotificationinterface.$(OBJEXT) \
+	amqp/libbitcoin_proton_a-amqppublishnotifier.$(OBJEXT)
 libbitcoin_proton_a_OBJECTS = $(am_libbitcoin_proton_a_OBJECTS)
 libbitcoin_server_a_AR = $(AR) $(ARFLAGS)
 libbitcoin_server_a_LIBADD =
@@ -277,11 +279,12 @@ am__libbitcoin_util_a_SOURCES_DIST = support/pagelocker.cpp \
 	compat/glibcxx_sanity.cpp compat/strnlen.cpp random.cpp \
 	rpcprotocol.cpp support/cleanse.cpp sync.cpp uint256.cpp \
 	util.cpp utilmoneystr.cpp utilstrencodings.cpp utiltime.cpp \
-	addrman.h alert.h amount.h amqp/amqpabstractnotifier.h \
-	amqp/amqpconfig.h amqp/amqpnotificationinterface.h \
-	amqp/amqppublishnotifier.h amqp/amqpsender.h arith_uint256.h \
-	asyncrpcoperation.h asyncrpcqueue.h base58.h bloom.h cc/eval.h \
-	chain.h chainparams.h chainparamsbase.h chainparamsseeds.h \
+	addressindex.h spentindex.h addrman.h alert.h amount.h \
+	amqp/amqpabstractnotifier.h amqp/amqpconfig.h \
+	amqp/amqpnotificationinterface.h amqp/amqppublishnotifier.h \
+	amqp/amqpsender.h arith_uint256.h asyncrpcoperation.h \
+	asyncrpcqueue.h base58.h bloom.h cc/eval.h chain.h \
+	chainparams.h chainparamsbase.h chainparamsseeds.h \
 	checkpoints.h checkqueue.h clientversion.h coincontrol.h \
 	coins.h compat.h compat/byteswap.h compat/endian.h \
 	compat/sanity.h compressor.h consensus/consensus.h \
@@ -441,7 +444,8 @@ am_libzcashconsensus_la_rpath = -rpath \
 am__EXEEXT_1 = safecoind$(EXEEXT)
 am__EXEEXT_2 = safecoin-cli$(EXEEXT) \
 	safecoin-tx$(EXEEXT)
-am__EXEEXT_3 = safecoin-test$(EXEEXT)
+am__EXEEXT_3 = wallet-utility$(EXEEXT)
+am__EXEEXT_4 = safecoin-test$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__safecoin_cli_SOURCES_DIST = bitcoin-cli.cpp bitcoin-cli-res.rc
 #am__objects_5 = bitcoin-cli-res.$(OBJEXT)
@@ -474,13 +478,13 @@ am__DEPENDENCIES_4 = $(am__append_2)
 am__DEPENDENCIES_5 = $(am__append_3)
 am__DEPENDENCIES_6 = $(LIBBITCOIN_ZMQ) \
 	$(am__DEPENDENCIES_1)
-#am__DEPENDENCIES_7 = $(LIBBITCOIN_PROTON) \
-#	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_7 = $(LIBBITCOIN_PROTON) \
+	$(am__DEPENDENCIES_1)
 am__DEPENDENCIES_8 = $(am__DEPENDENCIES_3) $(LIBBITCOIN_COMMON) \
 	$(LIBUNIVALUE) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) \
 	$(am__DEPENDENCIES_2) $(LIBSNARK) $(am__DEPENDENCIES_4) \
 	$(am__DEPENDENCIES_5) $(LIBSECP256K1) $(LIBCRYPTOCONDITIONS) \
-	$(am__DEPENDENCIES_6) $(am__append_16) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_6) $(am__append_17) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(LIBBITCOIN_CRYPTO) \
@@ -511,7 +515,7 @@ safecoind_DEPENDENCIES = $(am__DEPENDENCIES_3) $(LIBBITCOIN_COMMON) \
 	$(LIBUNIVALUE) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) \
 	$(am__DEPENDENCIES_2) $(LIBSNARK) $(am__DEPENDENCIES_4) \
 	$(am__DEPENDENCIES_5) $(LIBSECP256K1) $(LIBCRYPTOCONDITIONS) \
-	$(am__DEPENDENCIES_6) $(am__append_16) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_6) $(am__append_17) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(LIBBITCOIN_CRYPTO) \
@@ -519,6 +523,22 @@ safecoind_DEPENDENCIES = $(am__DEPENDENCIES_3) $(LIBBITCOIN_COMMON) \
 safecoind_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(safecoind_CXXFLAGS) \
 	$(CXXFLAGS) $(safecoind_LDFLAGS) $(LDFLAGS) -o $@
+am__wallet_utility_SOURCES_DIST = wallet-utility.cpp
+am_wallet_utility_OBJECTS =  \
+	wallet_utility-wallet-utility.$(OBJEXT)
+wallet_utility_OBJECTS = $(am_wallet_utility_OBJECTS)
+wallet_utility_DEPENDENCIES = libbitcoin_wallet.a \
+	$(LIBBITCOIN_COMMON) $(LIBBITCOIN_CRYPTO) \
+	$(LIBSECP256K1) $(LIBBITCOIN_UTIL) \
+	$(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2) $(LIBSNARK) \
+	$(am__DEPENDENCIES_1)
+wallet_utility_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(wallet_utility_CXXFLAGS) $(CXXFLAGS) \
+	$(wallet_utility_LDFLAGS) $(LDFLAGS) -o $@
 am_zcash_CreateJoinSplit_OBJECTS =  \
 	zcash/zcash_CreateJoinSplit-CreateJoinSplit.$(OBJEXT)
 zcash_CreateJoinSplit_OBJECTS = $(am_zcash_CreateJoinSplit_OBJECTS)
@@ -601,7 +621,7 @@ SOURCES = $(crypto_libbitcoin_crypto_a_SOURCES) \
 	$(libzcash_a_SOURCES) $(libzcashconsensus_la_SOURCES) \
 	$(safecoin_cli_SOURCES) $(safecoin_test_SOURCES) \
 	$(safecoin_tx_SOURCES) $(safecoind_SOURCES) \
-	$(zcash_CreateJoinSplit_SOURCES) \
+	$(wallet_utility_SOURCES) $(zcash_CreateJoinSplit_SOURCES) \
 	$(zcash_GenerateParams_SOURCES)
 DIST_SOURCES = $(am__crypto_libbitcoin_crypto_a_SOURCES_DIST) \
 	$(libbitcoin_cli_a_SOURCES) $(libbitcoin_common_a_SOURCES) \
@@ -614,6 +634,7 @@ DIST_SOURCES = $(am__crypto_libbitcoin_crypto_a_SOURCES_DIST) \
 	$(am__safecoin_cli_SOURCES_DIST) \
 	$(am__safecoin_test_SOURCES_DIST) \
 	$(am__safecoin_tx_SOURCES_DIST) $(am__safecoind_SOURCES_DIST) \
+	$(am__wallet_utility_SOURCES_DIST) \
 	$(zcash_CreateJoinSplit_SOURCES) \
 	$(zcash_GenerateParams_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -865,14 +886,14 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} /root/safecoin/build-aux/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/safecoin/safecoin/build-aux/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
 ARFLAGS = cr
-AUTOCONF = ${SHELL} /root/safecoin/build-aux/missing autoconf
-AUTOHEADER = ${SHELL} /root/safecoin/build-aux/missing autoheader
-AUTOMAKE = ${SHELL} /root/safecoin/build-aux/missing automake-1.15
+AUTOCONF = ${SHELL} /home/safecoin/safecoin/build-aux/missing autoconf
+AUTOHEADER = ${SHELL} /home/safecoin/safecoin/build-aux/missing autoheader
+AUTOMAKE = ${SHELL} /home/safecoin/safecoin/build-aux/missing automake-1.15
 AWK = gawk
 BDB_CPPFLAGS = 
 BDB_LIBS = -ldb_cxx-6.2
@@ -880,16 +901,16 @@ BITCOIN_CLI_NAME = zcash-cli
 BITCOIN_DAEMON_NAME = zcashd
 BITCOIN_TX_NAME = zcash-tx
 BOOST_CHRONO_LIB = -lboost_chrono-mt
-BOOST_CPPFLAGS = -pthread -I/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../include
+BOOST_CPPFLAGS = -pthread -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../include
 BOOST_FILESYSTEM_LIB = -lboost_filesystem
-BOOST_LDFLAGS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib
-BOOST_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib -lboost_system -lboost_filesystem -lboost_program_options-mt -lboost_thread-mt -lboost_chrono-mt
+BOOST_LDFLAGS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib
+BOOST_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib -lboost_system -lboost_filesystem -lboost_program_options-mt -lboost_thread-mt -lboost_chrono-mt
 BOOST_PROGRAM_OPTIONS_LIB = -lboost_program_options-mt
 BOOST_SYSTEM_LIB = -lboost_system
 BOOST_THREAD_LIB = -lboost_thread-mt
 BOOST_UNIT_TEST_FRAMEWORK_LIB = -lboost_unit_test_framework-mt
-CC = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache gcc -m64
-CCACHE = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache
+CC = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache gcc -m64
+CCACHE = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache
 CCDEPMODE = depmode=gcc3
 CFLAGS = -pipe -O1 
 CLIENT_VERSION_BUILD = 51
@@ -900,13 +921,13 @@ CLIENT_VERSION_REVISION = 0
 COPYRIGHT_YEAR = 2017
 CPP = gcc -m64 -E
 CPPFILT = /usr/bin/c++filt
-CPPFLAGS = -I/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../include/libsnark -I/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../include/  -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS
-CRYPTO_CFLAGS = -I/root/safecoin/depends/x86_64-unknown-linux-gnu/include
-CRYPTO_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/lib -lcrypto -ldl
-CXX = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache g++ -m64 -std=c++11
+CPPFLAGS = -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../include/libsnark -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../include/  -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS
+CRYPTO_CFLAGS = -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/include
+CRYPTO_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/lib -lcrypto -ldl
+CXX = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../native/bin/ccache g++ -m64 -std=c++11
 CXXCPP = g++ -m64 -std=c++11 -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -pipe -O1 -g -fopenmp -fwrapv -fno-strict-aliasing -Wno-builtin-declaration-mismatch
+CXXFLAGS = -pipe -O1 -fwrapv -fno-strict-aliasing -Werror -g -fopenmp -fopenmp -fwrapv -fno-strict-aliasing -Wno-builtin-declaration-mismatch
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -917,11 +938,11 @@ ECHO_C =
 ECHO_N = -n
 ECHO_T = 
 EGREP = /bin/grep -E
-ERROR_CXXFLAGS =  -Werror
-EVENT_CFLAGS = -I/root/safecoin/depends/x86_64-unknown-linux-gnu/include
-EVENT_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/lib -levent
-EVENT_PTHREADS_CFLAGS = -pthread -I/root/safecoin/depends/x86_64-unknown-linux-gnu/include
-EVENT_PTHREADS_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/lib -levent_pthreads -levent
+ERROR_CXXFLAGS = 
+EVENT_CFLAGS = -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/include
+EVENT_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/lib -levent
+EVENT_PTHREADS_CFLAGS = -pthread -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/include
+EVENT_PTHREADS_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/lib -levent_pthreads -levent
 EXEEXT = 
 FGREP = /bin/grep -F
 GCOV = /usr/bin/gcov
@@ -944,14 +965,14 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LCOV = 
 LD = /usr/bin/ld -m elf_x86_64
-LDFLAGS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib 
+LDFLAGS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib 
 LEVELDB_CPPFLAGS =  $(am__append_1)
 LEVELDB_TARGET_FLAGS = 
 LIBLEVELDB =  $(am__append_2)
 LIBMEMENV =  $(am__append_3)
 LIBOBJS = 
 LIBS = -lanl 
-LIBSNARK_DEPINST = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/..
+LIBSNARK_DEPINST = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/..
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIBTOOL_APP_LDFLAGS = 
 LIBZCASH_LIBS = -lgmp -lgmpxx -lboost_system -lcrypto -lsodium -lrustzcash
@@ -960,7 +981,7 @@ LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
 MAINT = 
-MAKEINFO = ${SHELL} /root/safecoin/build-aux/missing makeinfo
+MAKEINFO = ${SHELL} /home/safecoin/safecoin/build-aux/missing makeinfo
 MAKENSIS = 
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
@@ -984,10 +1005,10 @@ PATH_SEPARATOR = :
 PIC_FLAGS = -fPIC
 PIE_FLAGS = 
 PKG_CONFIG = /usr/bin/pkg-config --static
-PKG_CONFIG_LIBDIR = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib/pkgconfig
-PKG_CONFIG_PATH = /root/safecoin/depends/x86_64-unknown-linux-gnu/share/../share/pkgconfig
+PKG_CONFIG_LIBDIR = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../lib/pkgconfig
+PKG_CONFIG_PATH = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/share/../share/pkgconfig
 PORT = 
-PROTON_LIBS = 
+PROTON_LIBS = -lqpid-proton-cpp -lqpid-proton
 PTHREAD_CC = gcc -m64
 PTHREAD_CFLAGS = -pthread
 PTHREAD_LIBS = 
@@ -999,20 +1020,20 @@ SAN_LDFLAGS =
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
-SSL_CFLAGS = -I/root/safecoin/depends/x86_64-unknown-linux-gnu/include
-SSL_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/lib -lssl -ldl -lcrypto -ldl
+SSL_CFLAGS = -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/include
+SSL_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/lib -lssl -ldl -lcrypto -ldl
 STRIP = /usr/bin/strip
 TESTDEFS = 
 VERSION = 1.1.0-1
 WINDOWS_BITS = 
 WINDRES = 
 XGETTEXT = 
-ZMQ_CFLAGS = -I/root/safecoin/depends/x86_64-unknown-linux-gnu/include
-ZMQ_LIBS = -L/root/safecoin/depends/x86_64-unknown-linux-gnu/lib -lzmq -lstdc++
-abs_builddir = /root/safecoin/src
-abs_srcdir = /root/safecoin/src
-abs_top_builddir = /root/safecoin
-abs_top_srcdir = /root/safecoin
+ZMQ_CFLAGS = -I/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/include
+ZMQ_LIBS = -L/home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu/lib -lzmq -lstdc++
+abs_builddir = /home/safecoin/safecoin/src
+abs_srcdir = /home/safecoin/safecoin/src
+abs_top_builddir = /home/safecoin/safecoin
+abs_top_srcdir = /home/safecoin/safecoin
 ac_ct_AR = 
 ac_ct_CC = 
 ac_ct_CXX = 
@@ -1044,7 +1065,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /root/safecoin/build-aux/install-sh
+install_sh = ${SHELL} /home/safecoin/safecoin/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -1053,7 +1074,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /root/safecoin/depends/x86_64-unknown-linux-gnu
+prefix = /home/safecoin/safecoin/depends/x86_64-unknown-linux-gnu
 program_transform_name = s,x,x,
 psdir = ${docdir}
 runstatedir = ${localstatedir}/run
@@ -1116,6 +1137,8 @@ LIBZCASH_H = \
 
 # bitcoin core #
 BITCOIN_CORE_H = \
+  addressindex.h \
+  spentindex.h \
   addrman.h \
   alert.h \
   amount.h \
@@ -1282,13 +1305,13 @@ libbitcoin_zmq_a_SOURCES = \
   zmq/zmqnotificationinterface.cpp \
   zmq/zmqpublishnotifier.cpp
 
-#LIBBITCOIN_PROTON = libbitcoin_proton.a
-#libbitcoin_proton_a_CPPFLAGS = $(BITCOIN_INCLUDES)
-#libbitcoin_proton_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-#libbitcoin_proton_a_SOURCES = \
-#  amqp/amqpabstractnotifier.cpp \
-#  amqp/amqpnotificationinterface.cpp \
-#  amqp/amqppublishnotifier.cpp
+LIBBITCOIN_PROTON = libbitcoin_proton.a
+libbitcoin_proton_a_CPPFLAGS = $(BITCOIN_INCLUDES)
+libbitcoin_proton_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+libbitcoin_proton_a_SOURCES = \
+  amqp/amqpabstractnotifier.cpp \
+  amqp/amqpnotificationinterface.cpp \
+  amqp/amqppublishnotifier.cpp
 
 
 # wallet: zcashd, but only linked when wallet enabled
@@ -1318,7 +1341,7 @@ libbitcoin_wallet_a_SOURCES = \
 
 # crypto primitives library
 crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) \
-	$(BITCOIN_CONFIG_INCLUDES) $(am__append_11)
+	$(BITCOIN_CONFIG_INCLUDES) $(am__append_12)
 crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libbitcoin_crypto_a_SOURCES = crypto/common.h \
 	crypto/equihash.cpp crypto/equihash.h crypto/equihash.tcc \
@@ -1326,7 +1349,7 @@ crypto_libbitcoin_crypto_a_SOURCES = crypto/common.h \
 	crypto/hmac_sha512.cpp crypto/hmac_sha512.h \
 	crypto/ripemd160.cpp crypto/ripemd160.h crypto/sha1.cpp \
 	crypto/sha1.h crypto/sha256.cpp crypto/sha256.h \
-	crypto/sha512.cpp crypto/sha512.h $(am__append_12)
+	crypto/sha512.cpp crypto/sha512.h $(am__append_13)
 EQUIHASH_TROMP_SOURCES = \
   pow/tromp/equi_miner.h \
   pow/tromp/equi.h \
@@ -1375,7 +1398,7 @@ libbitcoin_util_a_SOURCES = support/pagelocker.cpp chainparamsbase.cpp \
 	compat/glibcxx_sanity.cpp compat/strnlen.cpp random.cpp \
 	rpcprotocol.cpp support/cleanse.cpp sync.cpp uint256.cpp \
 	util.cpp utilmoneystr.cpp utilstrencodings.cpp utiltime.cpp \
-	$(BITCOIN_CORE_H) $(LIBZCASH_H) $(am__append_13)
+	$(BITCOIN_CORE_H) $(LIBZCASH_H) $(am__append_14)
 
 # cli: zcash-cli
 libbitcoin_cli_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
@@ -1389,23 +1412,29 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-safecoind_SOURCES = bitcoind.cpp $(am__append_14)
+safecoind_SOURCES = bitcoind.cpp $(am__append_15)
 safecoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 safecoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 safecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 safecoind_LDADD = $(LIBBITCOIN_SERVER) $(LIBBITCOIN_COMMON) \
 	$(LIBUNIVALUE) $(LIBBITCOIN_UTIL) $(LIBBITCOIN_CRYPTO) \
 	$(LIBZCASH) $(LIBSNARK) $(LIBLEVELDB) $(LIBMEMENV) \
-	$(LIBSECP256K1) $(LIBCRYPTOCONDITIONS) $(am__append_15) \
-	$(am__append_16) $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) \
+	$(LIBSECP256K1) $(LIBCRYPTOCONDITIONS) $(am__append_16) \
+	$(am__append_17) $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) \
 	$(CRYPTO_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) \
-	$(LIBBITCOIN_CRYPTO) $(LIBZCASH_LIBS) $(am__append_17)
+	$(LIBBITCOIN_CRYPTO) $(LIBZCASH_LIBS) $(am__append_18)
 
 # bitcoin-cli binary #
-safecoin_cli_SOURCES = bitcoin-cli.cpp $(am__append_18)
+safecoin_cli_SOURCES = bitcoin-cli.cpp $(am__append_19)
 safecoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
 safecoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 safecoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+
+# wallet-utility binary #
+wallet_utility_SOURCES = wallet-utility.cpp
+wallet_utility_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+wallet_utility_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+wallet_utility_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 safecoin_cli_LDADD = \
   $(LIBBITCOIN_CLI) \
   $(LIBUNIVALUE) \
@@ -1419,10 +1448,24 @@ safecoin_cli_LDADD = \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH_LIBS)
 
+wallet_utility_LDADD = \
+  libbitcoin_wallet.a \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBSECP256K1) \
+  $(LIBBITCOIN_UTIL) \
+  $(BOOST_LIBS) \
+  $(BDB_LIBS) \
+  $(CRYPTO_LIBS) \
+  $(LIBZCASH) \
+  $(LIBSNARK) \
+  $(LIBZCASH_LIBS)
+
+
 #
 
 # zcash-tx binary #
-safecoin_tx_SOURCES = safecoin-tx.cpp $(am__append_19)
+safecoin_tx_SOURCES = safecoin-tx.cpp $(am__append_20)
 safecoin_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 safecoin_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 safecoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
@@ -1472,7 +1515,7 @@ libzcashconsensus_la_SOURCES =  \
 	pubkey.cpp script/zcashconsensus.cpp \
 	script/interpreter.cpp \
 	script/script.cpp uint256.cpp \
-	utilstrencodings.cpp $(am__append_20)
+	utilstrencodings.cpp $(am__append_21)
 libzcashconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
 libzcashconsensus_la_LIBADD = $(LIBSECP256K1)
 libzcashconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_BITCOIN_INTERNAL
@@ -1934,6 +1977,10 @@ safecoin-tx$(EXEEXT): $(safecoin_tx_OBJECTS) $(safecoin_tx_DEPENDENCIES) $(EXTRA
 safecoind$(EXEEXT): $(safecoind_OBJECTS) $(safecoind_DEPENDENCIES) $(EXTRA_safecoind_DEPENDENCIES) 
 	@rm -f safecoind$(EXEEXT)
 	$(AM_V_CXXLD)$(safecoind_LINK) $(safecoind_OBJECTS) $(safecoind_LDADD) $(LIBS)
+
+wallet-utility$(EXEEXT): $(wallet_utility_OBJECTS) $(wallet_utility_DEPENDENCIES) $(EXTRA_wallet_utility_DEPENDENCIES) 
+	@rm -f wallet-utility$(EXEEXT)
+	$(AM_V_CXXLD)$(wallet_utility_LINK) $(wallet_utility_OBJECTS) $(wallet_utility_LDADD) $(LIBS)
 zcash/zcash_CreateJoinSplit-CreateJoinSplit.$(OBJEXT):  \
 	zcash/$(am__dirstamp) zcash/$(DEPDIR)/$(am__dirstamp)
 
@@ -2041,6 +2088,7 @@ include ./$(DEPDIR)/libzcashconsensus_la-utilstrencodings.Plo
 include ./$(DEPDIR)/safecoin_cli-bitcoin-cli.Po
 include ./$(DEPDIR)/safecoin_tx-safecoin-tx.Po
 include ./$(DEPDIR)/safecoind-bitcoind.Po
+include ./$(DEPDIR)/wallet_utility-wallet-utility.Po
 include amqp/$(DEPDIR)/libbitcoin_proton_a-amqpabstractnotifier.Po
 include amqp/$(DEPDIR)/libbitcoin_proton_a-amqpnotificationinterface.Po
 include amqp/$(DEPDIR)/libbitcoin_proton_a-amqppublishnotifier.Po
@@ -3976,6 +4024,20 @@ safecoind-bitcoind.obj: bitcoind.cpp
 #	$(AM_V_CXX)source='bitcoind.cpp' object='safecoind-bitcoind.obj' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(safecoind_CPPFLAGS) $(CPPFLAGS) $(safecoind_CXXFLAGS) $(CXXFLAGS) -c -o safecoind-bitcoind.obj `if test -f 'bitcoind.cpp'; then $(CYGPATH_W) 'bitcoind.cpp'; else $(CYGPATH_W) '$(srcdir)/bitcoind.cpp'; fi`
+
+wallet_utility-wallet-utility.o: wallet-utility.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wallet_utility_CPPFLAGS) $(CPPFLAGS) $(wallet_utility_CXXFLAGS) $(CXXFLAGS) -MT wallet_utility-wallet-utility.o -MD -MP -MF $(DEPDIR)/wallet_utility-wallet-utility.Tpo -c -o wallet_utility-wallet-utility.o `test -f 'wallet-utility.cpp' || echo '$(srcdir)/'`wallet-utility.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wallet_utility-wallet-utility.Tpo $(DEPDIR)/wallet_utility-wallet-utility.Po
+#	$(AM_V_CXX)source='wallet-utility.cpp' object='wallet_utility-wallet-utility.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wallet_utility_CPPFLAGS) $(CPPFLAGS) $(wallet_utility_CXXFLAGS) $(CXXFLAGS) -c -o wallet_utility-wallet-utility.o `test -f 'wallet-utility.cpp' || echo '$(srcdir)/'`wallet-utility.cpp
+
+wallet_utility-wallet-utility.obj: wallet-utility.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wallet_utility_CPPFLAGS) $(CPPFLAGS) $(wallet_utility_CXXFLAGS) $(CXXFLAGS) -MT wallet_utility-wallet-utility.obj -MD -MP -MF $(DEPDIR)/wallet_utility-wallet-utility.Tpo -c -o wallet_utility-wallet-utility.obj `if test -f 'wallet-utility.cpp'; then $(CYGPATH_W) 'wallet-utility.cpp'; else $(CYGPATH_W) '$(srcdir)/wallet-utility.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/wallet_utility-wallet-utility.Tpo $(DEPDIR)/wallet_utility-wallet-utility.Po
+#	$(AM_V_CXX)source='wallet-utility.cpp' object='wallet_utility-wallet-utility.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(wallet_utility_CPPFLAGS) $(CPPFLAGS) $(wallet_utility_CXXFLAGS) $(CXXFLAGS) -c -o wallet_utility-wallet-utility.obj `if test -f 'wallet-utility.cpp'; then $(CYGPATH_W) 'wallet-utility.cpp'; else $(CYGPATH_W) '$(srcdir)/wallet-utility.cpp'; fi`
 
 zcash/zcash_CreateJoinSplit-CreateJoinSplit.o: zcash/CreateJoinSplit.cpp
 	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(zcash_CreateJoinSplit_CPPFLAGS) $(CPPFLAGS) $(zcash_CreateJoinSplit_CXXFLAGS) $(CXXFLAGS) -MT zcash/zcash_CreateJoinSplit-CreateJoinSplit.o -MD -MP -MF zcash/$(DEPDIR)/zcash_CreateJoinSplit-CreateJoinSplit.Tpo -c -o zcash/zcash_CreateJoinSplit-CreateJoinSplit.o `test -f 'zcash/CreateJoinSplit.cpp' || echo '$(srcdir)/'`zcash/CreateJoinSplit.cpp
