@@ -4035,14 +4035,6 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     
     long int nHeight = pindexPrev->nHeight+1;   //sc not sure if should be long
     
-        //Check EH solution size matches an acceptable N,K
-        size_t nSolSize = block.nSolution.size();
-    
-
-    
-        //Check EH solution size matches an acceptable N,K
-        size_t nSolSize = block.nSolution.size();
-    
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
