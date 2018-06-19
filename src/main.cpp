@@ -5,7 +5,7 @@
 
 #include "main.h"
 
-1;4205;0c#include "sodium.h"
+#include "sodium.h"
 
 #include "addrman.h"
 #include "alert.h"
