@@ -363,7 +363,11 @@ public:
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_test, pnSeed6_test + ARRAYLEN(pnSeed6_test));
 
         //fRequireRPCPassword = true;
+<<<<<<< HEAD
         fMiningRequiresPeers = true;//true;
+=======
+        fMiningRequiresPeers = true;
+>>>>>>> d7e14d676f36e86ae219e2a9ec7d5f8bd2647ea3
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
