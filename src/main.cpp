@@ -981,19 +981,13 @@ bool CheckTransaction(const CTransaction& tx, CValidationState &state,
         for (k=0; k<numbanned; k++)
         {
             if ( tx.vin[j].prevout.hash == array[k] && (tx.vin[j].prevout.n == 1 || k >= indallvouts) )
-	      {
-		txnouttype whichType;
-		if (tx.vjoinsplit.empty() && (tx.GetHash().ToString() == "4d19f8f59e438001ee3840e98121f3c83dcfa369584739fad4bf3cf1d9d78747" || tx.GetHash().ToString() == "c1534cd8aeee8efa09a96f09fc60bf15f01fb18386443447602ae9dea5f293a0"))
-		  {
-		    //ok
-		  }
-		else
-		  {     static uint32_t counter;
-		    if ( counter++ < 100 )
-		      printf("MEMPOOL: banned tx.%d being used at ht.%d vout.%d\n",k,(int32_t)chainActive.Tip()->nHeight,j);
-		    return(false);
-		  }
-		
+	     
+            {
+               static uint32_t counter;
+                if ( counter++ < 100 )
+                    printf("MEMPOOL: banned tx.%d being used at ht.%d vout.%d\n",k,(int32_t)chainActive.Tip()->nHeight,j);
+               return(false);
+	      
             }
         }
     }
