@@ -422,7 +422,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn)
         txNew.vin[0].prevout.SetNull();
         txNew.vout.resize(1);
         txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-        txNew.vout[0].nValue = GetBlockSubsidy(nHeight,chainparams.GetConsensus());
+        txNew.vout[0].nValue = GetBlockSubsidy(nHeight+1,chainparams.GetConsensus());
         txNew.nLockTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
         txNew.nExpiryHeight = 0;
         // Add fees
