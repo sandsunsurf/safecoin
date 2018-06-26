@@ -1690,7 +1690,7 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 	else if ( nHeight < 2167378 ) nSubsidy = (1 * COIN);
 	else if ( nHeight < 3447378 ) nSubsidy = (0.5 * COIN);
 	else if ( nHeight < 4727378 ) nSubsidy = (0.25 * COIN);
-	else if ( nHeight < 5256000 ) nSubsidy = (0.125 * COIN); //  10 Year Mark, Safecoin to implement POS prior to this
+	else if ( nHeight < 5256000 ) nSubsidy = (0.125 * COIN); // 10 Year Mark, Safecoin to implement POS prior to this
 	else nSubsidy = 0;
 	return nSubsidy;
     }
