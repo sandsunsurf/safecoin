@@ -1025,7 +1025,7 @@ int32_t safecoin_validate_interest(const CTransaction &tx,int32_t txheight,uint3
             {
                 if ( tx.nLockTime != 1477258935 || dispflag != 0 )
                 {
-                    fprintf(stderr,"safecoin_validate_interest.%d reject.%d [%d] locktime %u cmp2.%u\n",dispflag,txheight,(int32_t)(tx.nLockTime - (cmptime-3600)),(uint32_t)tx.nLockTime,cmptime);
+		  fprintf(stderr,"safecoin_validate_interest.%d reject.%d [%d] locktime %u cmp2.%u\n",dispflag,txheight,(int32_t)(tx.nLockTime - (cmptime-3600)),(uint32_t)tx.nLockTime,cmptime);
                 }
                 return(-1);
             }
