@@ -2652,7 +2652,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
     if ( block.vtx[0].GetValueOut() > blockReward+1 && pindex->nHeight > 1)
     {
-        if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->nHeight > 1 || block.vtx[0].vout[0].nValue > blockReward )
+        if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->nHeight >= SAFECOIN_NOTARIES_HEIGHT1 || block.vtx[0].vout[0].nValue > blockReward )
         {
             return state.DoS(100,
                              error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",
