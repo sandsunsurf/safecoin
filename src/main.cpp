@@ -2030,7 +2030,7 @@ namespace Consensus {
             // Check for negative or overflow input values
             nValueIn += coins->vout[prevout.n].nValue;
 #ifdef SAFECOIN_ENABLE_INTEREST
-            if ( ASSETCHAINS_SYMBOL[0] == 0 && nSpendHeight > 103820)//chainActive.Tip() != 0 && chainActive.Tip()->nHeight >= 60000 )
+            if ( ASSETCHAINS_SYMBOL[0] == 0 && nSpendHeight > 1)//chainActive.Tip() != 0 && chainActive.Tip()->nHeight >= 60000 )
             {
                 if ( coins->vout[prevout.n].nValue >= 10*COIN )
                 {
@@ -2054,7 +2054,7 @@ namespace Consensus {
             return state.DoS(100, error("CheckInputs(): vpub_old values out of range"),
                              REJECT_INVALID, "bad-txns-inputvalues-outofrange");
         
-	if (nValueIn < tx.GetValueOut() && nSpendHeight > 103820)
+	if (nValueIn < tx.GetValueOut() && nSpendHeight > 1)
         {
             fprintf(stderr,"spentheight.%d valuein %s vs %s error\n",nSpendHeight,FormatMoney(nValueIn).c_str(), FormatMoney(tx.GetValueOut()).c_str());
             return state.DoS(100, error("CheckInputs(): %s value in (%s) < value out (%s) diff %.8f",
@@ -2062,11 +2062,11 @@ namespace Consensus {
         }
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
-	if (nTxFee < 0 && nSpendHeight > 103820)
+	if (nTxFee < 0 && nSpendHeight > 1)
             return state.DoS(100, error("CheckInputs(): %s nTxFee < 0", tx.GetHash().ToString()),
                              REJECT_INVALID, "bad-txns-fee-negative");
         nFees += nTxFee;
-if (!MoneyRange(nFees) && nSpendHeight > 103820)
+if (!MoneyRange(nFees) && nSpendHeight > 1)
             return state.DoS(100, error("CheckInputs(): nFees out of range"),
                              REJECT_INVALID, "bad-txns-fee-outofrange");
         return true;
@@ -2650,9 +2650,9 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             else fprintf(stderr,"checktoshis %.8f vs actual vout[1] %.8f\n",dstr(checktoshis),dstr(block.vtx[0].vout[1].nValue));
         }
     }
-    if ( block.vtx[0].GetValueOut() > blockReward+1 && pindex->nHeight > 103820)
+    if ( block.vtx[0].GetValueOut() > blockReward+1 && pindex->nHeight > 1)
     {
-        if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->nHeight > 194253 || block.vtx[0].vout[0].nValue > blockReward )
+        if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->nHeight > 1 || block.vtx[0].vout[0].nValue > blockReward )
         {
             return state.DoS(100,
                              error("ConnectBlock(): coinbase pays too much (actual=%d vs limit=%d)",

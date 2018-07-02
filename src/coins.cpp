@@ -402,7 +402,7 @@ CAmount CCoinsViewCache::GetValueIn(int32_t nHeight,int64_t *interestp,const CTr
         value = GetOutputFor(tx.vin[i]).nValue;
         nResult += value;
 #ifdef SAFECOIN_ENABLE_INTEREST
-        if ( ASSETCHAINS_SYMBOL[0] == 0 && nHeight >= 103820 )
+        if ( ASSETCHAINS_SYMBOL[0] == 0 && nHeight >= 1 )
         {
             if ( value >= 10*COIN )
             {
