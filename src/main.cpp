@@ -3663,9 +3663,11 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
             int32_t z; for (z=31; z>=0; z--)
                 fprintf(stderr,"%02x",((uint8_t *)&hash)[z]);
             fprintf(stderr," failed hash ht.%d\n",height);
+	    LogPrintf("CheckBlock():  proof of work failed\n");
             return state.DoS(50, error("CheckBlock: proof of work failed"),REJECT_INVALID, "high-hash");
         }
         if ( safecoin_checkPOW(1,(CBlock *)&block,height) < 0 ) // checks Equihash
+	    LogPrintf("CheckBlock():  failed slow_checkPOW\n");
             return state.DoS(100, error("CheckBlock: failed slow_checkPOW"),REJECT_INVALID, "failed-slow_checkPOW");
     }
     /*if ( fCheckPOW && !CheckEquihashSolution(&block, Params()) )
@@ -3678,6 +3680,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         bool mutated;
         uint256 hashMerkleRoot2 = block.BuildMerkleTree(&mutated);
         if (block.hashMerkleRoot != hashMerkleRoot2)
+	    LogPrintf("CheckBlock():  hashMerkleRoot mismatch\n");
             return state.DoS(100, error("CheckBlock(): hashMerkleRoot mismatch"),
                              REJECT_INVALID, "bad-txnmrklroot", true);
         
@@ -3685,6 +3688,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         // of transactions in a block without affecting the merkle root of a block,
         // while still invalidating it.
         if (mutated)
+	   LogPrintf("CheckBlock(): duplicate transaction\n");
             return state.DoS(100, error("CheckBlock(): duplicate transaction"),
                              REJECT_INVALID, "bad-txns-duplicate", true);
     }
@@ -3695,15 +3699,18 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     
     // Size limits
     if (block.vtx.empty() || block.vtx.size() > MAX_BLOCK_SIZE || ::GetSerializeSize(block, SER_NETWORK, PROTOCOL_VERSION) > MAX_BLOCK_SIZE)
+        LogPrintf("CheckBlock(): size limits failed\n");
         return state.DoS(100, error("CheckBlock(): size limits failed"),
                          REJECT_INVALID, "bad-blk-length");
     
     // First transaction must be coinbase, the rest must not be
     if (block.vtx.empty() || !block.vtx[0].IsCoinBase())
+           LogPrintf("CheckBlock(): first tx is not coinbase\n");
         return state.DoS(100, error("CheckBlock(): first tx is not coinbase"),
                          REJECT_INVALID, "bad-cb-missing");
     for (unsigned int i = 1; i < block.vtx.size(); i++)
         if (block.vtx[i].IsCoinBase())
+	   LogPrintf("CheckBlock(): more than one coinbase\n");
             return state.DoS(100, error("CheckBlock(): more than one coinbase"),
                              REJECT_INVALID, "bad-cb-multiple");
     
@@ -3711,8 +3718,10 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     BOOST_FOREACH(const CTransaction& tx, block.vtx)
     {
       if ((height>103820) & (safecoin_validate_interest(tx,height == 0 ? safecoin_block2height((CBlock *)&block) : height,block.nTime,1) < 0 ))
+	        LogPrintf("CheckBlock: safecoin_validate_interest failed\n");
             return error("CheckBlock: safecoin_validate_interest failed");
         if (!CheckTransaction(tx, state, verifier))
+	  	LogPrintf("CheckBlock(): CheckTransaction failed\n");
             return error("CheckBlock(): CheckTransaction failed");
     }
     unsigned int nSigOps = 0;
@@ -3721,6 +3730,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         nSigOps += GetLegacySigOpCount(tx);
     }
     if (nSigOps > MAX_BLOCK_SIGOPS)
+      LogPrintf("CheckBlock(): out-of-bounds SigOpCount\n");
         return state.DoS(100, error("CheckBlock(): out-of-bounds SigOpCount"),
                          REJECT_INVALID, "bad-blk-sigops", true);
     if ( safecoin_check_deposit(height,block,(pindex==0||pindex->pprev==0)?0:pindex->pprev->nTime) < 0 )
@@ -3728,6 +3738,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     {
         static uint32_t counter;
         //if ( counter++ < 100 && ASSETCHAINS_STAKED == 0 )
+	LogPrintf("check deposit rejection\n");
         fprintf(stderr,"check deposit rejection\n");
         return(false);
     }
