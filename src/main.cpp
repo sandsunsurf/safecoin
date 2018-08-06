@@ -4139,6 +4139,7 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
             {
                 Misbehaving(pfrom->GetId(), 1);
             }
+	    LogPrintf("%s checkblock\n", checked);
             return error("%s: CheckBlock FAILED", __func__);
         }
         // Store to disk
