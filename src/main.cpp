@@ -3737,10 +3737,10 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         //if ( safecoin_check_deposit(ASSETCHAINS_SYMBOL[0] == 0 ? height : pindex != 0 ? (int32_t)pindex->nHeight : chainActive.Tip()->nHeight+1,block,pindex==0||pindex->pprev==0?0:pindex->pprev->nTime) < 0 )
     {
         static uint32_t counter;
-        //if ( counter++ < 100 && ASSETCHAINS_STAKED == 0 )
-	//	LogPrintf("check deposit rejection\n");
+        if ( counter++ < 100 )
+		LogPrintf("check deposit rejection\n");
         fprintf(stderr,"check deposit rejection\n");
-        return(false);
+        return(true);
     }
     return true;
 }
