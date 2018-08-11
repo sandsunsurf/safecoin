@@ -701,9 +701,10 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
             if ( overflow != 0 || total > COIN/10 )
             {
                 if ( height >= activation )
-                    if ( height > 235300 )
+		  {
                         fprintf(stderr,">>>>>>>> <<<<<<<<<< ht.%d illegal nonz output %.8f n.%d\n",height,dstr(block.vtx[0].vout[1].nValue),n);
                     return(-1);
+		  }
             }
             else if ( block.nBits == SAFECOIN_MINDIFF_NBITS && total > 0 ) // to deal with fee stealing
             {
