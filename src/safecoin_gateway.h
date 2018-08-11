@@ -644,9 +644,8 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
 {
     static uint256 array[64]; static int32_t numbanned,indallvouts;
     int32_t i,j,k,n,ht,baseid,txn_count,activation,num,opretlen,offset=1,errs=0,matched=0,safeheights[256],otherheights[256]; uint256 hash,txids[256]; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],base[SAFECOIN_ASSETCHAIN_MAXLEN]; uint16_t vouts[256]; int8_t baseids[256]; uint8_t *script,opcode,rmd160s[256*20]; uint64_t total,subsidy,available,deposited,issued,withdrawn,approved,redeemed,checktoshis,seed; int64_t values[256],srcvalues[256]; struct pax_transaction *pax; struct safecoin_state *sp;
-    activation = 2353000;
-    if (height < 251665)
-    activation = 235300;  //235300
+    activation = 235300;
+
     
     if ( *(int32_t *)&array[0] == 0 )
         numbanned = safecoin_bannedset(&indallvouts,array,(int32_t)(sizeof(array)/sizeof(*array)));
@@ -676,13 +675,14 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
         }
     }
     n = block.vtx[0].vout.size();
-    script = (uint8_t *)block.vtx[0].vout[n-1].scriptPubKey.data();
+    //script = (uint8_t *)block.vtx[0].vout[n-1].scriptPubKey.data();
     //if ( n <= 2 || script[0] != 0x6a )
     {
         int64_t val,prevtotal = 0; int32_t overflow = 0;
         total = 0;
         for (i=1; i<n; i++)
         {
+	    script = (uint8_t *)block.vtx[0].vout[i].scriptPubKey.data();
             if ( (val= block.vtx[0].vout[i].nValue) < 0 || val >= MAX_MONEY )
             {
                 overflow = 1;
@@ -700,8 +700,9 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
         {
             if ( overflow != 0 || total > COIN/10 )
             {
-	      // fprintf(stderr,">>>>>>>> <<<<<<<<<< ht.%d illegal nonz output %.8f n.%d\n",height,dstr(block.vtx[0].vout[1].nValue),n);
                 if ( height >= activation )
+                    if ( height > 235300 )
+                        fprintf(stderr,">>>>>>>> <<<<<<<<<< ht.%d illegal nonz output %.8f n.%d\n",height,dstr(block.vtx[0].vout[1].nValue),n);
                     return(-1);
             }
             else if ( block.nBits == SAFECOIN_MINDIFF_NBITS && total > 0 ) // to deal with fee stealing
