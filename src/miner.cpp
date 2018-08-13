@@ -582,7 +582,7 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
 // Internal miner
 //
 
-CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey)
+CBlockTemplate* CreateNewBlockWithKey(CReserveKey& reservekey,int32_t nHeight)
 {
     CPubKey pubkey; CScript scriptPubKey; uint8_t *script,*ptr; int32_t i;
     if ( USE_EXTERNAL_PUBKEY != 0 )
@@ -785,7 +785,7 @@ void static BitcoinMiner()
 
 
 #ifdef ENABLE_WALLET
-            CBlockTemplate *ptr = CreateNewBlockWithKey(reservekey);
+            CBlockTemplate *ptr = CreateNewBlockWithKey(reservekey,pindexPrev->nHeight+1);
 #else
             CBlockTemplate *ptr = CreateNewBlockWithKey();
 #endif
