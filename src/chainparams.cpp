@@ -316,10 +316,10 @@ public:
         nMaxTipAge = 24 * 60 * 60;
 
         nPruneAfterHeight = 1000;
-        eh_epoch_1 = eh200_9;
+        eh_epoch_1 = eh144_5;
         eh_epoch_2 = eh144_5;
-        eh_epoch_1_endblock = 60;
-        eh_epoch_2_startblock = 50;
+        eh_epoch_1_endblock = 10;
+        eh_epoch_2_startblock = 30;
 
 
         const char* pszTimestamp = "CNN 2018/02/07 Internet rights advocate John Perry Barlow dies";

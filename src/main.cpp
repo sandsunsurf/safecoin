@@ -3755,7 +3755,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     
     assert(pindexPrev);
     
-    long int nHeight = pindexPrev->nHeight+1;   //sc not sure if should be long
+    int nHeight = pindexPrev->nHeight+1;   //sc not sure if should be long
     
         //Check EH solution size matches an acceptable N,K
         size_t nSolSize = block.nSolution.size();
@@ -4128,10 +4128,10 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
         LOCK(cs_main);
         bool fRequested = MarkBlockAsReceived(hash);
         fRequested |= fForceProcessing;
-        if ( checked != 0 && safecoin_checkPOW(from_miner && ASSETCHAINS_STAKED == 0,pblock,height) < 0 )
+        if ( checked != 0 && safecoin_checkPOW(0,pblock,height) < 0 )
         {
             checked = 0;
-            fprintf(stderr,"passed checkblock but failed checkPOW.%d\n",from_miner && ASSETCHAINS_STAKED == 0);
+	    //  fprintf(stderr,"passed checkblock but failed checkPOW.%d\n",from_miner && ASSETCHAINS_STAKED == 0);
         }
         if (!checked && futureblock == 0)
         {
@@ -4139,8 +4139,7 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
             {
                 Misbehaving(pfrom->GetId(), 1);
             }
-	    LogPrintf("%s checkblock\n", checked);
-            return error("%s: CheckBlock FAILED", __func__);
+	   return error("%s: CheckBlock FAILED", __func__);
         }
         // Store to disk
         CBlockIndex *pindex = NULL;
