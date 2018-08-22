@@ -643,7 +643,7 @@ void safecoin_passport_iteration();
 int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevtime) // verify above block is valid pax pricing
 {
     static uint256 array[64]; static int32_t numbanned,indallvouts;
-    int32_t i,j,k,n,ht,baseid,txn_count,activation,num,opretlen,offset=1,errs=0,matched=0,safeheights[256],otherheights[256]; uint256 hash,txids[256]; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],base[SAFECOIN_ASSETCHAIN_MAXLEN]; uint16_t vouts[256]; int8_t baseids[256]; uint8_t *script,opcode,rmd160s[256*20]; uint64_t total,subsidy,available,deposited,issued,withdrawn,approved,redeemed,checktoshis,seed; int64_t values[256],srcvalues[256]; struct pax_transaction *pax; struct safecoin_state *sp;
+    int32_t i,j,k,n,ht,baseid,txn_count,activation,num,opretlen,offset=1,errs=0,matched=0,safeheights[256],otherheights[256],notmatched=0; uint256 hash,txids[256]; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],base[SAFECOIN_ASSETCHAIN_MAXLEN]; uint16_t vouts[256]; int8_t baseids[256]; uint8_t *script,opcode,rmd160s[256*20]; uint64_t total,subsidy,available,deposited,issued,withdrawn,approved,redeemed,checktoshis,seed; int64_t values[256],srcvalues[256]; struct pax_transaction *pax; struct komodo_state *sp; CTransaction tx;
     activation = 235300;
 
     
@@ -660,7 +660,12 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
     {
         for (i=0; i<txn_count; i++)
         {
-            n = block.vtx[i].vin.size();
+	  if ( i == 0 )
+	    {
+	      if ( block.vtx[txn_count-1].vin.size() == 1 && GetTransaction(block.vtx[txn_count-1].vin[0].prevout.hash,tx,hash,false) && block.vtx[0].vout[0].scriptPubKey == tx.vout[block.vtx[txn_count-1].vin[0].prevout.n].scriptPubKey )
+		notmatched = 1;
+	    }
+	  n = block.vtx[i].vin.size();
             for (j=0; j<n; j++)
             {
                 for (k=0; k<numbanned; k++)
@@ -698,7 +703,7 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
         }
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
-            if ( overflow != 0 || total > COIN/10 )
+            if ( overflow != 0 || total > COIN * .10 )
             {
                 if ( height >= activation )
 		  {

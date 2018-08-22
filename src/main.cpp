@@ -3562,7 +3562,7 @@ bool CheckBlockHeader(int32_t *futureblockp,int32_t height,CBlockIndex *pindex, 
     if (blockhdr.GetBlockTime() > GetAdjustedTime() + 60)
     {
         CBlockIndex *tipindex;
-        //fprintf(stderr,"ht.%d future block %u vs time.%u + 60\n",height,(uint32_t)blockhdr.GetBlockTime(),(uint32_t)GetAdjustedTime());
+        fprintf(stderr,"ht.%d future block %u vs time.%u + 60\n",height,(uint32_t)blockhdr.GetBlockTime(),(uint32_t)GetAdjustedTime());
         if ( (tipindex= chainActive.Tip()) != 0 && tipindex->GetBlockHash() == blockhdr.hashPrevBlock && blockhdr.GetBlockTime() < GetAdjustedTime() + 60 + 5 )
         {
             //fprintf(stderr,"it is the next block, let's wait for %d seconds\n",GetAdjustedTime() + 60 - blockhdr.GetBlockTime());
@@ -3868,6 +3868,9 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     return true;
 }
 
+static uint256 safecoin_requestedhash;
+static int32_t safecoin_requestedcount;
+
 bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidationState& state, CBlockIndex** ppindex)
 {
     static uint256 zero;
@@ -3887,8 +3890,18 @@ bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidat
             *ppindex = pindex;
         if ( pindex != 0 && pindex->nStatus & BLOCK_FAILED_MASK )
             return state.Invalid(error("%s: block is marked invalid", __func__), 0, "duplicate");
-        return true;
+
+	if ( pindex != 0 && hash == safecoin_requestedhash )
+	  {
+	    fprintf(stderr,"AddToBlockIndex A safecoin_requestedhash %s\n",safecoin_requestedhash.ToString().c_str());
+	    memset(&safecoin_requestedhash,0,sizeof(safecoin_requestedhash));
+	    safecoin_requestedcount = 0;
+	  }
+	//if ( pindex == 0 )
+	//    fprintf(stderr,"accepthdr %s already known but no pindex\n",hash.ToString().c_str());
+	return true;
     }
+	
     if (!CheckBlockHeader(futureblockp,*ppindex!=0?(*ppindex)->nHeight:0,*ppindex, block, state,0))
     {
         if ( *futureblockp == 0 )
@@ -3905,6 +3918,11 @@ bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidat
         if (mi == mapBlockIndex.end())
         {
             LogPrintf("AcceptBlockHeader hashPrevBlock %s not found\n",block.hashPrevBlock.ToString().c_str());
+            if ( safecoin_requestedhash == zero )
+	      {
+		safecoin_requestedhash = block.hashPrevBlock;
+		safecoin_requestedcount = 0;
+	      }
             return(false);
             //return state.DoS(10, error("%s: prev block not found", __func__), 0, "bad-prevblk");
         }
@@ -3935,6 +3953,21 @@ bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidat
     }
     if (ppindex)
         *ppindex = pindex;
+
+    if ( pindex != 0 && hash == safecoin_requestedhash )
+      {
+	fprintf(stderr,"AddToBlockIndex safecoin_requestedhash %s\n",safecoin_requestedhash.ToString().c_str());
+	memset(&safecoin_requestedhash,0,sizeof(safecoin_requestedhash));
+	safecoin_requestedcount = 0;
+      }
+    else //if ( (rand() % 100) == 0 && safecoin_requestedhash == zero )
+      /*else //if ( (rand() % 100) == 0 && safecoin_requestedhash == zero )
+    {
+        fprintf(stderr,"random safecoin_requestedhash %s\n",safecoin_requestedhash.ToString().c_str());
+        komodo_requestedhash = hash;
+    }
+    }*/
+    
     return true;
 }
 
@@ -4121,11 +4154,11 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
     auto verifier = libzcash::ProofVerifier::Disabled();
     hash = pblock->GetHash();
     //fprintf(stderr,"process newblock %s\n",hash.ToString().c_str());
-    if ( chainActive.Tip() != 0 )
-        safecoin_currentheight_set(chainActive.Tip()->nHeight);
-    checked = CheckBlock(&futureblock,height!=0?height:safecoin_block2height(pblock),0,*pblock, state, verifier,0);
     {
         LOCK(cs_main);
+	if ( chainActive.Tip() != 0 )
+	  safecoin_currentheight_set(chainActive.Tip()->nHeight);
+	checked = CheckBlock(&futureblock,height!=0?height:safecoin_block2height(pblock),0,*pblock, state, verifier,0);
         bool fRequested = MarkBlockAsReceived(hash);
         fRequested |= fForceProcessing;
         if ( checked != 0 && safecoin_checkPOW(0,pblock,height) < 0 )
@@ -6619,6 +6652,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         //
         // Message: getdata (blocks)
         //
+	static uint256 zero;
         vector<CInv> vGetData;
         if (!pto->fDisconnect && !pto->fClient && (fFetch || !IsInitialBlockDownload()) && state.nBlocksInFlight < MAX_BLOCKS_IN_TRANSIT_PER_PEER) {
             vector<CBlockIndex*> vToDownload;
@@ -6637,7 +6671,27 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
                 }
             }
         }
-        
+
+        CBlockIndex *pindex;
+	if ( safecoin_requestedhash != zero && (pindex= mapBlockIndex[safecoin_requestedhash]) != 0 )
+	  if ( safecoin_requestedhash != zero && safecoin_requestedcount < 16 && (pindex= mapBlockIndex[safecoin_requestedhash]) != 0 )
+	    {
+	      LogPrint("net","request %s to nodeid.%d\n",safecoin_requestedhash.ToString().c_str(),pto->GetId());
+	      fprintf(stderr,"safecoin_requestedhash request %s to nodeid.%d\n",safecoin_requestedhash.ToString().c_str(),pto->GetId());
+	      LogPrint("net","safecoin_requestedhash.%d request %s to nodeid.%d\n",safecoin_requestedcount,safecoin_requestedhash.ToString().c_str(),pto->GetId());
+	      fprintf(stderr,"safecoin_requestedhash.%d request %s to nodeid.%d\n",safecoin_requestedcount,safecoin_requestedhash.ToString().c_str(),pto->GetId());
+	      vGetData.push_back(CInv(MSG_BLOCK, safecoin_requestedhash));
+	      MarkBlockAsInFlight(pto->GetId(), safecoin_requestedhash, consensusParams, pindex);
+	      safecoin_requestedcount++;
+	      if ( safecoin_requestedcount > 16 )
+		{
+		  memset(&safecoin_requestedhash,0,sizeof(safecoin_requestedhash));
+		  safecoin_requestedcount = 0;
+		}
+	    }
+	
+
+	
         //
         // Message: getdata (non-blocks)
         //
@@ -6663,7 +6717,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         if (!vGetData.empty())
             pto->PushMessage("getdata", vGetData);
         
-    }
+  }
     return true;
 }
 
