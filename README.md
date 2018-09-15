@@ -58,8 +58,9 @@ pico safecoin.conf
 #rpcuser=bitcoinrpc
 #rpcpassword=password
 txindex=1
-addnode=107.191.36.192
-addnode=45.77.109.253
+addnode=140.82.45.57
+addnode=8.12.22.254
+addnode=140.82.11.189
 ```
 
 Start mining

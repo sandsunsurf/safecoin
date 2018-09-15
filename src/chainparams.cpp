@@ -158,8 +158,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x0e8398ad8ba699fa41e1c56fe6112ca2530719c32b7e3d0cdb6610a458bd7e14"));
         vFixedSeeds.clear();
         vSeeds.clear();
-	vSeeds.push_back(CDNSSeedData("107.191.36.192", "107.191.36.192")); // seed node
 	vSeeds.push_back(CDNSSeedData("140.82.45.57", "140.82.45.57")); // seed node
+	vSeeds.push_back(CDNSSeedData("8.12.22.254", "8.12.22.254")); // seed node
+	vSeeds.push_back(CDNSSeedData("140.82.11.189", "140.82.11.189")); // seed node
 	vSeeds.push_back(CDNSSeedData("safecoin.org", "dnsseed.safecoin.org")); // Safecoin
 	vSeeds.push_back(CDNSSeedData("ipv6admin.com", "dnsseed.ipv6admin.com")); // Ipv6ipv6admin
 	vSeeds.push_back(CDNSSeedData("fair.exchange", "dnsseed.fair.exchange")); // Safecoin
