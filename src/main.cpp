@@ -3959,6 +3959,7 @@ bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidat
 	fprintf(stderr,"AddToBlockIndex safecoin_requestedhash %s\n",safecoin_requestedhash.ToString().c_str());
 	memset(&safecoin_requestedhash,0,sizeof(safecoin_requestedhash));
 	safecoin_requestedcount = 0;
+	return false;
       }
     else //if ( (rand() % 100) == 0 && safecoin_requestedhash == zero )
       /*else //if ( (rand() % 100) == 0 && safecoin_requestedhash == zero )
@@ -4092,6 +4093,7 @@ CBlockIndex *safecoin_ensure(CBlock *pblock,uint256 hash)
             }
         }
     }
+    return pindex;
 }
 
 CBlockIndex *oldsafecoin_ensure(CBlock *pblock,uint256 hash)
