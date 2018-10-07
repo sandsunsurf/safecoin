@@ -3965,7 +3965,7 @@ bool AcceptBlockHeader(int32_t *futureblockp,const CBlockHeader& block, CValidat
       /*else //if ( (rand() % 100) == 0 && safecoin_requestedhash == zero )
     {
         fprintf(stderr,"random safecoin_requestedhash %s\n",safecoin_requestedhash.ToString().c_str());
-        komodo_requestedhash = hash;
+        safecoin_requestedhash = hash;
     }
     }*/
     
