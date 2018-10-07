@@ -148,7 +148,7 @@ CBlockIndex *safecoin_chainactive(int32_t height);
 void safecoin_index2pubkey33(uint8_t *pubkey33,CBlockIndex *pindex,int32_t height);
 extern int32_t SAFECOIN_CHOSEN_ONE;
 extern uint64_t ASSETCHAINS_STAKED;
-extern char ASSETCHAINS_SYMBOL[];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 #define SAFECOIN_ELECTION_GAP 2000
 
 int32_t safecoin_eligiblenotary(uint8_t pubkeys[66][33],int32_t *mids,uint32_t blocktimes[66],int32_t *nonzpkeysp,int32_t height);

@@ -257,4 +257,6 @@ template <typename Callable> void TraceThread(const char* name,  Callable func)
     }
 }
 
+#define SAFECOIN_ASSETCHAIN_MAXLEN 65
+
 #endif // BITCOIN_UTIL_H
