@@ -930,7 +930,7 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
             {
                 if ( mids[i] == notaryid )
                 {
-                    if ( height > 792000 )
+                    if ( height > 108800 )
                     {
                         for (j=0; j<66; j++)
                             fprintf(stderr,"%d ",mids[j]);
@@ -1512,7 +1512,7 @@ int32_t safecoin_checkPOW(int32_t slowflag,CBlock *pblock,int32_t height)
         if ( height == 0 )
             return(0);
     }
-    if ( (ASSETCHAINS_SYMBOL[0] != 0 || height > 792000) && bhash > bnTarget )
+    if ( (ASSETCHAINS_SYMBOL[0] != 0 || height > 108800) && bhash > bnTarget )
     {
         failed = 1;
         if ( height > 0 && ASSETCHAINS_SYMBOL[0] == 0 ) // for the fast case

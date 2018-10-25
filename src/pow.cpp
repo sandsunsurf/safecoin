@@ -177,7 +177,7 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
                 flag = 1;
             else if ( special2 < 0 )
             {
-                if ( height > 792000 )
+                if ( height > 108800 )
                     flag = 0;
                 else fprintf(stderr,"ht.%d notaryid.%d special.%d flag.%d special2.%d\n",height,notaryid,special,flag,special2);
             }
@@ -200,9 +200,9 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
     {
         if ( SAFECOIN_LOADINGBLOCKS != 0 )
             return true;
-        if ( ASSETCHAINS_SYMBOL[0] != 0 || height > 792000 )
+        if ( ASSETCHAINS_SYMBOL[0] != 0 || height > 108800 )
         {
-            //if ( 0 && height > 792000 )
+            //if ( 0 && height > 108800 )
             if ( Params().NetworkIDString() != "regtest" )
             {
                 for (i=31; i>=0; i--)
