@@ -36,7 +36,8 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Mining Algorithm: Equihash
 
 ## About this Project
-Safecoin is based on Zcash and has been extended by our innovative consensus algorithm called dPoW which utilizes Bitcoin's hashrate to store Safecoin blockchain information into the Bitcoin blockchain. Other new and native Safecoin features are the privacy technology called JUMBLR, our assetchain capabilities (one click plug and play blockchain solutions) and a set of financial decentralization and interoperability technologies. More details are available under https://safecoin.org/ and https://blog.safecoin.org.
+Safecoin is a fork of the Komodo and Zcash projects, although we have made significant changes and continue to evolve in our own direction.
+Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a far higher standard of privacy through a sophisticated zero-knowledge proving scheme that preserves confidentiality of transaction metadata. Technical details are available in our [Protocol Specification](https://github.com/zcash/zips/raw/master/protocol/protocol.pdf).
 
 ## Getting started
 
