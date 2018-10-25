@@ -33,7 +33,7 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Max Supply: 36.2 million SAFE.
 - Block Time: 1M 2s
 - Block Reward: See schedule
-- Mining Algorithm: Equihash
+- Mining Algorithm: Equihash 144_5 (Zhash)
 
 ## About this Project
 Safecoin is a fork of the Komodo and Zcash projects, although we have made significant changes and continue to evolve in our own direction.
