@@ -30,14 +30,14 @@
 
 Eval* EVAL_TEST = 0;
 struct CCcontract_info CCinfos[0x100];
-extern pthread_mutex_t KOMODO_CC_mutex;
+extern pthread_mutex_t SAFECOIN_CC_mutex;
 
 bool RunCCEval(const CC *cond, const CTransaction &tx, unsigned int nIn)
 {
     EvalRef eval;
-    pthread_mutex_lock(&KOMODO_CC_mutex);
+    pthread_mutex_lock(&SAFECOIN_CC_mutex);
     bool out = eval->Dispatch(cond, tx, nIn);
-    pthread_mutex_unlock(&KOMODO_CC_mutex);
+    pthread_mutex_unlock(&SAFECOIN_CC_mutex);
     //fprintf(stderr,"out %d vs %d isValid\n",(int32_t)out,(int32_t)eval->state.IsValid());
     assert(eval->state.IsValid() == out);
 
@@ -132,12 +132,12 @@ bool Eval::GetBlock(uint256 hash, CBlockIndex& blockIdx) const
     return false;
 }
 
-extern int32_t komodo_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
+extern int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 
 
 int32_t Eval::GetNotaries(uint8_t pubkeys[64][33], int32_t height, uint32_t timestamp) const
 {
-    return komodo_notaries(pubkeys, height, timestamp);
+    return safecoin_notaries(pubkeys, height, timestamp);
 }
 
 
@@ -180,7 +180,7 @@ bool Eval::CheckNotaryInputs(const CTransaction &tx, uint32_t height, uint32_t t
 
 
 /*
- * Get MoM from a notarisation tx hash (on KMD)
+ * Get MoM from a notarisation tx hash (on SAFE)
  */
 bool Eval::GetNotarisationData(const uint256 notaryHash, NotarisationData &data) const
 {
@@ -195,10 +195,10 @@ bool Eval::GetNotarisationData(const uint256 notaryHash, NotarisationData &data)
 /*
  * Get MoMoM corresponding to a notarisation tx hash (on assetchain)
  */
-bool Eval::GetProofRoot(uint256 kmdNotarisationHash, uint256 &momom) const
+bool Eval::GetProofRoot(uint256 safeNotarisationHash, uint256 &momom) const
 {
     std::pair<uint256,NotarisationData> out;
-    if (!GetNextBacknotarisation(kmdNotarisationHash, out)) return false;
+    if (!GetNextBacknotarisation(safeNotarisationHash, out)) return false;
     momom = out.second.MoMoM;
     return true;
 }

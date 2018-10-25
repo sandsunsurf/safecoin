@@ -8,8 +8,8 @@
 #include "wallet/crypter.h"
 #include <boost/foreach.hpp>
 
-#include "komodo_defs.h"
-char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+#include "safecoin_defs.h"
+char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 int64_t MAX_MONEY = 200000000 * 100000000LL;
 uint64_t ASSETCHAINS_SUPPLY;
 uint16_t BITCOIND_RPCPORT = 7771;

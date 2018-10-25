@@ -11,7 +11,7 @@
 #include "chainparams.h"
 
 static const std::string CLIENT_VERSION_STR = FormatVersion(CLIENT_VERSION);
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 void EnforceNodeDeprecation(int nHeight, bool forceLogging) {
 
@@ -31,7 +31,7 @@ void EnforceNodeDeprecation(int nHeight, bool forceLogging) {
         if (blocksToDeprecation == 0 || forceLogging) {
             auto msg = strprintf(_("This version has been deprecated as of block height %d."),
                                  DEPRECATION_HEIGHT) + " " +
-                       _("You should upgrade to the latest version of Komodo.");
+                       _("You should upgrade to the latest version of Safecoin.");
             if (!disableDeprecation) {
                 msg += " " + strprintf(_("To disable deprecation for this version, set %s%s."),
                                        "-disabledeprecation=", CLIENT_VERSION_STR);
@@ -48,11 +48,11 @@ void EnforceNodeDeprecation(int nHeight, bool forceLogging) {
         if (disableDeprecation) {
             msg = strprintf(_("This version will be deprecated at block height %d."),
                             DEPRECATION_HEIGHT) + " " +
-                  _("You should upgrade to the latest version of Komodo.");
+                  _("You should upgrade to the latest version of Safecoin.");
         } else {
             msg = strprintf(_("This version will be deprecated at block height %d, and will automatically shut down."),
                             DEPRECATION_HEIGHT) + " " +
-                  _("You should upgrade to the latest version of Komodo.") + " " +
+                  _("You should upgrade to the latest version of Safecoin.") + " " +
                   strprintf(_("To disable deprecation for this version, set %s%s."),
                             "-disabledeprecation=", CLIENT_VERSION_STR);
         }

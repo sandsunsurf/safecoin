@@ -33,8 +33,8 @@
 using namespace std;
 
 extern uint64_t ASSETCHAINS_STAKED;
-extern int32_t KOMODO_MININGTHREADS;
-arith_uint256 komodo_PoWtarget(int32_t *percPoSp,arith_uint256 target,int32_t height,int32_t goalperc);
+extern int32_t SAFECOIN_MININGTHREADS;
+arith_uint256 safecoin_PoWtarget(int32_t *percPoSp,arith_uint256 target,int32_t height,int32_t goalperc);
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
@@ -148,7 +148,7 @@ UniValue getgenerate(const UniValue& params, bool fHelp)
         throw runtime_error(
             "getgenerate\n"
             "\nReturn if the server is set to generate coins or not. The default is false.\n"
-            "It is set with the command line argument -gen (or komodo.conf setting gen)\n"
+            "It is set with the command line argument -gen (or safecoin.conf setting gen)\n"
             "It can also be set with the setgenerate call.\n"
             "\nResult\n"
             "true|false      (boolean) If the server is set to generate coins or not\n"
@@ -186,7 +186,7 @@ UniValue generate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
 #endif
     }
     if (!Params().MineBlocksOnDemand())
@@ -218,7 +218,7 @@ UniValue generate(const UniValue& params, bool fHelp)
         lastTime = GetTime();
 
 #ifdef ENABLE_WALLET
-        std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey,nHeight,KOMODO_MAXGPUCOUNT));
+        std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey,nHeight,SAFECOIN_MAXGPUCOUNT));
 #else
         std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey());
 #endif
@@ -308,7 +308,7 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
 #endif
     }
     if (Params().MineBlocksOnDemand())
@@ -329,8 +329,8 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
     mapArgs["-gen"] = (fGenerate ? "1" : "0");
     mapArgs ["-genproclimit"] = itostr(nGenProcLimit);
     if ( fGenerate == 0 )
-        KOMODO_MININGTHREADS = -1;
-    else KOMODO_MININGTHREADS = (int32_t)nGenProcLimit;
+        SAFECOIN_MININGTHREADS = -1;
+    else SAFECOIN_MININGTHREADS = (int32_t)nGenProcLimit;
 #ifdef ENABLE_WALLET
     GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
 #else
@@ -386,7 +386,7 @@ UniValue getmininginfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("chain",            Params().NetworkIDString()));
 #ifdef ENABLE_MINING
     obj.push_back(Pair("generate",         getgenerate(params, false)));
-    obj.push_back(Pair("numthreads",       (int64_t)KOMODO_MININGTHREADS));
+    obj.push_back(Pair("numthreads",       (int64_t)SAFECOIN_MININGTHREADS));
 #endif
     return obj;
 }
@@ -514,7 +514,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
 #endif
     }
 
@@ -571,7 +571,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mode");
 
     if (vNodes.empty())
-        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Komodo is not connected!");
+        throw JSONRPCError(RPC_CLIENT_NOT_CONNECTED, "Safecoin is not connected!");
 
     //if (IsInitialBlockDownload())
      //   throw JSONRPCError(RPC_CLIENT_IN_INITIAL_DOWNLOAD, "Zcash is downloading blocks...");
@@ -647,7 +647,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         }
 #ifdef ENABLE_WALLET
         CReserveKey reservekey(pwalletMain);
-        pblocktemplate = CreateNewBlockWithKey(reservekey,chainActive.LastTip()->nHeight+1,KOMODO_MAXGPUCOUNT);
+        pblocktemplate = CreateNewBlockWithKey(reservekey,chainActive.LastTip()->nHeight+1,SAFECOIN_MAXGPUCOUNT);
 #else
         pblocktemplate = CreateNewBlockWithKey();
 #endif
@@ -737,7 +737,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
     if ( ASSETCHAINS_STAKED != 0 )
     {
         arith_uint256 POWtarget; int32_t PoSperc;
-        POWtarget = komodo_PoWtarget(&PoSperc,hashTarget,(int32_t)(pindexPrev->nHeight+1),ASSETCHAINS_STAKED);
+        POWtarget = safecoin_PoWtarget(&PoSperc,hashTarget,(int32_t)(pindexPrev->nHeight+1),ASSETCHAINS_STAKED);
         result.push_back(Pair("target", POWtarget.GetHex()));
         result.push_back(Pair("PoSperc", (int64_t)PoSperc));
         result.push_back(Pair("ac_staked", (int64_t)ASSETCHAINS_STAKED));
@@ -911,7 +911,7 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
             "1. height         (numeric, optional) The block height.  If not provided, defaults to the current height of the chain.\n"
             "\nResult:\n"
             "{\n"
-            "  \"miner\" : x.xxx           (numeric) The mining reward amount in KMD.\n"
+            "  \"miner\" : x.xxx           (numeric) The mining reward amount in SAFE.\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("getblocksubsidy", "1000")

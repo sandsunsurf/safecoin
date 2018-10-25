@@ -238,7 +238,7 @@ UniValue help(const UniValue& params, bool fHelp)
     return tableRPC.help(strCommand);
 }
 
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 UniValue stop(const UniValue& params, bool fHelp)
 {
@@ -247,10 +247,10 @@ UniValue stop(const UniValue& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "stop\n"
-            "\nStop Komodo server.");
+            "\nStop Safecoin server.");
     // Shutdown will take long enough that the response should get back
     StartShutdown();
-    sprintf(buf,"%s Komodo server stopping",ASSETCHAINS_SYMBOL);
+    sprintf(buf,"%s Safecoin server stopping",ASSETCHAINS_SYMBOL);
     return buf;
 }
 
@@ -737,7 +737,7 @@ UniValue CRPCTable::execute(const std::string &strMethod, const UniValue &params
 
 std::string HelpExampleCli(const std::string& methodname, const std::string& args)
 {
-    return "> komodo-cli " + methodname + " " + args + "\n";
+    return "> safecoin-cli " + methodname + " " + args + "\n";
 }
 
 std::string HelpExampleRpc(const std::string& methodname, const std::string& args)

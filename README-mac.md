@@ -29,23 +29,23 @@ brew tap discoteq/discoteq; brew install flock autoconf autogen automake gcc@6 b
 Get all that installed, then run:
 
 ```shell
-git clone https://github.com/jl777/komodo.git
-cd komodo
+git clone https://github.com/jl777/safecoin.git
+cd safecoin
 ./zcutil/build-mac.sh
 ./zcutil/fetch-params.sh
 ```
 
-To build a distributable version of komodo then run the makeDistrib.sh script after building.
+To build a distributable version of safecoin then run the makeDistrib.sh script after building.
 
-When you are done building, you need to create `Komodo.conf` the Mac way. 
+When you are done building, you need to create `Safecoin.conf` the Mac way. 
 
 ```shell
-mkdir ~/Library/Application\ Support/Komodo
-touch ~/Library/Application\ Support/Komodo/Komodo.conf
-nano ~/Library/Application\ Support/Komodo/Komodo.conf
+mkdir ~/Library/Application\ Support/Safecoin
+touch ~/Library/Application\ Support/Safecoin/Safecoin.conf
+nano ~/Library/Application\ Support/Safecoin/Safecoin.conf
 ```
 
-Add the following lines to the Komodo.conf file:
+Add the following lines to the Safecoin.conf file:
 
 ```shell
 rpcuser=dontuseweakusernameoryougetrobbed

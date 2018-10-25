@@ -13,7 +13,7 @@
  * notarised on another chain.
  *
  * IN: params - condition params
- * IN: importTx - Payout transaction on value chain (KMD)
+ * IN: importTx - Payout transaction on value chain (SAFE)
  * IN: nIn  - index of input of stake
  *
  * importTx: Spends stakeTx with payouts from asset chain

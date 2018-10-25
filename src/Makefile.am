@@ -101,11 +101,11 @@ noinst_PROGRAMS =
 TESTS =
 
 #if BUILD_BITCOIND
-  bin_PROGRAMS += komodod
+  bin_PROGRAMS += safecoind
 #endif
 
 if BUILD_BITCOIN_UTILS
-  bin_PROGRAMS += komodo-cli komodo-tx
+  bin_PROGRAMS += safecoin-cli safecoin-tx
 endif
 if ENABLE_WALLET
   bin_PROGRAMS += wallet-utility
@@ -466,16 +466,16 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
-komodod_SOURCES = bitcoind.cpp
-komodod_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-komodod_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-komodod_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+safecoind_SOURCES = bitcoind.cpp
+safecoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+safecoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+safecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-komodod_SOURCES += bitcoind-res.rc
+safecoind_SOURCES += bitcoind-res.rc
 endif
 
-komodod_LDADD = \
+safecoind_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBUNIVALUE) \
@@ -489,14 +489,14 @@ komodod_LDADD = \
   $(LIBCRYPTOCONDITIONS)
 
 if ENABLE_ZMQ
-komodod_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
+safecoind_LDADD += $(LIBBITCOIN_ZMQ) $(ZMQ_LIBS)
 endif
 
 if ENABLE_WALLET
-komodod_LDADD += libbitcoin_wallet.a
+safecoind_LDADD += libbitcoin_wallet.a
 endif
 
-komodod_LDADD += \
+safecoind_LDADD += \
   $(BOOST_LIBS) \
   $(BDB_LIBS) \
   $(SSL_LIBS) \
@@ -507,14 +507,14 @@ komodod_LDADD += \
   $(LIBZCASH_LIBS)
 
 if ENABLE_PROTON
-komodod_LDADD += $(LIBBITCOIN_PROTON) $(PROTON_LIBS)
+safecoind_LDADD += $(LIBBITCOIN_PROTON) $(PROTON_LIBS)
 endif
 
 # bitcoin-cli binary #
-komodo_cli_SOURCES = bitcoin-cli.cpp
-komodo_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
-komodo_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-komodo_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+safecoin_cli_SOURCES = bitcoin-cli.cpp
+safecoin_cli_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CFLAGS)
+safecoin_cli_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+safecoin_cli_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 # wallet-utility binary #
 if ENABLE_WALLET
@@ -525,10 +525,10 @@ wallet_utility_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 endif
 
 if TARGET_WINDOWS
-komodo_cli_SOURCES += bitcoin-cli-res.rc
+safecoin_cli_SOURCES += bitcoin-cli-res.rc
 endif
 
-komodo_cli_LDADD = \
+safecoin_cli_LDADD = \
 	$(LIBBITCOIN_CLI) \
 	$(LIBUNIVALUE) \
 	$(LIBBITCOIN_UTIL) \
@@ -557,17 +557,17 @@ wallet_utility_LDADD = \
 endif
 
 # zcash-tx binary #
-komodo_tx_SOURCES = komodo-tx.cpp
-komodo_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
-komodo_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-komodo_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+safecoin_tx_SOURCES = safecoin-tx.cpp
+safecoin_tx_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
+safecoin_tx_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+safecoin_tx_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
-komodo_tx_SOURCES += bitcoin-tx-res.rc
+safecoin_tx_SOURCES += bitcoin-tx-res.rc
 endif
 
 # FIXME: Is libzcash needed for zcash_tx?
-komodo_tx_LDADD = \
+safecoin_tx_LDADD = \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -578,7 +578,7 @@ komodo_tx_LDADD = \
   $(LIBZCASH_LIBS) \
   $(LIBCRYPTOCONDITIONS)
 
-komodo_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
+safecoin_tx_LDADD += $(BOOST_LIBS) $(CRYPTO_LIBS)
 #
 
 # zcash protocol primitives #

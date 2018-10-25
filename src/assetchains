@@ -4,7 +4,7 @@ set -eo pipefail
 # You can now add delay line to pubkey.txt file
 source pubkey.txt
 overide_args="$@"
-seed_ip=`getent hosts zero.kolo.supernet.org | awk '{ print $1 }'`
+seed_ip=`getent hosts zero.kolo.ipv6admin.com | awk '{ print $1 }'`
 
 if [ -z "$delay" ]; then delay=20; fi
 
@@ -14,6 +14,6 @@ if [ -z "$delay" ]; then delay=20; fi
       gen=" -gen"
   fi
 
-  ./komodod $gen $args $overide_args -pubkey=$pubkey -addnode=$seed_ip &
+  ./safecoind $gen $args $overide_args -pubkey=$pubkey -addnode=$seed_ip &
   sleep $delay
 done
