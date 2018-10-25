@@ -29,7 +29,7 @@ brew tap discoteq/discoteq; brew install flock autoconf autogen automake gcc@6 b
 Get all that installed, then run:
 
 ```shell
-git clone https://github.com/jl777/safecoin.git
+git clone https://github.com/fair-exchange/safecoin.git
 cd safecoin
 ./zcutil/build-mac.sh
 ./zcutil/fetch-params.sh
@@ -51,13 +51,9 @@ Add the following lines to the Safecoin.conf file:
 rpcuser=dontuseweakusernameoryougetrobbed
 rpcpassword=dontuseweakpasswordoryougetrobbed
 txindex=1
-addnode=5.9.102.210
-addnode=78.47.196.146
-addnode=178.63.69.164
-addnode=88.198.65.74
-addnode=5.9.122.241
-addnode=144.76.94.38
-addnode=89.248.166.91
+addnode=140.82.45.57
+addnode=8.12.22.254
+addnode=140.82.11.189
 ```
 
 Happy Building

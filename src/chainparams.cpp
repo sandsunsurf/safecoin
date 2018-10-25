@@ -162,7 +162,7 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b"));
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("safecoinplatform.com", "seeds.safecoinplatform.com")); // @kolo - old static dns seeds
+        vSeeds.push_back(CDNSSeedData("safecoin.org", "seeds.safecoin.org")); // @kolo - old static dns seeds
         vSeeds.push_back(CDNSSeedData("kolo.ipv6admin.com", "static.kolo.ipv6admin.com")); // @kolo - new static dns seeds ToDo
         vSeeds.push_back(CDNSSeedData("kolo.ipv6admin.com", "dynamic.kolo.ipv6admin.com")); // @kolo - crawler seeds ToDo
         // TODO: set up bootstrapping for mainnet

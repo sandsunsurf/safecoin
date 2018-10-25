@@ -667,7 +667,7 @@ void cJSON_Minify(char *json)
 	*into=0;	// and null-terminate.
 }
 
-// the following written by jl777
+// the following written by fair-exchange
 /******************************************************************************
  * Copyright © 2014-2018 The SuperNET Developers.                             *
  *                                                                            *

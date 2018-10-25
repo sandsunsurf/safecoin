@@ -3912,7 +3912,7 @@ CBlockIndex* AddToBlockIndex(const CBlockHeader& block)
     {
         if ( it->second != 0 ) // vNodes.size() >= SAFECOIN_LIMITED_NETWORKSIZE, change behavior to allow safecoin_ensure to work
         {
-            // this is the strange case where somehow the hash is in the mapBlockIndex via as yet undetermined process, but the pindex for the hash is not there. Theoretically it is due to processing the block headers, but I have seen it get this case without having received it from the block headers or anywhere else... jl777
+            // this is the strange case where somehow the hash is in the mapBlockIndex via as yet undetermined process, but the pindex for the hash is not there. Theoretically it is due to processing the block headers, but I have seen it get this case without having received it from the block headers or anywhere else... fair-exchange
             //fprintf(stderr,"addtoblockindex already there %p\n",it->second);
             return it->second;
         }

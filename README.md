@@ -1,25 +1,21 @@
-[![Build Status](https://travis-ci.org/fair-exchange/safecoin.svg?branch=dev)](https://travis-ci.org/fair-exchange/safecoin)
 ---
-![Safecoin Logo](https://i.imgur.com/vIwVtqv.png "Safecoin Logo")
+![Safecoin Logo](https://raw.githubusercontent.com/Fair-Exchange/safecoinwiki/master/Logos/SafeCoin/SafeCoin-Logo-with-text.png "Safecoin Logo")
 
 
 ## Safecoin
 
-This is the official Safecoin sourcecode repository based on https://github.com/jl777/safecoin. 
+This is the official Safecoin sourcecode repository based on https://github.com/fair-exchange/safecoin. 
 
 ## Development Resources
 
-- Safecoin Website: [https://safecoinplatform.com](https://safecoinplatform.com/)
-- Safecoin Blockexplorer: [https://safeexplorer.io](https://safeexplorer.io/)
-- Safecoin Discord: [https://safecoinplatform.com/discord](https://safecoinplatform.com/discord)
-- Forum: [https://forum.safecoinplatform.com](https://forum.safecoinplatform.com/)
-- Mail: [info@safecoinplatform.com](mailto:info@safecoinplatform.com)
-- Support: [https://support.safecoinplatform.com/support/home](https://support.safecoinplatform.com/support/home)
-- Knowledgebase & How-to: [https://support.safecoinplatform.com/en/support/solutions](https://support.safecoinplatform.com/en/support/solutions)
-- API references & Dev Documentation: [https://docs.safecoinplatform.com](https://docs.safecoinplatform.com/)
-- Blog: [https://blog.safecoinplatform.com](https://blog.safecoinplatform.com/)
-- Whitepaper: [Safecoin Whitepaper](https://safecoinplatform.com/whitepaper)
-- Safecoin Platform public material: [Safecoin Platform public material](https://docs.google.com/document/d/1AbhWrtagu4vYdkl-vsWz-HSNyNvK-W-ZasHCqe7CZy0)
+- Safecoin Website: [https://safecoin.org](https://safecoin.org/)
+- Safecoin Blockexplorer: [https://explorer.safecoin.org](https://explorer.safecoin.org/)
+- Safecoin Discord: [https://discord.gg/vQgYGJz](https://discord.gg/vQgYGJz)
+- Forum: [https://forum.safecoin.org](https://forum.safecoin.org/)
+- Mail: [safe@safecoin.org](mailto:safe@safecoin.org)
+- Knowledgebase & How-to: [https://github.com/Fair-Exchange/safecoinwiki/wiki](https://github.com/Fair-Exchange/safecoinwiki/wiki)
+- Blog: [https://safecoin.org/blog](https://safecoin.org/blog)
+- Whitepaper: [Safecoin Whitepaper](https://safecoin.org/assets/SafeWhitePaper.pdf)
 
 ## List of Safecoin Platform Technologies
 
@@ -30,20 +26,17 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - CC - Crypto Conditions to realize "smart contract" logic on top of the Safecoin Platform
 - Jumblr - Decentralized tumbler for SAFE and other cryptocurrencies
 - Assetchains - Create your own Blockchain that inherits all Safecoin Platform functionalities and blockchain interoperability
-- Pegged Assets - Chains that maintain a peg to fiat currencies
+- Pegged Assets - Chains that maintain a peg to fiat currencies  (SafeCash in progress)
 - Peerchains - Scalability solution where sibling chains form a network of blockchains
-- More in depth covered [here](https://docs.google.com/document/d/1AbhWrtagu4vYdkl-vsWz-HSNyNvK-W-ZasHCqe7CZy0)
-- Also note you receive 5% APR on your holdings.
-[See this article for more details](https://safecoinplatform.atlassian.net/wiki/spaces/KPSD/pages/20480015/Claim+SAFE+Interest+in+Safewallet)
 
 ## Tech Specification
-- Max Supply: 200 million SAFE.
+- Max Supply: 36.2 million SAFE.
 - Block Time: 1M 2s
-- Block Reward: 3SAFE
+- Block Reward: See schedule
 - Mining Algorithm: Equihash
 
 ## About this Project
-Safecoin is based on Zcash and has been extended by our innovative consensus algorithm called dPoW which utilizes Bitcoin's hashrate to store Safecoin blockchain information into the Bitcoin blockchain. Other new and native Safecoin features are the privacy technology called JUMBLR, our assetchain capabilities (one click plug and play blockchain solutions) and a set of financial decentralization and interoperability technologies. More details are available under https://safecoinplatform.com/ and https://blog.safecoinplatform.com.
+Safecoin is based on Zcash and has been extended by our innovative consensus algorithm called dPoW which utilizes Bitcoin's hashrate to store Safecoin blockchain information into the Bitcoin blockchain. Other new and native Safecoin features are the privacy technology called JUMBLR, our assetchain capabilities (one click plug and play blockchain solutions) and a set of financial decentralization and interoperability technologies. More details are available under https://safecoin.org/ and https://blog.safecoin.org.
 
 ## Getting started
 
@@ -63,7 +56,7 @@ Safecoin builds for all operating systems out of the same codebase. Follow the O
 
 #### Linux
 ```shell
-git clone https://github.com/safecoinplatform/safecoin --branch master --single-branch
+git clone https://github.com/fair-exchange/safecoin --branch master --single-branch
 cd safecoin
 ./zcutil/fetch-params.sh
 # -j8 = using 8 threads for the compilation - replace 8 with number of threads you want to use
@@ -75,7 +68,7 @@ cd safecoin
 Ensure you have [brew](https://brew.sh) and the command line tools installed (comes automatically with XCode) and run:
 ```shell
 brew update && brew install gcc@6
-git clone https://github.com/safecoinplatform/safecoin --branch master --single-branch
+git clone https://github.com/fair-exchange/safecoin --branch master --single-branch
 cd safecoin
 ./zcutil/fetch-params.sh
 # -j8 = using 8 threads for the compilation - replace 8 with number of threads you want to use
@@ -86,7 +79,7 @@ cd safecoin
 #### Windows
 Use a debian cross-compilation setup with mingw for windows and run:
 ```shell
-git clone https://github.com/safecoinplatform/safecoin --branch master --single-branch
+git clone https://github.com/fair-exchange/safecoin --branch master --single-branch
 cd safecoin
 ./zcutil/fetch-params.sh
 # -j8 = using 8 threads for the compilation - replace 8 with number of threads you want to use
@@ -111,13 +104,9 @@ rpcuser=yourrpcusername
 rpcpassword=yoursecurerpcpassword
 rpcbind=127.0.0.1
 txindex=1
-addnode=5.9.102.210
-addnode=78.47.196.146
-addnode=178.63.69.164
-addnode=88.198.65.74
-addnode=5.9.122.241
-addnode=144.76.94.38
-addnode=89.248.166.91
+addnode=140.82.45.57
+addnode=8.12.22.254
+addnode=140.82.11.189
 ```
 ### Create your own Blockchain based on Safecoin
 
