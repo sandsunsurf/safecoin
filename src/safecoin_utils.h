@@ -1665,7 +1665,7 @@ void safecoin_args(char *argv0)
     else
     {
         char fname[512],username[512],password[4096]; int32_t iter; FILE *fp;
-        ASSETCHAINS_P2PPORT = 7770;
+        ASSETCHAINS_P2PPORT = 8770;
         ASSETCHAINS_RPCPORT = 8771;
         for (iter=0; iter<2; iter++)
         {
