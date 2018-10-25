@@ -54,7 +54,7 @@ static int32_t cJSON_strcasecmp(const char *s1,const char *s2)
 	return tolower((int32_t)(*(const unsigned char *)s1)) - tolower((int32_t)(*(const unsigned char *)s2));
 }
 
-// the following written by fair-exchange
+// the following written by jl777
 /******************************************************************************
  * Copyright © 2014-2018 The SuperNET Developers.                             *
  *                                                                            *

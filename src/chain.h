@@ -121,7 +121,7 @@ public:
 
     //! height of the entry in the chain. The genesis block has height 0
     int nHeight;
-    int64_t newcoins,zfunds; int8_t segid; // fair-exchange fields
+    int64_t newcoins,zfunds; int8_t segid; // jl777 fields
     //! Which # file this block is stored in (blk?????.dat)
     int nFile;
 

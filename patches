@@ -771,7 +771,7 @@ diff -crB ./Dockerfile ../../safecoin/Dockerfile
   ADD ./ /safecoin
   ENV HOME /safecoin
 --- 1,5 ----
-! FROM kolobus/ubuntu:safecoin
+! FROM safecoinbus/ubuntu:safecoin
 ! MAINTAINER Mihail Fedorov <tech@fedorov.net>
   
   ADD ./ /safecoin
@@ -868,8 +868,8 @@ diff -crB ./.git/packed-refs ../../safecoin/.git/packed-refs
 ! 060c9a92939c62bbedb5fe560bf8ef6856e2b8f1 refs/remotes/origin/beta
   ba9104dd7e9b6ba2b68ad352253ac8f3298092f4 refs/remotes/origin/dPoW
 ! cb42e5518262235ed4e4dbff43179e0308114d6a refs/remotes/origin/dev
-  76b6eacf41395ddd2badd5d5dc3352e603c59df2 refs/remotes/origin/kolo
-  bb40eb8b043a1e63c3dc3b1c2e4d0f6e67e771d4 refs/remotes/origin/kolo-dev
+  76b6eacf41395ddd2badd5d5dc3352e603c59df2 refs/remotes/origin/safecoin
+  bb40eb8b043a1e63c3dc3b1c2e4d0f6e67e771d4 refs/remotes/origin/safecoin-dev
   d03fbd981fce86504b78d2a9582e4da988d59823 refs/remotes/origin/master
 --- 2,10 ----
   fcd361184f09fe17546698b0d13caddac5b63500 refs/remotes/origin/PoS
@@ -878,8 +878,8 @@ diff -crB ./.git/packed-refs ../../safecoin/.git/packed-refs
 ! f6f296f1acf8c2b177451ed0c9f8660f3a80ec3d refs/remotes/origin/beta
   ba9104dd7e9b6ba2b68ad352253ac8f3298092f4 refs/remotes/origin/dPoW
 ! 26ac06c4f5a6b4dc3163b36a1e5d24bfa7eccbd2 refs/remotes/origin/dev
-  76b6eacf41395ddd2badd5d5dc3352e603c59df2 refs/remotes/origin/kolo
-  bb40eb8b043a1e63c3dc3b1c2e4d0f6e67e771d4 refs/remotes/origin/kolo-dev
+  76b6eacf41395ddd2badd5d5dc3352e603c59df2 refs/remotes/origin/safecoin
+  bb40eb8b043a1e63c3dc3b1c2e4d0f6e67e771d4 refs/remotes/origin/safecoin-dev
   d03fbd981fce86504b78d2a9582e4da988d59823 refs/remotes/origin/master
 Only in ../../safecoin/.git/refs/heads: dev
 diff -crB ./.gitignore ../../safecoin/.gitignore

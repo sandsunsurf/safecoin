@@ -14,7 +14,7 @@
  ******************************************************************************/
 
 How to write utxo based CryptoConditions contracts for SAFE chains
-by fair-exchange
+by jl777
 
 This is not the only smart contracts methodology that is possible to build on top of OP_CHECKCRYPTOCONDITION, just the first one. All the credit for getting OP_CHECKCRYPTOCONDITION working in the Safecoin codebase goes to @libscott. I am just hooking into the code that he made and tried to make it just a little easier to make new contracts.
 

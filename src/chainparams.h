@@ -100,7 +100,7 @@ public:
     //void setgenesis(CBlock &block) { genesis = block; }
     //void recalc_genesis(uint32_t nonce) { genesis = CreateGenesisBlock(ASSETCHAINS_TIMESTAMP, nonce, GENESIS_NBITS, 1, COIN); };
     int nDefaultPort = 0;
-    CMessageHeader::MessageStartChars pchMessageStart; // fair-exchange moved
+    CMessageHeader::MessageStartChars pchMessageStart; // jl777 moved
     Consensus::Params consensus;
 
 protected:
