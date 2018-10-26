@@ -1,22 +1,18 @@
 Source: VerusCoin
 Section: utils
 Priority: optional
-Maintainer: VerusCoin <team@z.cash>
-Homepage: https://veruscoin.io
+Maintainer: Safecoin <safe@safecoin.org>
+Homepage: https://safecoin.org
 Build-Depends: autoconf, automake, bsdmainutils, build-essential,
  git, g++-multilib, libc6-dev, libtool,
  m4, ncurses-dev, pkg-config, python,
  unzip, wget, zlib1g-dev
-Vcs-Git: https://github.com/VeruscCoin/VerusCoin.git
-Vcs-Browser: https://github.com/VerusCoin/VerusCoin
 
-Package: Verus-CLI
+Vcs-Git: https://github.com/fair-exchange/safecoin.git
+Vcs-Browser: https://github.com/fair-exchange/safecoin
+
+Package: safecoin
 Architecture: amd64
 Depends: ${shlibs:Depends}
-Description: VerusCoin is a new, mineable and stakeable cryptocurrency.
-It is a live fork of Safecoin that retains its Zcash lineage and improves it.
-VerusCoin will leverage the Safecoin platform and dPoW notarization for enhanced security and cross-chain interoperability.
-We have added a variation of a zawy12, lwma difficulty algorithm, a new CPU-optimized hash algorithm and a new algorithm for fair proof of stake.
-We describe these changes and vision going forward in a [our Phase I white paper](http://185.25.51.16/papers/VerusPhaseI.pdf) and
-[our Vision](http://185.25.51.16/papers/VerusVision.pdf).
+Description: Safecoin Rocks
 
