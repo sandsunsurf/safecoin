@@ -816,10 +816,10 @@ void static BitcoinMiner()
             // Get the height of current tip
 	    int nHeight = chainActive.Height();
 	    if (nHeight == -1) {
-	      LogPrintf("Error in BitcoinZ Miner: chainActive.Height() returned -1\n");
+	      LogPrintf("Error in Safecoin Miner: chainActive.Height() returned -1\n");
 	      return;
 	    }
-	    CBlockIndex* pindexPrev = chainActive[nHeight];
+	    //	    CBlockIndex* pindexPrev = chainActive[nHeight];
 
 	    // Get equihash parameters for the next block to be mined.
 	    EHparameters ehparams[MAX_EH_PARAM_LIST_LEN]; //allocate on-stack space for parameters list
