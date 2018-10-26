@@ -1869,15 +1869,44 @@ extern uint8_t ASSETCHAINS_PUBLIC,ASSETCHAINS_PRIVATE;
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
-    static uint64_t cached_subsidy; static int32_t cached_numhalvings;
-    int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
-    if ( ASSETCHAINS_SYMBOL[0] == 0 )
+  static uint64_t cached_subsidy; static int32_t cached_numhalvings;
+  int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
+  if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
-        if ( nHeight == 1 )
-            return(100000000 * COIN); // ICO allocation
-        else if ( nHeight < SAFECOIN_ENDOFERA ) //safecoin_moneysupply(nHeight) < MAX_MONEY )
-            return(3 * COIN);
-        else return(0);
+      if ( nHeight == 1 ) nSubsidy = (4000000 * COIN);
+      else if ( nHeight == 80185 ) nSubsidy = (665600 * COIN); //refund for interest rate attack
+      else if ( nHeight < 123840 ) nSubsidy = (128 * COIN);
+      else if ( nHeight < 178378 ) nSubsidy = (64 * COIN);
+      else if ( nHeight < 181378 ) nSubsidy = (56 * COIN);
+      else if ( nHeight < 184378 ) nSubsidy = (48 * COIN);
+      else if ( nHeight < 187378 ) nSubsidy = (40 * COIN);
+      else if ( nHeight < 197378 ) nSubsidy = (32 * COIN);
+      else if ( nHeight < 207378 ) nSubsidy = (28 * COIN);
+      else if ( nHeight < 217378 ) nSubsidy = (24 * COIN);
+      else if ( nHeight < 227378 ) nSubsidy = (22 * COIN);
+      else if ( nHeight < 237378 ) nSubsidy = (20 * COIN);
+      else if ( nHeight < 247378 ) nSubsidy = (18 * COIN);
+      else if ( nHeight < 287378 ) nSubsidy = (16 * COIN);
+      else if ( nHeight < 327378 ) nSubsidy = (15 * COIN);
+      else if ( nHeight < 367378 ) nSubsidy = (14 * COIN);
+      else if ( nHeight < 407378 ) nSubsidy = (13 * COIN);
+      else if ( nHeight < 447378 ) nSubsidy = (12 * COIN);
+      else if ( nHeight < 487378 ) nSubsidy = (11 * COIN);
+      else if ( nHeight < 527378 ) nSubsidy = (10 * COIN);
+      else if ( nHeight < 567378 ) nSubsidy = (9 * COIN);
+      else if ( nHeight < 647378 ) nSubsidy = (8 * COIN);
+      else if ( nHeight < 727378 ) nSubsidy = (7 * COIN);
+      else if ( nHeight < 807378 ) nSubsidy = (6 * COIN);
+      else if ( nHeight < 887378 ) nSubsidy = (5 * COIN);
+      else if ( nHeight < 1207378 ) nSubsidy = (4 * COIN);
+      else if ( nHeight < 1527378 ) nSubsidy = (3 * COIN);
+      else if ( nHeight < 1847378 ) nSubsidy = (2 * COIN);
+      else if ( nHeight < 2167378 ) nSubsidy = (1 * COIN);
+      else if ( nHeight < 3447378 ) nSubsidy = (0.5 * COIN);
+      else if ( nHeight < 4727378 ) nSubsidy = (0.25 * COIN);
+      else if ( nHeight < 5256000 ) nSubsidy = (0.125 * COIN); // 10 Year Mark, Safecoin to implement POS prior to this
+      else nSubsidy = 0;
+      return nSubsidy;
     }
     else
     {
