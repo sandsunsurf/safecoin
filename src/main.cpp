@@ -4751,8 +4751,8 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     for (uint32_t i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction& tx = block.vtx[i];
-        if ( safecoin_validate_interest(tx,height == 0 ? safecoin_block2height((CBlock *)&block) : height,block.nTime,0) < 0 )
-            return error("CheckBlock: safecoin_validate_interest failed");
+	//      if ((height>103820) & safecoin_validate_interest(tx,height == 0 ? safecoin_block2height((CBlock *)&block) : height,block.nTime,0) < 0 )
+	//            return error("CheckBlock: safecoin_validate_interest failed");
         if (!CheckTransaction(tiptime,tx, state, verifier))
             return error("CheckBlock: CheckTransaction failed");
     }

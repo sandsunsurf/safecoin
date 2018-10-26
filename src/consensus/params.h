@@ -118,7 +118,12 @@ struct Params {
     int32_t SetSaplingHeight(int32_t height) { vUpgrades[Consensus::UPGRADE_SAPLING].nActivationHeight = height; }
     int32_t SetOverwinterHeight(int32_t height) { vUpgrades[Consensus::UPGRADE_OVERWINTER].nActivationHeight = height; }
     uint256 nMinimumChainWork;
+
+  /** Hard Fork to disable Interest **/
+  int hfDisableInterest;
+  
 };
+
 } // namespace Consensus
 
 #endif // BITCOIN_CONSENSUS_PARAMS_H
