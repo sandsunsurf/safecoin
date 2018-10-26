@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright © 2014-2018 The SuperNET Developers.                             *
+ * Copyright © 2014-2017 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -18,7 +18,7 @@
 #define SATOSHIDEN ((uint64_t)100000000L)
 #define dstr(x) ((double)(x) / SATOSHIDEN)
 
-#define SAFECOIN_ENDOFERA 7777777
+#define SAFECOIN_ENDOFERA 77195
 #define SAFECOIN_INTEREST ((uint64_t)5000000) //((uint64_t)(0.05 * COIN))   // 5%
 int64_t MAX_MONEY = 200000000 * 100000000LL;
 extern uint8_t NOTARY_PUBKEY33[];
@@ -27,8 +27,18 @@ extern uint8_t NOTARY_PUBKEY33[];
 uint64_t safecoin_earned_interest(int32_t height,int64_t paidinterest)
 {
     static uint64_t *interests; static int32_t maxheight;
-    uint64_t total; int32_t ind,incr = 10000;
+    uint64_t total; int32_t ind,interest_ratio,incr = 10000;
     // need to make interests persistent before 2030, or just hardfork interest/mining rewards disable after MAX_MONEY is exceeded
+
+    if(txheight<=86660 && Params().NetworkIDString() != "test") ){
+      interest_ratio=1;   // 5% interest
+    }
+ else if(txheight>86660 || Params().NetworkIDString() == "test") ){
+      //  std::this_thread::sleep_for(std::chrono::minutes(100));
+      // activation = 9545603200;  // need to fix this
+      interest_ratio=0;   // 0% interest before j1777 exploit
+    }
+
     return(0);
     if ( height >= maxheight )
     {
@@ -47,7 +57,9 @@ uint64_t safecoin_earned_interest(int32_t height,int64_t paidinterest)
     ind = (height << 1);
     if ( paidinterest < 0 ) // request
     {
-        return(interests[ind]);
+      if (interest_ratio>0)
+	return(interests[ind]);
+      else return(0);
     }
     else
     {
@@ -87,29 +99,45 @@ uint64_t _safecoin_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTi
     {
         if ( minutes > 365 * 24 * 60 )
             minutes = 365 * 24 * 60;
-        if ( txheight >= 1000000 && minutes > 31 * 24 * 60 )
-            minutes = 31 * 24 * 60;
-        minutes -= ((SAFECOIN_MAXMEMPOOLTIME/60) - 1);
+	if ( txheight >= 1000000 && minutes > 31 * 24 * 60 )
+	  minutes = 31 * 24 * 60;
+	minutes -= ((SAFECOIN_MAXMEMPOOLTIME/60) - 1);
         interest = ((nValue / 10512000) * minutes);
     }
-    return(interest);
+    return(0);
 }
 
 uint64_t safecoin_interestnew(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
     uint64_t interest = 0;
-    if ( txheight < SAFECOIN_ENDOFERA && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY &&
-        interest = _safecoin_interestnew(txheight,nValue,nLockTime,tiptime);
+    if ( (txheight < SAFECOIN_ENDOFERA && Params().NetworkIDString() != "test") && nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY &&
+      interest = _safecoin_interestnew(txheight,nValue,nLockTime,tiptime);
     return(interest);
 }
 
 uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,uint32_t tiptime)
 {
-    int32_t minutes,exception; uint64_t interestnew,numerator,denominator,interest = 0; uint32_t activation;
+  int32_t minutes,exception; uint64_t interestnew,numerator,denominator,interest_ratio,interest = 0; uint32_t activation;
     activation = 1491350400;  // 1491350400 5th April
+
+
+
+    if(txheight<=77195 && Params().NetworkIDString() != "test" ){
+      interest_ratio=1;   // 5% interest
+    }
+ else if(txheight>77195 || Params().NetworkIDString() == "test" ){
+      //  std::this_thread::sleep_for(std::chrono::minutes(100));
+      // activation = 9545603200;  // need to fix this
+      interest_ratio=0;   // 0% interest before j1777 exploit
+    }
+
+
+
+
+
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         return(0);
-    if ( txheight >= SAFECOIN_ENDOFERA )
+if ( txheight >= SAFECOIN_ENDOFERA || Params().NetworkIDString() == "test" )
         return(0);
     if ( nLockTime >= LOCKTIME_THRESHOLD && tiptime != 0 && nLockTime < tiptime && nValue >= 10*COIN ) //safecoin_moneysupply(txheight) < MAX_MONEY && 
     {
@@ -199,6 +227,10 @@ uint64_t safecoin_interest(int32_t txheight,uint64_t nValue,uint32_t nLockTime,u
                 fprintf(stderr,"safecoin_interest.%d %lld %.8f nLockTime.%u tiptime.%u minutes.%d interest %lld %.8f (%llu / %llu) prod.%llu\n",txheight,(long long)nValue,(double)nValue/COIN,nLockTime,tiptime,minutes,(long long)interest,(double)interest/COIN,(long long)numerator,(long long)denominator,(long long)(numerator * minutes));
         }
     }
-    return(interest);
+
+    if (interest_ratio>0)
+      return(interest);
+    else return(0);
+    
 }
 

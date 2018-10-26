@@ -1056,7 +1056,8 @@ uint64_t safecoin_accrued_interest(int32_t *txheightp,uint32_t *locktimep,uint25
     if ( (*locktimep= safecoin_interest_args(&txheighttimep,txheightp,&tiptime,&value,hash,n)) != 0 )
     {
         if ( (checkvalue == 0 || value == checkvalue) && (checkheight == 0 || *txheightp == checkheight) )
-            return(safecoin_interest(*txheightp,value,*locktimep,tiptime));
+          //  return(safecoin_interest(*txheightp,value,*locktimep,tiptime));
+	return(0);
         //fprintf(stderr,"nValue %llu lock.%u:%u nTime.%u -> %llu\n",(long long)coins.vout[n].nValue,coins.nLockTime,timestamp,pindex->nTime,(long long)interest);
         else fprintf(stderr,"safecoin_accrued_interest value mismatch %llu vs %llu or height mismatch %d vs %d\n",(long long)value,(long long)checkvalue,*txheightp,checkheight);
     }
@@ -1078,10 +1079,10 @@ int32_t safecoin_validate_interest(const CTransaction &tx,int32_t txheight,uint3
 {
     if ( SAFECOIN_REWIND == 0 && ASSETCHAINS_SYMBOL[0] == 0 && (int64_t)tx.nLockTime >= LOCKTIME_THRESHOLD ) //1473793441 )
     {
-        if ( txheight > 246748 )
+        if ( txheight > 89500 )
         {
-            if ( txheight < 247205 )
-                cmptime -= 16000;
+	  //      if ( txheight < 247205 )
+          //      cmptime -= 16000;
             if ( (int64_t)tx.nLockTime < cmptime-SAFECOIN_MAXMEMPOOLTIME )
             {
                 if ( tx.nLockTime != 1477258935 && dispflag != 0 )
