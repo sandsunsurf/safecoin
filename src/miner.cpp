@@ -737,8 +737,7 @@ void static BitcoinMiner()
     // Each thread has its own counter
     unsigned int nExtraNonce = 0;
     
-    unsigned int n = chainparams.EquihashN();
-    unsigned int k = chainparams.EquihashK();
+
     uint8_t *script; uint64_t total,checktoshis; int32_t i,j,gpucount=SAFECOIN_MAXGPUCOUNT,notaryid = -1;
     while ( (ASSETCHAIN_INIT == 0 || SAFECOIN_INITDONE == 0) )
     {
@@ -752,10 +751,10 @@ void static BitcoinMiner()
         My_notaryid = notaryid;
     std::string solver;
     //if ( notaryid >= 0 || ASSETCHAINS_SYMBOL[0] != 0 )
-    solver = "tromp";
+    solver = "default";
     //else solver = "default";
     assert(solver == "tromp" || solver == "default");
-    LogPrint("pow", "Using Equihash solver \"%s\" with n = %u, k = %u\n", solver, n, k);
+    //    LogPrint("pow", "Using Equihash solver \"%s\" with n = %u, k = %u\n", solver, n, k);
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         fprintf(stderr,"notaryid.%d Mining.%s with %s\n",notaryid,ASSETCHAINS_SYMBOL,solver.c_str());
     std::mutex m_cs;
@@ -810,6 +809,32 @@ void static BitcoinMiner()
                 //fprintf(stderr,"%s create new block ht.%d\n",ASSETCHAINS_SYMBOL,Mining_height);
                 //sleep(3);
             }
+
+
+
+
+            // Get the height of current tip
+	    int nHeight = chainActive.Height();
+	    if (nHeight == -1) {
+	      LogPrintf("Error in BitcoinZ Miner: chainActive.Height() returned -1\n");
+	      return;
+	    }
+	    CBlockIndex* pindexPrev = chainActive[nHeight];
+
+	    // Get equihash parameters for the next block to be mined.
+	    EHparameters ehparams[MAX_EH_PARAM_LIST_LEN]; //allocate on-stack space for parameters list
+	    validEHparameterList(ehparams,nHeight+1,chainparams);
+
+	    unsigned int n = ehparams[0].n;
+	    unsigned int k = ehparams[0].k;
+	    LogPrint("pow", "Using Equihash solver \"%s\" with n = %u, k = %u\n", solver, n, k);
+
+
+
+
+	    
+
+	    
 #ifdef ENABLE_WALLET
             CBlockTemplate *ptr = CreateNewBlockWithKey(reservekey,pindexPrev->nHeight+1,gpucount);
 #else
