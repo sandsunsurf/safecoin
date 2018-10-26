@@ -2,6 +2,10 @@
 *.deb
 *.exe
 src/bitcoin
+src/safecoind
+src/safecoin-cli
+src/safecoin-tx
+src/safecoin-test
 src/zcashd
 src/zcash-cli
 src/zcash-gtest
