@@ -621,10 +621,10 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                 notarized = 1;
             if ( 0 && opretlen != 149 )
                 printf("[%s].%d (%s) matched.%d i.%d j.%d notarized.%d %llx opretlen.%d len.%d offset.%d opoffset.%d\n",ASSETCHAINS_SYMBOL,height,ccdata.symbol,matched,i,j,notarized,(long long)signedmask,opretlen,len,offset,opoffset);
-            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&srchash);
-            len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
+            len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&srchash);
+            len += safenodes_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             if ( matched != 0 )
-                len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
+                len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
             if ( matched != 0 )
                 validated = safecoin_validate_chain(srchash,*notarizedheightp);
             else validated = 1;
@@ -642,13 +642,13 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                 //printf("nameoffset.%d len.%d + 36 %d opoffset.%d vs opretlen.%d\n",nameoffset,len,len+36,opoffset,opretlen);
                 if ( len+36-opoffset <= opretlen )
                 {
-                    len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
-                    len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
+                    len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
+                    len += safenodes_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
                     ccdata.MoMdata.MoM = MoM;
                     ccdata.MoMdata.MoMdepth = MoMdepth & 0xffff;
                     if ( len+sizeof(ccdata.CCid)-opoffset <= opretlen )
                     {
-                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(ccdata.CCid),(uint8_t *)&ccdata.CCid);
+                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(ccdata.CCid),(uint8_t *)&ccdata.CCid);
                         //if ( ((MoMdepth>>16) & 0xffff) != (ccdata.CCid & 0xffff) )
                         //    fprintf(stderr,"%s CCid mismatch %u != %u\n",ASSETCHAINS_SYMBOL,((MoMdepth>>16) & 0xffff),(ccdata.CCid & 0xffff));
                         ccdata.len = sizeof(ccdata.CCid);
@@ -657,19 +657,19 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                             // MoMoM, depth, numpairs, (notarization ht, MoMoM offset)
                             if ( len+48-opoffset <= opretlen && strcmp(ccdata.symbol,ASSETCHAINS_SYMBOL) == 0 )
                             {
-                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safestarti);
-                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safeendi);
-                                len += iguana_rwbignum(0,&scriptbuf[len],sizeof(MoMoMdata.MoMoM),(uint8_t *)&MoMoMdata.MoMoM);
-                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.MoMoMdepth);
-                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.numpairs);
+                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safestarti);
+                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safeendi);
+                                len += safenodes_rwbignum(0,&scriptbuf[len],sizeof(MoMoMdata.MoMoM),(uint8_t *)&MoMoMdata.MoMoM);
+                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.MoMoMdepth);
+                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.numpairs);
                                 MoMoMdata.len += sizeof(MoMoMdata.MoMoM) + sizeof(uint32_t)*4;
                                 if ( len+MoMoMdata.numpairs*8-opoffset == opretlen )
                                 {
                                     MoMoMdata.pairs = (struct safecoin_ccdatapair *)calloc(MoMoMdata.numpairs,sizeof(*MoMoMdata.pairs));
                                     for (k=0; k<MoMoMdata.numpairs; k++)
                                     {
-                                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(int32_t),(uint8_t *)&MoMoMdata.pairs[k].notarized_height);
-                                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.pairs[k].MoMoMoffset);
+                                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(int32_t),(uint8_t *)&MoMoMdata.pairs[k].notarized_height);
+                                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.pairs[k].MoMoMoffset);
                                         MoMoMdata.len += sizeof(uint32_t) * 2;
                                     }
                                 } else ccdata.len = MoMoMdata.len = 0;

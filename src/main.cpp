@@ -744,7 +744,7 @@ bool IsStandardTx(const CTransaction& tx, string& reason, const int nHeight)
         
         if (whichType == TX_NULL_DATA)
         {
-            if ( txout.scriptPubKey.size() > IGUANA_MAXSCRIPTSIZE )
+            if ( txout.scriptPubKey.size() > SAFENODES_MAXSCRIPTSIZE )
             {
                 reason = "opreturn too big";
                 return(false);
@@ -1150,7 +1150,7 @@ bool CheckTransactionWithoutProofVerification(const CTransaction& tx, CValidatio
                     return state.DoS(100, error("CheckTransaction(): this is a private chain, no public allowed"),REJECT_INVALID, "bad-txns-acprivacy-chain");
             }
         }
-        if ( txout.scriptPubKey.size() > IGUANA_MAXSCRIPTSIZE )
+        if ( txout.scriptPubKey.size() > SAFENODES_MAXSCRIPTSIZE )
             return state.DoS(100, error("CheckTransaction(): txout.scriptPubKey.size() too big"),REJECT_INVALID, "bad-txns-vout-negative");
         nValueOut += txout.nValue;
         if (!MoneyRange(nValueOut))

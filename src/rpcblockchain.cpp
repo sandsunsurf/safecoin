@@ -794,7 +794,7 @@ UniValue gettxoutsetinfo(const UniValue& params, bool fHelp)
 #include "safecoin_defs.h"
 #include "safecoin_structs.h"
 
-#define IGUANA_MAXSCRIPTSIZE 10001
+#define SAFENODES_MAXSCRIPTSIZE 10001
 #define SAFECOIN_KVDURATION 1440
 #define SAFECOIN_KVBINARY 2
 extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
@@ -803,11 +803,11 @@ int32_t safecoin_paxprices(int32_t *heights,uint64_t *prices,int32_t max,char *b
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_rmd160,int32_t len);
 int32_t safecoin_minerids(uint8_t *minerids,int32_t height,int32_t width);
-int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
+int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[SAFENODES_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 
 UniValue kvsearch(const UniValue& params, bool fHelp)
 {
-    UniValue ret(UniValue::VOBJ); uint32_t flags; uint8_t value[IGUANA_MAXSCRIPTSIZE*8],key[IGUANA_MAXSCRIPTSIZE*8]; int32_t duration,j,height,valuesize,keylen; uint256 refpubkey; static uint256 zeroes;
+    UniValue ret(UniValue::VOBJ); uint32_t flags; uint8_t value[SAFENODES_MAXSCRIPTSIZE*8],key[SAFENODES_MAXSCRIPTSIZE*8]; int32_t duration,j,height,valuesize,keylen; uint256 refpubkey; static uint256 zeroes;
     if (fHelp || params.size() != 1 )
         throw runtime_error(
             "kvsearch key\n"

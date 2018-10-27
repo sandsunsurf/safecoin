@@ -177,10 +177,10 @@ int32_t safecoin_rwapproval(int32_t rwflag,uint8_t *opretbuf,struct pax_transact
         pax->vout += ((uint32_t)opretbuf[len++] << 8);
         //printf(" txid v.%d\n",pax->vout);
     }
-    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->safecoinshis),&pax->safecoinshis);
-    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->fiatoshis),&pax->fiatoshis);
-    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->height),&pax->height);
-    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->otherheight),&pax->otherheight);
+    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->safecoinshis),&pax->safecoinshis);
+    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->fiatoshis),&pax->fiatoshis);
+    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->height),&pax->height);
+    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->otherheight),&pax->otherheight);
     if ( rwflag != 0 )
     {
         memcpy(&opretbuf[len],pax->rmd160,20), len += 20;
@@ -785,7 +785,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
         tosafecoin = 0;
         if ( opretlen == 38 ) // any SAFE tx
         {
-            iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
+            safenodes_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
             memset(base,0,sizeof(base));
             PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&fiatoshis);
             bitcoin_address(coinaddr,addrtype,rmd160,20);
@@ -928,7 +928,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
             return(typestr);
         }
         tosafecoin = 1;
-        iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
+        safenodes_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
         memset(base,0,sizeof(base));
         PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&safecoinshis);
         bitcoin_address(coinaddr,addrtype,rmd160,20);

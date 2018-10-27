@@ -348,7 +348,7 @@ int32_t oracle_format(uint256 *hashp,int64_t *valp,char *str,uint8_t fmt,uint8_t
     {
         if ( str != 0 )
         {
-            if ( slen < IGUANA_MAXSCRIPTSIZE && offset+slen <= datalen )
+            if ( slen < SAFENODES_MAXSCRIPTSIZE && offset+slen <= datalen )
             {
                 for (i=0; i<slen; i++)
                     str[i] = data[offset++];
@@ -360,7 +360,7 @@ int32_t oracle_format(uint256 *hashp,int64_t *valp,char *str,uint8_t fmt,uint8_t
     {
         if ( str != 0 )
         {
-            if ( dlen < IGUANA_MAXSCRIPTSIZE && offset+dlen <= datalen )
+            if ( dlen < SAFENODES_MAXSCRIPTSIZE && offset+dlen <= datalen )
             {
                 for (i=0; i<dlen; i++)
                     sprintf(&str[i<<1],"%02x",data[offset++]);
@@ -372,7 +372,7 @@ int32_t oracle_format(uint256 *hashp,int64_t *valp,char *str,uint8_t fmt,uint8_t
     {
         if ( len == 32 )
         {
-            iguana_rwbignum(0,&data[offset],len,(uint8_t *)hashp);
+            safenodes_rwbignum(0,&data[offset],len,(uint8_t *)hashp);
             if ( str != 0 )
                 sprintf(str,"%s",uint256_str(_str,*hashp));
         }
@@ -383,9 +383,9 @@ int32_t oracle_format(uint256 *hashp,int64_t *valp,char *str,uint8_t fmt,uint8_t
                 switch ( len )
                 {
                     case 1: val = (int8_t)data[offset]; break;
-                    case 2: iguana_rwnum(0,&data[offset],len,(void *)&val16); val = val16; break;
-                    case 4: iguana_rwnum(0,&data[offset],len,(void *)&val32); val = val32; break;
-                    case 8: iguana_rwnum(0,&data[offset],len,(void *)&val); break;
+                    case 2: safenodes_rwnum(0,&data[offset],len,(void *)&val16); val = val16; break;
+                    case 4: safenodes_rwnum(0,&data[offset],len,(void *)&val32); val = val32; break;
+                    case 8: safenodes_rwnum(0,&data[offset],len,(void *)&val); break;
                 }
                 if ( str != 0 )
                     sprintf(str,"%lld",(long long)val);
@@ -396,9 +396,9 @@ int32_t oracle_format(uint256 *hashp,int64_t *valp,char *str,uint8_t fmt,uint8_t
                 switch ( len )
                 {
                     case 1: uval = data[offset]; break;
-                    case 2: iguana_rwnum(0,&data[offset],len,(void *)&uval16); uval = uval16; break;
-                    case 4: iguana_rwnum(0,&data[offset],len,(void *)&uval32); uval = uval32; break;
-                    case 8: iguana_rwnum(0,&data[offset],len,(void *)&uval); break;
+                    case 2: safenodes_rwnum(0,&data[offset],len,(void *)&uval16); uval = uval16; break;
+                    case 4: safenodes_rwnum(0,&data[offset],len,(void *)&uval32); uval = uval32; break;
+                    case 8: safenodes_rwnum(0,&data[offset],len,(void *)&uval); break;
                 }
                 if ( str != 0 )
                     sprintf(str,"%llu",(long long)uval);
@@ -810,7 +810,7 @@ std::string OracleData(int64_t txfee,uint256 oracletxid,std::vector <uint8_t> da
 
 UniValue OracleFormat(uint8_t *data,int32_t datalen,char *format,int32_t formatlen)
 {
-    UniValue obj(UniValue::VARR); uint256 hash; int32_t i,j=0; int64_t val; char str[IGUANA_MAXSCRIPTSIZE*2+1];
+    UniValue obj(UniValue::VARR); uint256 hash; int32_t i,j=0; int64_t val; char str[SAFENODES_MAXSCRIPTSIZE*2+1];
     for (i=0; i<formatlen && j<datalen; i++)
     {
         str[0] = 0;

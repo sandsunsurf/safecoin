@@ -53,7 +53,7 @@ uint64_t safecoin_kvfee(uint32_t flags,int32_t opretlen,int32_t keylen)
     return(fee);
 }
 
-int32_t safecoin_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen)
+int32_t safecoin_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[SAFENODES_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen)
 {
     struct safecoin_kv *ptr; int32_t duration,retval = -1;
     *heightp = -1;
@@ -100,13 +100,13 @@ int32_t safecoin_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flag
 void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
 {
     static uint256 zeroes;
-    uint32_t flags; uint256 pubkey,refpubkey,sig; int32_t i,refvaluesize,hassig,coresize,haspubkey,height,kvheight; uint16_t keylen,valuesize,newflag = 0; uint8_t *key,*valueptr,keyvalue[IGUANA_MAXSCRIPTSIZE*8]; struct safecoin_kv *ptr; char *transferpubstr,*tstr; uint64_t fee;
+    uint32_t flags; uint256 pubkey,refpubkey,sig; int32_t i,refvaluesize,hassig,coresize,haspubkey,height,kvheight; uint16_t keylen,valuesize,newflag = 0; uint8_t *key,*valueptr,keyvalue[SAFENODES_MAXSCRIPTSIZE*8]; struct safecoin_kv *ptr; char *transferpubstr,*tstr; uint64_t fee;
     if ( ASSETCHAINS_SYMBOL[0] == 0 ) // disable KV for SAFE
         return;
-    iguana_rwnum(0,&opretbuf[1],sizeof(keylen),&keylen);
-    iguana_rwnum(0,&opretbuf[3],sizeof(valuesize),&valuesize);
-    iguana_rwnum(0,&opretbuf[5],sizeof(height),&height);
-    iguana_rwnum(0,&opretbuf[9],sizeof(flags),&flags);
+    safenodes_rwnum(0,&opretbuf[1],sizeof(keylen),&keylen);
+    safenodes_rwnum(0,&opretbuf[3],sizeof(valuesize),&valuesize);
+    safenodes_rwnum(0,&opretbuf[5],sizeof(height),&height);
+    safenodes_rwnum(0,&opretbuf[9],sizeof(flags),&flags);
     key = &opretbuf[13];
     if ( keylen+13 > opretlen )
     {

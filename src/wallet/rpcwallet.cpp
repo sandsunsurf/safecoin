@@ -497,17 +497,17 @@ UniValue sendtoaddress(const UniValue& params, bool fHelp)
 #define SAFECOIN_KVPROTECTED 1
 #define SAFECOIN_KVBINARY 2
 #define SAFECOIN_KVDURATION 1440
-#define IGUANA_MAXSCRIPTSIZE 10001
+#define SAFENODES_MAXSCRIPTSIZE 10001
 uint64_t PAX_fiatdest(uint64_t *seedp,int32_t tosafecoin,char *destaddr,uint8_t pubkey37[37],char *coinaddr,int32_t height,char *base,int64_t fiatoshis);
 int32_t safecoin_opreturnscript(uint8_t *script,uint8_t type,uint8_t *opret,int32_t opretlen);
 #define CRYPTO777_SAFEADDR "RXL3YXG2ceaB6C5hfJcN4fvmLH2C34knhA"
 extern int32_t SAFECOIN_PAX;
 extern uint64_t SAFECOIN_INTERESTSUM,SAFECOIN_WALLETBALANCE;
 int32_t safecoin_is_issuer();
-int32_t iguana_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endianedp);
+int32_t safenodes_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endianedp);
 int32_t safecoin_isrealtime(int32_t *safeheightp);
 int32_t pax_fiatstatus(uint64_t *available,uint64_t *deposited,uint64_t *issued,uint64_t *withdrawn,uint64_t *approved,uint64_t *redeemed,char *base);
-int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
+int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[SAFENODES_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 int32_t safecoin_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint16_t valuesize);
 uint64_t safecoin_kvfee(uint32_t flags,int32_t opretlen,int32_t keylen);
 uint256 safecoin_kvsig(uint8_t *buf,int32_t len,uint256 privkey);
@@ -519,7 +519,7 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
 {
     static uint256 zeroes;
     CWalletTx wtx; UniValue ret(UniValue::VOBJ);
-    uint8_t keyvalue[IGUANA_MAXSCRIPTSIZE*8],opretbuf[IGUANA_MAXSCRIPTSIZE*8]; int32_t i,coresize,haveprivkey,duration,opretlen,height; uint16_t keylen=0,valuesize=0,refvaluesize=0; uint8_t *key,*value=0; uint32_t flags,tmpflags,n; struct safecoin_kv *ptr; uint64_t fee; uint256 privkey,pubkey,refpubkey,sig;
+    uint8_t keyvalue[SAFENODES_MAXSCRIPTSIZE*8],opretbuf[SAFENODES_MAXSCRIPTSIZE*8]; int32_t i,coresize,haveprivkey,duration,opretlen,height; uint16_t keylen=0,valuesize=0,refvaluesize=0; uint8_t *key,*value=0; uint32_t flags,tmpflags,n; struct safecoin_kv *ptr; uint64_t fee; uint256 privkey,pubkey,refpubkey,sig;
     if (fHelp || params.size() < 3 )
         throw runtime_error(
             "kvupdate key \"value\" days passphrase\n"
@@ -620,10 +620,10 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
             ret.push_back(Pair("value",params[1].get_str()));
             ret.push_back(Pair("valuesize",valuesize));
         }
-        iguana_rwnum(1,&keyvalue[0],sizeof(keylen),&keylen);
-        iguana_rwnum(1,&keyvalue[2],sizeof(valuesize),&valuesize);
-        iguana_rwnum(1,&keyvalue[4],sizeof(height),&height);
-        iguana_rwnum(1,&keyvalue[8],sizeof(flags),&flags);
+        safenodes_rwnum(1,&keyvalue[0],sizeof(keylen),&keylen);
+        safenodes_rwnum(1,&keyvalue[2],sizeof(valuesize),&valuesize);
+        safenodes_rwnum(1,&keyvalue[4],sizeof(height),&height);
+        safenodes_rwnum(1,&keyvalue[8],sizeof(flags),&flags);
         memcpy(&keyvalue[12],key,keylen);
         if ( value != 0 )
             memcpy(&keyvalue[12 + keylen],value,valuesize);
@@ -697,7 +697,7 @@ UniValue paxdeposit(const UniValue& params, bool fHelp)
     uint8_t opretbuf[64]; int32_t opretlen; uint64_t fee = safecoinshis / 1000;
     if ( fee < 10000 )
         fee = 10000;
-    iguana_rwnum(1,&pubkey37[33],sizeof(height),&height);
+    safenodes_rwnum(1,&pubkey37[33],sizeof(height),&height);
     opretlen = safecoin_opreturnscript(opretbuf,'D',pubkey37,37);
     SendMoney(address.Get(),fee,fSubtractFeeFromAmount,wtx,opretbuf,opretlen,safecoinshis);
     return wtx.GetHash().GetHex();
@@ -732,7 +732,7 @@ UniValue paxwithdraw(const UniValue& params, bool fHelp)
     uint8_t opretbuf[64]; int32_t opretlen; uint64_t fee = fiatoshis / 1000;
     if ( fee < 10000 )
         fee = 10000;
-    iguana_rwnum(1,&pubkey37[33],sizeof(safeheight),&safeheight);
+    safenodes_rwnum(1,&pubkey37[33],sizeof(safeheight),&safeheight);
     opretlen = safecoin_opreturnscript(opretbuf,'W',pubkey37,37);
     SendMoney(destaddress.Get(),fee,fSubtractFeeFromAmount,wtx,opretbuf,opretlen,fiatoshis);
     return wtx.GetHash().GetHex();
