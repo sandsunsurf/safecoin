@@ -28,7 +28,7 @@
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t height,uint32_t timestamp);
 
-//#define issue_curl(cmdstr) bitcoind_RPC(0,(char *)"curl",(char *)"http://127.0.0.1:7776",0,0,(char *)(cmdstr))
+//#define issue_curl(cmdstr) bitcoind_RPC(0,(char *)"curl",(char *)"http://127.0.0.1:8776",0,0,(char *)(cmdstr))
 
 struct MemoryStruct { char *memory; size_t size; };
 struct return_string { char *ptr; size_t len; };
