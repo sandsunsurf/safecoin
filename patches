@@ -1508,7 +1508,7 @@ diff -crB ./src/assetchains ../../safecoin/src/assetchains
   echo $pubkey
   
 ! ./safecoind -pubkey=$pubkey -ac_name=REVS -ac_supply=1300000 -addnode=78.47.196.146 $1 &
-! ./safecoind -pubkey=$pubkey -ac_name=SUPERNET -ac_supply=816061 -addnode=78.47.196.146 $1 &
+! ./safecoind -pubkey=$pubkey -ac_name=FAIREXCHANGE -ac_supply=816061 -addnode=78.47.196.146 $1 &
 ! ./safecoind -pubkey=$pubkey -ac_name=DEX -ac_supply=999999 -addnode=78.47.196.146 $1 &
 ! ./safecoind -pubkey=$pubkey -ac_name=PANGEA -ac_supply=999999 -addnode=78.47.196.146 $1 &
 ! ./safecoind -pubkey=$pubkey -ac_name=JUMBLR -ac_supply=999999 -addnode=78.47.196.146 $1 &
@@ -1554,7 +1554,7 @@ diff -crB ./src/assetchains ../../safecoin/src/assetchains
 ! 
 ! curl --url "http://127.0.0.1:7776" --data "{\"timeout\":60000,\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"REVS\",\"pubkey\":\"$pubkey\"}"
 ! 
-! curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"SUPERNET\",\"pubkey\":\"$pubkey\"}"
+! curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"FAIREXCHANGE\",\"pubkey\":\"$pubkey\"}"
 ! curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"DEX\",\"pubkey\":\"$pubkey\"}"
 ! curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"PANGEA\",\"pubkey\":\"$pubkey\"}"
 ! curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"JUMBLR\",\"pubkey\":\"$pubkey\"}"
@@ -1603,7 +1603,7 @@ diff -crB ./src/assetchains ../../safecoin/src/assetchains
   echo $pubkey
   
 ! ./safecoind -pubkey=$pubkey -ac_name=REVS -ac_supply=1300000 -addnode=78.47.196.146 $1 -gen &
-! ./safecoind -pubkey=$pubkey -ac_name=SUPERNET -ac_supply=816061 -addnode=78.47.196.146 $1 -gen &
+! ./safecoind -pubkey=$pubkey -ac_name=FAIREXCHANGE -ac_supply=816061 -addnode=78.47.196.146 $1 -gen &
 ! ./safecoind -pubkey=$pubkey -ac_name=DEX -ac_supply=999999 -addnode=78.47.196.146 $1 -gen &
 ! ./safecoind -pubkey=$pubkey -ac_name=PANGEA -ac_supply=999999 -addnode=78.47.196.146 $1 -gen &
 ! ./safecoind -pubkey=$pubkey -ac_name=JUMBLR -ac_supply=999999 -addnode=78.47.196.146 $1 -gen &

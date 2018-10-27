@@ -6,7 +6,7 @@ sleep 3
 
 curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"REVS\",\"pubkey\":\"$pubkey\"}"
 
-curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"SUPERNET\",\"pubkey\":\"$pubkey\"}"
+curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"FAIREXCHANGE\",\"pubkey\":\"$pubkey\"}"
 curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"DEX\",\"pubkey\":\"$pubkey\"}"
 curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"PANGEA\",\"pubkey\":\"$pubkey\"}"
 curl --url "http://127.0.0.1:7776" --data "{\"agent\":\"safenodes\",\"method\":\"dpow\",\"symbol\":\"JUMBLR\",\"pubkey\":\"$pubkey\"}"
