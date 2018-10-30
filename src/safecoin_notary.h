@@ -18,7 +18,7 @@
 
 #include "safecoin_cJSON.h"
 
-#define SAFECOIN_MAINNET_START 178999
+#define SAFECOIN_MAINNET_START 1
 
 const char *Notaries_genesis[][2] =
 {
