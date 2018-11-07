@@ -13,8 +13,8 @@ pkgconfig_DATA = libzcashconsensus.pc
 endif
 
 
-BITCOIND_BIN=$(top_builddir)/src/zcashd$(EXEEXT)
-BITCOIN_CLI_BIN=$(top_builddir)/src/zcash-cli$(EXEEXT)
+BITCOIND_BIN=$(top_builddir)/src/safecoind$(EXEEXT)
+BITCOIN_CLI_BIN=$(top_builddir)/src/safecoin-cli$(EXEEXT)
 #WALLET_UTILITY_BIN=$(top_builddir)/src/wallet-utility$(EXEEXT)
 BITCOIN_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
