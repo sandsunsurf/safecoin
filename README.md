@@ -48,6 +48,10 @@ Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a 
 sudo apt-get install build-essential pkg-config libc6-dev m4 g++-multilib autoconf libtool ncurses-dev unzip git python python-zmq zlib1g-dev wget libcurl4-openssl-dev bsdmainutils automake curl
 ```
 
+Secure Setup
+-----------------
+https://github.com/fair-exchange/safecoin/blob/master/SECURE_SETUP.md
+
 ### Build Safecoin
 
 This software is based on zcash and considered experimental and is continously undergoing heavy development.
@@ -105,9 +109,8 @@ rpcuser=yourrpcusername
 rpcpassword=yoursecurerpcpassword
 rpcbind=127.0.0.1
 txindex=1
-addnode=140.82.45.57
-addnode=8.12.22.254
-addnode=140.82.11.189
+addnode=dnsseedua.local.support
+addnode=dnsseed.ipv6admin.com
 ```
 ### Create your own Blockchain based on Safecoin
 
