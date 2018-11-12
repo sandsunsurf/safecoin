@@ -2596,7 +2596,8 @@ namespace Consensus {
             // Check for negative or overflow input values
             nValueIn += coins->vout[prevout.n].nValue;
 #ifdef SAFECOIN_ENABLE_INTEREST
-            if ( ASSETCHAINS_SYMBOL[0] == 0 && nSpendHeight > 60000 )//chainActive.LastTip() != 0 && chainActive.LastTip()->GetHeight() >= 60000 )
+
+            if ( ASSETCHAINS_SYMBOL[0] == 0 && nSpendHeight > 103820 )//chainActive.LastTip() != 0 && chainActive.LastTip()->nHeight >= 60000 )
             {
                 if ( coins->vout[prevout.n].nValue >= 10*COIN )
                 {
@@ -2619,8 +2620,13 @@ namespace Consensus {
         if (!MoneyRange(nValueIn))
             return state.DoS(100, error("CheckInputs(): shielded input to transparent value pool out of range"),
                              REJECT_INVALID, "bad-txns-inputvalues-outofrange");
+<<<<<<< HEAD
 
         if (nValueIn < tx.GetValueOut())
+=======
+        
+        if (nValueIn < tx.GetValueOut() && nSpendHeight > 103820)
+>>>>>>> 622c7ac0f... fix error sync
         {
             fprintf(stderr,"spentheight.%d valuein %s vs %s error\n",nSpendHeight,FormatMoney(nValueIn).c_str(), FormatMoney(tx.GetValueOut()).c_str());
             return state.DoS(100, error("CheckInputs(): %s value in (%s) < value out (%s) diff %.8f",
@@ -2628,11 +2634,11 @@ namespace Consensus {
         }
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
-        if (nTxFee < 0)
+        if (nTxFee < 0 && nSpendHeight > 103820)
             return state.DoS(100, error("CheckInputs(): %s nTxFee < 0", tx.GetHash().ToString()),
                              REJECT_INVALID, "bad-txns-fee-negative");
         nFees += nTxFee;
-        if (!MoneyRange(nFees))
+        if (!MoneyRange(nFees) && nSpendHeight > 103820)
             return state.DoS(100, error("CheckInputs(): nFees out of range"),
                              REJECT_INVALID, "bad-txns-fee-outofrange");
         return true;
@@ -3477,12 +3483,16 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             else fprintf(stderr,"checktoshis %.8f numvouts %d\n",dstr(checktoshis),(int32_t)block.vtx[0].vout.size());
         }
     }
+<<<<<<< HEAD
     if (ASSETCHAINS_SYMBOL[0] != 0 && pindex->GetHeight() == 1 && block.vtx[0].GetValueOut() != blockReward)
     {
         return state.DoS(100, error("ConnectBlock(): coinbase for block 1 pays wrong amount (actual=%d vs correct=%d)", block.vtx[0].GetValueOut(), blockReward),
                             REJECT_INVALID, "bad-cb-amount");
     }
     if ( block.vtx[0].GetValueOut() > blockReward+SAFECOIN_EXTRASATOSHI )
+=======
+    if ( block.vtx[0].GetValueOut() > blockReward+1 && pindex->nHeight > 103820)
+>>>>>>> 622c7ac0f... fix error sync
     {
         if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->GetHeight() >= SAFECOIN_NOTARIES_HEIGHT1 || block.vtx[0].vout[0].nValue > blockReward )
         {
