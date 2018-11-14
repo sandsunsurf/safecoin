@@ -17,6 +17,8 @@
 #include "util.h"
 #include "utiltls.h"
 
+namespace safecoin {
+
 // Set of most common default trusted certificates directories used by OpenSSL
 static const char* defaultTrustedDirs[] =
 {
@@ -489,4 +491,5 @@ int LoadDefaultRootCertificates(SSL_CTX *ctx)
     }
 
     return certsLoaded;
+}
 }
