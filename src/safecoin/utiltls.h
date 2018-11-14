@@ -7,6 +7,7 @@
 #define UTILTLS_H
 
 #include <boost/filesystem/path.hpp>
+namespace safecoin {
 
 #define TLS_KEY_FILE_NAME   "key.pem"    // default name of a private key
 #define TLS_CERT_FILE_NAME  "cert.pem"   // default name of a certificate
@@ -50,5 +51,7 @@ std::vector<boost::filesystem::path> GetDefaultTrustedDirectories();
 // Returns the number of loaded certificates.
 //
 int LoadDefaultRootCertificates(SSL_CTX *ctx);
+
+}
 
 #endif // UTILTLS_H
