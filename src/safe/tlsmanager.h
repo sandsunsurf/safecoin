@@ -25,7 +25,7 @@
 
 using namespace std;
 
-namespace safecoin
+namespace safe
 {
 typedef struct _NODE_ADDR {
     std::string ipAddr;

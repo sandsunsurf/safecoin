@@ -13,7 +13,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "version.h"
-#include "safecoin/utiltls.h"
+#include "safe/utiltls.h"
 #include "deprecation.h"
 
 #include <boost/foreach.hpp>
@@ -23,7 +23,7 @@
 using namespace std;
 
 // SAFECOIN_MOD_START
-using namespace safecoin;
+using namespace safe;
 // SAFECOIN_MOD_END
 
 UniValue getconnectioncount(const UniValue& params, bool fHelp)

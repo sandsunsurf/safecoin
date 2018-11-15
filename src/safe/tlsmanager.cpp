@@ -18,7 +18,7 @@
 
 #include "tlsmanager.h"
 using namespace std;
-namespace safecoin
+namespace safe
 {
 /**
 * @brief If verify_callback always returns 1, the TLS/SSL handshake will not be terminated with respect to verification failures and the connection will be established.
