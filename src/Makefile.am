@@ -47,6 +47,7 @@ LIBCRYPTOCONDITIONS=cryptoconditions/libcryptoconditions_core.la
 LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
 LIBZCASH=libzcash.a -lcurl
+LIBSAFECOIN=libsafecoin.a
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
@@ -77,7 +78,9 @@ EXTRA_LIBRARIES = \
 	libbitcoin_common.a \
 	libbitcoin_server.a \
 	libbitcoin_cli.a \
-	libzcash.a
+	libzcash.a \
+	libsafecoin.a
+
 if ENABLE_WALLET
 BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += libbitcoin_wallet.a
@@ -238,6 +241,8 @@ BITCOIN_CORE_H = \
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h
 
+LIBSAFECOIN_H = \
+    zen/utiltls.h
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
@@ -313,7 +318,8 @@ libbitcoin_server_a_SOURCES = \
   safe/utiltls.cpp \
   validationinterface.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -484,6 +490,7 @@ safecoind_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH) \
+  $(LIBSAFECOIN) \
   $(LIBSNARK) \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
@@ -539,6 +546,7 @@ safecoin_cli_LDADD = \
 	$(CRYPTO_LIBS) \
 	$(EVENT_LIBS) \
 	$(LIBZCASH) \
+	$(LIBSAFECOIN) \
 	$(LIBBITCOIN_CRYPTO) \
 	$(LIBZCASH_LIBS)
 
@@ -575,6 +583,7 @@ safecoin_tx_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBSECP256K1) \
   $(LIBZCASH) \
+  $(LIBSAFECOIN) \
   $(LIBSNARK) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBZCASH_LIBS) \
@@ -641,6 +650,17 @@ endif
 libsafecoin_a_SOURCES = \
     safe/utiltls.cpp\
     safe/tlsmanager.cpp
+
+if HAVE_OPENMP
+libsafecoin_a_CPPFLAGS = -DMULTICORE -fopenmp
+endif
+libsafecoin_a_CPPFLAGS := $(libsafecoin_a_CPPFLAGS) -fPIC -DBINARY_OUTPUT -DCURVE_ALT_BN128 -DBOOST_SPIRIT_THREADSAFE -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS $(HARDENED_CPPFLAGS) -pipe -O1 -g -Wstack-protector -fstack-protector-all -fPIE -fvisibility=hidden -DSTATIC $(BITCOIN_INCLUDES)
+
+libsafecoin_a_CXXFLAGS = $(HARDENED_CXXFLAGS) -fwrapv -fno-strict-aliasing
+
+libsafecoin_a_LDFLAGS = $(HARDENED_LDFLAGS)
+
+libsafecoin_a_CPPFLAGS += -DMONTGOMERY_OUTPUT
 
 CLEANFILES = leveldb/libleveldb.a leveldb/libmemenv.a *.gcda *.gcno */*.gcno wallet/*/*.gcno
 
