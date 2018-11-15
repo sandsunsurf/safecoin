@@ -242,7 +242,7 @@ BITCOIN_CORE_H = \
   zmq/zmqpublishnotifier.h
 
 LIBSAFECOIN_H = \
-    zen/utiltls.h
+    safe/utiltls.h
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
