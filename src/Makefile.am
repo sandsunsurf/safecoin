@@ -222,7 +222,7 @@ BITCOIN_CORE_H = \
   utilmoneystr.h \
   utilstrencodings.h \
   utiltime.h \
-  safecoin/utiltls.h \
+  safe/utiltls.h \
   validationinterface.h \
   version.h \
   wallet/asyncrpcoperation_mergetoaddress.h \
@@ -310,7 +310,7 @@ libbitcoin_server_a_SOURCES = \
   torcontrol.cpp \
   txdb.cpp \
   txmempool.cpp \
-  safecoin/utiltls.cpp \
+  safe/utiltls.cpp \
   validationinterface.cpp \
   $(BITCOIN_CORE_H) \
   $(LIBZCASH_H)
@@ -636,6 +636,11 @@ libzcashconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
+
+# safecoin-specific sources #
+libsafecoin_a_SOURCES = \
+    safe/utiltls.cpp\
+    safe/tlsmanager.cpp
 
 CLEANFILES = leveldb/libleveldb.a leveldb/libmemenv.a *.gcda *.gcno */*.gcno wallet/*/*.gcno
 

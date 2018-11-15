@@ -17,7 +17,7 @@
 #include "scheduler.h"
 #include "ui_interface.h"
 #include "crypto/common.h"
-#include "safecoin/utiltls.h"
+#include "safe/utiltls.h"
 
 #ifdef _WIN32
 #include <string.h>
@@ -33,8 +33,8 @@
 #include <openssl/err.h>
 
 // SAFECOIN_MOD_START
-#include <safecoin/tlsmanager.cpp>
-using namespace safecoin;
+#include <safe/tlsmanager.cpp>
+using namespace safe;
 // SAFECOIN_MOD_END
 
 // Dump addresses to peers.dat every 15 minutes (900s)

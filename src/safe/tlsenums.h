@@ -3,7 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-namespace safecoin
+namespace safe
 {
 typedef enum { SSL_ACCEPT,
                SSL_CONNECT,

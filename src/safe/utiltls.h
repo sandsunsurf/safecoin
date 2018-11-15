@@ -7,7 +7,7 @@
 #define UTILTLS_H
 
 #include <boost/filesystem/path.hpp>
-namespace safecoin {
+namespace safe {
 
 #define TLS_KEY_FILE_NAME   "key.pem"    // default name of a private key
 #define TLS_CERT_FILE_NAME  "cert.pem"   // default name of a certificate
