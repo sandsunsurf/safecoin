@@ -13,7 +13,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "version.h"
-#include "utiltls.h"
+#include "safe/utiltls.h"
 #include "deprecation.h"
 
 #include <boost/foreach.hpp>
@@ -21,6 +21,10 @@
 #include <univalue.h>
 
 using namespace std;
+
+// SAFECOIN_MOD_START
+using namespace safe;
+// SAFECOIN_MOD_END
 
 UniValue getconnectioncount(const UniValue& params, bool fHelp)
 {
