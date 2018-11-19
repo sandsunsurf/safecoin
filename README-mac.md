@@ -51,9 +51,8 @@ Add the following lines to the Safecoin.conf file:
 rpcuser=dontuseweakusernameoryougetrobbed
 rpcpassword=dontuseweakpasswordoryougetrobbed
 txindex=1
-addnode=140.82.45.57
-addnode=8.12.22.254
-addnode=140.82.11.189
+addnode=dnsseedua.local.support
+addnode=dnsseed.ipv6admin.com
 ```
 
 Happy Building
