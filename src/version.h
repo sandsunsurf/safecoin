@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2014 The Bitcoin Core developers
+// Copyright (c) 2018 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,7 +10,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 170018;
+static const int PROTOCOL_VERSION = 170019;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 212;
@@ -18,7 +19,7 @@ static const int INIT_PROTO_VERSION = 212;
 static const int GETHEADERS_VERSION = 31800;
 
 //! disconnect from peers older than this proto version
-static const int MIN_PEER_PROTO_VERSION = 170017;
+static const int MIN_PEER_PROTO_VERSION = 170018;
 
 //! nTime field added to CAddress, starting with this version;
 //! if possible, avoid requesting addresses nodes older than this

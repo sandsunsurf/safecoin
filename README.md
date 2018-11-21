@@ -2,7 +2,8 @@
 ![Safecoin Logo](https://raw.githubusercontent.com/Fair-Exchange/safecoinwiki/master/Logos/SafeCoin/SafeCoin-Logo-with-text.png "Safecoin Logo")
 
 
-## Safecoin
+## Safecoin 2.0.0
+==============
 
 This is the official Safecoin sourcecode repository based on https://github.com/fair-exchange/safecoin. 
 
