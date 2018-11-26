@@ -2780,7 +2780,7 @@ bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, unsigne
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck() {
-    RenameThread("zcash-scriptch");
+    RenameThread("safecoin-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -7007,7 +7007,7 @@ bool ProcessMessages(CNode* pfrom)
             }
             else
             {
-                //PrintExceptionContinue(&e, "ProcessMessages()");
+                PrintExceptionContinue(&e, "ProcessMessages()");
             }
         }
         catch (const boost::thread_interrupted&) {

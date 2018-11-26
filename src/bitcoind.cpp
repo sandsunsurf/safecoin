@@ -20,11 +20,6 @@
 
 #include <stdio.h>
 
-#ifdef _WIN32
-#define frpintf(...)
-#define printf(...)
-#endif
-
 /* Introduction text for doxygen: */
 
 /*! \mainpage Developer documentation
@@ -143,23 +138,97 @@ bool AppInit(int argc, char* argv[])
         {
             ReadConfigFile(mapArgs, mapMultiArgs);
         } catch (const missing_zcash_conf& e) {
-            fprintf(stderr,
-                (_("Before starting safecoind, you need to create a configuration file:\n"
-                   "%s\n"
-                   "It can be completely empty! That indicates you are happy with the default\n"
-                   "configuration of safecoind. But requiring a configuration file to start ensures\n"
-                   "that safecoind won't accidentally compromise your privacy if there was a default\n"
-                   "option you needed to change.\n"
-                   "\n"
-                   "You can look at the example configuration file for suggestions of default\n"
-                   "options that you may want to change. It should be in one of these locations,\n"
-                   "depending on how you installed Safecoin:\n") +
-                 _("- Source code:  %s\n"
-                   "- .deb package: %s\n")).c_str(),
-                GetConfigFile().string().c_str(),
-                "contrib/debian/examples/safecoin.conf",
-                "/usr/share/doc/safecoin/examples/safecoin.conf");
-            return false;
+            try
+            {
+
+#ifdef _WIN32
+                fprintf(stdout,
+                    "------------------------------------------------------------------\n"
+                    "                        ERROR:\n"
+                    " The configuration file safecoin.conf is missing.\n"
+                    " Please create a valid safecoin.conf in the application data directory.\n"
+                    " The default application data directories are:\n"
+                    "\n"
+                    " Windows (pre Vista): C:\\Documents and Settings\\Username\\Application Data\\Safecoin\n"
+                    " Windows (Vista and later): C:\\Users\\Username\\AppData\\Roaming\\Safecoin\n"
+                    "\n"
+                    " You can find the default configuration file at:\n"
+                    " https://github.com/Fair-Exchange/safecoin/blob/master/contrib/debian/examples/safecoin.conf\n"
+                    "\n"
+                    "                        WARNING:\n"
+                    " Running the default configuration file without review is considered a potential risk, as safecoind\n"
+                    " might accidentally compromise your privacy if there is a default option that you need to change!\n"
+                    "\n"
+                    " Please create a valid safecoin.conf and restart to safecoind continue.\n"
+                    "------------------------------------------------------------------\n");
+                return false;
+#endif
+                // Warn user about using default config file
+                fprintf(stdout,
+                    "------------------------------------------------------------------\n"
+                    "                        WARNING:\n"
+                    "Automatically copying the default config file to:\n"
+                    "\n"
+#ifdef  __APPLE__
+                    "~/Library/Application Support/Safecoin\n"
+#else
+                    "~/.safecoin/safecoin.conf\n"
+#endif
+                    "\n"
+                    " Running the default configuration file without review is considered a potential risk, as safecoind\n"
+                    " might accidentally compromise your privacy if there is a default option that you need to change!\n"
+                    "\n"
+                    "           Please restart safecoind to continue.\n"
+                    "           You will not see this warning again.\n"
+                    "------------------------------------------------------------------\n");
+
+
+#ifdef __APPLE__
+                // On Mac OS try to copy the default config file if safecoind is started from source folder safecoin/src/safecoind
+                std::string strConfPath("../contrib/debian/examples/safecoin.conf");
+                if (!boost::filesystem::exists(strConfPath)){
+                    strConfPath = "contrib/debian/examples/safecoin.conf";
+                }
+#else
+                std::string strConfPath("/usr/share/doc/safecoin/examples/safecoin.conf");
+
+                if (!boost::filesystem::exists(strConfPath))
+                {
+                    strConfPath = "contrib/debian/examples/safecoin.conf";
+                }
+
+                if (!boost::filesystem::exists(strConfPath))
+                {
+                    strConfPath = "../contrib/debian/examples/safecoin.conf";
+                }
+#endif
+                // Copy default config file
+                std::ifstream src(strConfPath, std::ios::binary);
+                src.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+                std::ofstream dst(GetConfigFile().string().c_str(), std::ios::binary);
+                dst << src.rdbuf();
+                return false;
+            } catch (const std::exception& e) {                
+                fprintf(stdout,
+                    "------------------------------------------------------------------\n"
+                    " There was an error copying the default configuration file!!!!\n"
+                    "\n"
+                    " Please create a configuration file in the data directory.\n"
+                    " The default application data directories are:\n"
+                    " Windows (pre Vista): C:\\Documents and Settings\\Username\\Application Data\\Safecoin\n"
+                    " Windows (Vista and later): C:\\Users\\Username\\AppData\\Roaming\\Safecoin\n"
+                    "\n"
+                    " You can find the default configuration file at:\n"
+                    " https://github.com/Fair-Exchange/safecoin/blob/master/contrib/debian/examples/safecoin.conf\n"
+                    "\n"
+                    "                        WARNING:\n"
+                    " Running the default configuration file without review is considered a potential risk, as safecoind\n"
+                    " might accidentally compromise your privacy if there is a default option that you need to change!\n"
+                    "------------------------------------------------------------------\n");
+                fprintf(stderr, "Error copying configuration file: %s\n", e.what());
+                return false;
+            }
         } catch (const std::exception& e) {
             fprintf(stderr,"Error reading configuration file: %s\n", e.what());
             return false;

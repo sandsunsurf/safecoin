@@ -350,11 +350,11 @@ def patch_gitian_linux_yml(release, releaseprev):
         outf.write(inf.readline())
 
         secondline = inf.readline()
-        assert secondline == 'name: "zcash-{}"\n'.format(
+        assert secondline == 'name: "safecoin-{}"\n'.format(
             releaseprev.novtext
         ), repr(secondline)
 
-        outf.write('name: "zcash-{}"\n'.format(release.novtext))
+        outf.write('name: "safecoin-{}"\n'.format(release.novtext))
         outf.write(inf.read())
 
 
@@ -380,7 +380,7 @@ def _patch_build_defs(release, path, pattern):
 
 
 def initialize_logging():
-    logname = './zcash-make-release.log'
+    logname = './safecoin-make-release.log'
     fmtr = logging.Formatter(
         '%(asctime)s L%(lineno)-4d %(levelname)-5s | %(message)s',
         '%Y-%m-%d %H:%M:%S'
@@ -398,7 +398,7 @@ def initialize_logging():
     root.setLevel(logging.DEBUG)
     root.addHandler(hout)
     root.addHandler(hpath)
-    logging.info('zcash make-release.py debug log: %r', logname)
+    logging.info('safecoin make-release.py debug log: %r', logname)
 
 
 def sh_out(*args):

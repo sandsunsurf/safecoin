@@ -1,4 +1,5 @@
 // Copyright (c) 2016 The Zcash developers
+// Copyright (c) 2018 The Safecoin DEV TEAM
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -265,7 +266,7 @@ int printMiningStatus(bool mining)
         lines++;
     } else {
         std::cout << _("You are currently not mining.") << std::endl;
-        std::cout << _("To enable mining, add 'gen=1' to your zcash.conf and restart.") << std::endl;
+        std::cout << _("To enable mining, add 'gen=1' to your safecoin.conf and restart.") << std::endl;
         lines += 2;
     }
     std::cout << std::endl;
@@ -420,7 +421,7 @@ int printInitMessage()
 void ThreadShowMetricsScreen()
 {
     // Make this thread recognisable as the metrics screen thread
-    RenameThread("zcash-metrics-screen");
+    RenameThread("safecoin-metrics-screen");
 
     // Determine whether we should render a persistent UI or rolling metrics
     bool isTTY = isatty(STDOUT_FILENO);
@@ -436,8 +437,8 @@ void ThreadShowMetricsScreen()
         std::cout << std::endl;
 
         // Thank you text
-        std::cout << _("Thank you for running a Zcash node!") << std::endl;
-        std::cout << _("You're helping to strengthen the network and contributing to a social good :)") << std::endl;
+        std::cout << _("Welcome to Safecoin, and thank you for making cryptocurrency a Safer place!") << std::endl;
+        std::cout << _("Thank you for running a Safecoin node!") << std::endl;
 
         // Privacy notice text
         std::cout << PrivacyInfo();
