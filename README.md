@@ -17,8 +17,10 @@ Peerchains - Scalability solution where sibling chains form a network of blockch
 ## Tech Specification
 Max Supply: 36 million SAFE.
 Block Time: 1M 2s
-Block Reward: 128 SAFE Halving every 86 days for just under 2 years
-Mining Algorithm: Equihash
+Block Reward: 128 SAFE
+[Halving Schedule](https://safecoin.org/wp-content/uploads/2018/11/safecoin-block-reward-schedule.png)
+Mining Algorithm: Zhash (Equihash 144_5)
+
 ## About this Project
 Safecoin is a fork of the Komodo and Zcash projects, although we have made significant changes and continue to evolve in our own direction.
 Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a far higher standard of privacy through a sophisticated zero-knowledge proving scheme that preserves confidentiality of transaction metadata. Technical details are available in our [Protocol Specification](https://github.com/zcash/zips/raw/master/protocol/protocol.pdf).
