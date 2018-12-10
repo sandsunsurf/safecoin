@@ -16,7 +16,7 @@
 #endif
 #include "checkpoints.h"
 #include "compat/sanity.h"
-#include "consensus/upgrades.h"
+//#include "consensus/upgrades.h" //Probably unnecessary code
 #include "consensus/validation.h"
 #include "httpserver.h"
 #include "httprpc.h"
@@ -190,7 +190,7 @@ void Shutdown()
     /// for example if the data directory was found to be locked.
     /// Be sure that anything that writes files or flushes caches only does this if the respective
     /// module was initialized.
-    RenameThread("zcash-shutoff");
+    RenameThread("safecoin-shutoff");
     mempool.AddTransactionsUpdated(1);
 
     StopHTTPRPC();
@@ -614,7 +614,7 @@ void CleanupBlockRevFiles()
 
 void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
 {
-    RenameThread("zcash-loadblk");
+    RenameThread("safecoin-loadblk");
     // -reindex
     if (fReindex) {
         CImportingNow imp;
@@ -820,7 +820,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     fLogTimestamps = GetBoolArg("-logtimestamps", true);
     fLogIPs = GetBoolArg("-logips", false);
 
-    LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     LogPrintf("Safecoin version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
 
     // when specifying an explicit binding address, you want to listen on it
@@ -1062,38 +1061,40 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         }
     }
 
-    if (!mapMultiArgs["-nuparams"].empty()) {
-        // Allow overriding network upgrade parameters for testing
-        if (Params().NetworkIDString() != "regtest") {
-            return InitError("Network upgrade parameters may only be overridden on regtest.");
-        }
-        const vector<string>& deployments = mapMultiArgs["-nuparams"];
-        for (auto i : deployments) {
-            std::vector<std::string> vDeploymentParams;
-            boost::split(vDeploymentParams, i, boost::is_any_of(":"));
-            if (vDeploymentParams.size() != 2) {
-                return InitError("Network upgrade parameters malformed, expecting hexBranchId:activationHeight");
-            }
-            int nActivationHeight;
-            if (!ParseInt32(vDeploymentParams[1], &nActivationHeight)) {
-                return InitError(strprintf("Invalid nActivationHeight (%s)", vDeploymentParams[1]));
-            }
-            bool found = false;
-            // Exclude Sprout from upgrades
-            for (auto i = Consensus::BASE_SPROUT + 1; i < Consensus::MAX_NETWORK_UPGRADES; ++i)
-            {
-                if (vDeploymentParams[0].compare(HexInt(NetworkUpgradeInfo[i].nBranchId)) == 0) {
-                    UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex(i), nActivationHeight);
-                    found = true;
-                    LogPrintf("Setting network upgrade activation parameters for %s to height=%d\n", vDeploymentParams[0], nActivationHeight);
-                    break;
-                }
-            }
-            if (!found) {
-                return InitError(strprintf("Invalid network upgrade (%s)", vDeploymentParams[0]));
-            }
-        }
-    }
+//Probably unnecessary code
+//    if (!mapMultiArgs["-nuparams"].empty()) {
+//        // Allow overriding network upgrade parameters for testing
+//        if (Params().NetworkIDString() != "regtest") {
+//            return InitError("Network upgrade parameters may only be overridden on regtest.");
+//        }
+//        const vector<string>& deployments = mapMultiArgs["-nuparams"];
+//        for (auto i : deployments) {
+//            std::vector<std::string> vDeploymentParams;
+//            boost::split(vDeploymentParams, i, boost::is_any_of(":"));
+//            if (vDeploymentParams.size() != 2) {
+//                return InitError("Network upgrade parameters malformed, expecting hexBranchId:activationHeight");
+//            }
+//            int nActivationHeight;
+//            if (!ParseInt32(vDeploymentParams[1], &nActivationHeight)) {
+//                return InitError(strprintf("Invalid nActivationHeight (%s)", vDeploymentParams[1]));
+//            }
+//            bool found = false;
+//            // Exclude Sprout from upgrades
+//            for (auto i = Consensus::BASE_SPROUT + 1; i < Consensus::MAX_NETWORK_UPGRADES; ++i)
+//            {
+//                if (vDeploymentParams[0].compare(HexInt(NetworkUpgradeInfo[i].nBranchId)) == 0) {
+//                    UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex(i), nActivationHeight);
+//                    found = true;
+//                    LogPrintf("Setting network upgrade activation parameters for %s to height=%d\n", vDeploymentParams[0], nActivationHeight);
+//                    break;
+//                }
+//            }
+//            if (!found) {
+//                return InitError(strprintf("Invalid network upgrade (%s)", vDeploymentParams[0]));
+//            }
+//        }
+//    }
+//
 
     // ********************************************************* Step 4: application initialization: dir lock, daemonize, pidfile, debug log
 
@@ -1132,11 +1133,13 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 #ifndef _WIN32
     CreatePidFile(GetPidFile(), getpid());
 #endif
+
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
 
     if (fPrintToDebugLog)
         OpenDebugLog();
+
     LogPrintf("Using OpenSSL version %s\n", SSLeay_version(SSLEAY_VERSION));
 #ifdef ENABLE_WALLET
     LogPrintf("Using BerkeleyDB version %s\n", DbEnv::version(0, 0, 0));
@@ -1799,6 +1802,11 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     StartNode(threadGroup, scheduler);
 
+    // Monitor the chain, and alert if we get blocks much quicker or slower than expected
+    int64_t nPowTargetSpacing = Params().GetConsensus().nPowTargetSpacing;
+    CScheduler::Function f = boost::bind(&PartitionCheck, &IsInitialBlockDownload,
+                                         boost::ref(cs_main), boost::cref(pindexBestHeader), nPowTargetSpacing);
+    scheduler.scheduleEvery(f, nPowTargetSpacing);
 
 #ifdef ENABLE_MINING
     // Generate coins in the background

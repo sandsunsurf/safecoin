@@ -923,9 +923,10 @@ void SetThreadPriority(int nPriority)
 
 std::string PrivacyInfo()
 {
-    return "\n" +
-           FormatParagraph(strprintf(_("In order to ensure you are adequately protecting your privacy when using Zcash, please see <%s>."),
-                                     "https://z.cash/support/security/")) + "\n";
+    return "";
+//    return "\n" +
+//           FormatParagraph(strprintf(_("In order to ensure you are adequately protecting your privacy when using Zcash, please see <%s>."),
+//                                     "https://z.cash/support/security/")) + "\n";
 }
 
 std::string LicenseInfo()
@@ -933,8 +934,9 @@ std::string LicenseInfo()
     return "\n" +
            FormatParagraph(strprintf(_("Copyright (C) 2009-%i The Bitcoin Core Developers"), COPYRIGHT_YEAR)) + "\n" +
            FormatParagraph(strprintf(_("Copyright (C) 2015-%i The Zcash Developers"), COPYRIGHT_YEAR)) + "\n" +
-        FormatParagraph(strprintf(_("Copyright (C) 2015-%i jl777 and SuperNET developers"), COPYRIGHT_YEAR)) + "\n" +
-        "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2015-%i jl777 and SuperNET developers"), COPYRIGHT_YEAR)) + "\n" +
+           FormatParagraph(strprintf(_("Copyright (C) 2018-%i Safecoin developers"), COPYRIGHT_YEAR)) + "\n" +
+           "\n" +
            FormatParagraph(_("This is experimental software.")) + "\n" +
            "\n" +
            FormatParagraph(_("Distributed under the MIT software license, see the accompanying file COPYING or <http://www.opensource.org/licenses/mit-license.php>.")) + "\n" +
