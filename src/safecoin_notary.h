@@ -128,7 +128,7 @@ const char *Notaries_elected0[][2] =
 };
 
 //////////  Temporary until SafeNodes release
-#define SAFECOIN_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
+#define SAFECOIN_NOTARIES_TIMESTAMP1 2525132800 // May 1st 2018 1530921600 // 7/7/2017
 #define SAFECOIN_NOTARIES_HEIGHT1 9999999999999 //((814000 / SAFECOIN_ELECTION_GAP) * SAFECOIN_ELECTION_GAP)
 
 const char *Notaries_elected1[][2] =
