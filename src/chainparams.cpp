@@ -158,8 +158,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x0e8398ad8ba699fa41e1c56fe6112ca2530719c32b7e3d0cdb6610a458bd7e14"));
         vFixedSeeds.clear();
         vSeeds.clear();
-		vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
-		vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
+        vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
+        vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
+        vSeeds.push_back(CDNSSeedData("dnsseed3", "dnsseed.fair.exchange"));
         // TODO: set up bootstrapping for mainnet
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,86);
@@ -258,9 +259,9 @@ void *chainparams_commandline(void *ptr)
 				(102864, uint256S("0x00000025561af0c339a1df438fee5ccfa7c49bfcfdcb4d070b0d96cb429bedb5"))
 				(170242, uint256S("0x00000011069f756ed14d4967b9862331ebb2f41a2928291066981258adc672d5"))	//switch to equihash 144,5
 				(360000, uint256S("0x00000260ec5c16afbc1d4e70f9616e60bbc3222ad3604c0d2acdf716da7f8b9c"))
-			        (420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4")),       //add TLS
-				(int64_t)1540539546,	// * UNIX timestamp of last checkpoint block
-				(int64_t)649731,		// * total number of transactions between genesis and last checkpoint
+				(420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4")),       //add TLS
+				(int64_t)1544156648,	// * UNIX timestamp of last checkpoint block
+				(int64_t)738900,		// * total number of transactions between genesis and last checkpoint
 										//   (the tx=... number in the SetBestChain debug.log lines)
 				(double)2283			// * estimated number of transactions per day after checkpoint
 										//   total number of tx / (checkpoint block height / (24 * 24))
@@ -347,9 +348,9 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-  	vSeeds.push_back(CDNSSeedData("safecoin.org", "dnsseed.safecoin.org")); // Safecoin
-	vSeeds.push_back(CDNSSeedData("ipv6admin.com", "dnsseed.ipv6admin.com")); // Ipv6ipv6admin
-	vSeeds.push_back(CDNSSeedData("fair.exchange", "dnsseed.fair.exchange")); // Safecoin
+        vSeeds.push_back(CDNSSeedData("safecoin.org", "testnet.dnsseed.safecoin.org")); // Safecoin
+        vSeeds.push_back(CDNSSeedData("ipv6admin.com", "testnet.dnsseed.ipv6admin.com")); // Ipv6ipv6admin
+        vSeeds.push_back(CDNSSeedData("fair.exchange", "testnet.dnsseed.fair.exchange")); // Safecoin
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
