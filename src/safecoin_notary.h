@@ -120,7 +120,7 @@ int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t h
     for (i=0; i<n; i++)
     {
       if ( memcmp(pubkey33,pubkeys[i],33) == 0 )
-	//            return(i);
+	            return(-1);
     }
     return(-1);
 }
@@ -136,7 +136,7 @@ int32_t safecoin_ratify_threshold(int32_t height,uint64_t signedmask)
         if ( ((1LL << i) & signedmask) != 0 )
             wt++;
     if ( wt > (numnotaries >> 1) || (wt > 7 && (signedmask & 1) != 0) )
-      //       return(1);
+             return(0);
     else return(0);
 }
 
