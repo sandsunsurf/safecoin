@@ -53,6 +53,7 @@ rpcpassword=dontuseweakpasswordoryougetrobbed
 txindex=1
 addnode=dnsseedua.local.support
 addnode=dnsseed.ipv6admin.com
+addnode=dnsseed.fair.exchange
 ```
 
 Happy Building
