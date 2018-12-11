@@ -2,7 +2,7 @@
 ![Safecoin Logo](https://raw.githubusercontent.com/Fair-Exchange/safecoinwiki/master/Logos/SafeCoin/SafeCoin-Logo-with-text.png "Safecoin Logo")
 
 
-## Safecoin 2.0.0
+## Safecoin v1.6.0-5
 ==============
 
 This is the official Safecoin sourcecode repository based on https://github.com/fair-exchange/safecoin. 
@@ -112,6 +112,7 @@ rpcbind=127.0.0.1
 txindex=1
 addnode=dnsseedua.local.support
 addnode=dnsseed.ipv6admin.com
+addnode=dnsseed.fair.exchange
 ```
 ### Create your own Blockchain based on Safecoin
 
