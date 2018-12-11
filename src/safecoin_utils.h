@@ -43,11 +43,11 @@ typedef struct queue
 
 #include "mini-gmp.c"
 
-#define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
-#define CRYPTO777_SAFEADDR "RXL3YXG2ceaB6C5hfJcN4fvmLH2C34knhA"
-#define CRYPTO777_RMD160STR "f1dce4182fce875748c4986b240ff7d7bc3fffb0"
+#define CRYPTO777_PUBSECPSTR "02004a23684b6e12441ac4c913775f4f74584c48a9167d2fb65da6a2ddc9852761"
+#define CRYPTO777_SAFEADDR "RfcUEDp6F2ryar92H1eqg5moxx7cpWwe2n"
+#define CRYPTO777_RMD160STR "4cb928806e9288448d7add21d37fff7026bbc56a"
 
-#define SAFECOIN_PUBTYPE 60
+#define SAFECOIN_PUBTYPE 61
 
 struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
 struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
