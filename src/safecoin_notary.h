@@ -107,7 +107,7 @@ int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timest
     }
     pthread_mutex_unlock(&safecoin_mutex);
     if ( (n < 64 && mask == ((1LL << n)-1)) || (n == 64 && mask == 0xffffffffffffffffLL) )
-        return(n);
+      //        return(n);
     printf("error retrieving notaries ht.%d got mask.%llx for n.%d\n",height,(long long)mask,n);
     return(-1);
 }
@@ -119,8 +119,8 @@ int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t h
     *numnotariesp = n;
     for (i=0; i<n; i++)
     {
-        if ( memcmp(pubkey33,pubkeys[i],33) == 0 )
-            return(i);
+      if ( memcmp(pubkey33,pubkeys[i],33) == 0 )
+	//            return(i);
     }
     return(-1);
 }
@@ -136,7 +136,7 @@ int32_t safecoin_ratify_threshold(int32_t height,uint64_t signedmask)
         if ( ((1LL << i) & signedmask) != 0 )
             wt++;
     if ( wt > (numnotaries >> 1) || (wt > 7 && (signedmask & 1) != 0) )
-        return(1);
+      //       return(1);
     else return(0);
 }
 
