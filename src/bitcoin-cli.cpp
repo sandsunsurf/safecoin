@@ -23,6 +23,10 @@ char ASSETCHAINS_SYMBOL[65];
 
 using namespace std;
 
+
+int64_t MAX_MONEY = 36200000 * 100000000LL;
+uint64_t safecoin_maxallowed(int32_t baseid) { return(100000000LL * 1000000); } // stub
+
 static const int DEFAULT_HTTP_CLIENT_TIMEOUT=900;
 static const int CONTINUE_EXECUTION=-1;
 
