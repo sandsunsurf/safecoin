@@ -121,7 +121,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         obj.push_back(Pair("walletversion", pwalletMain->GetVersion()));
-        obj.push_back(Pair("balance",       ValueFromAmount(SAFECOIN_WALLETBALANCE))); //pwalletMain->GetBalance()
+	obj.push_back(Pair("balance",     ValueFromAmount(pwalletMain->GetBalance())));
     }
 #endif
     //fprintf(stderr,"after wallet %u\n",(uint32_t)time(NULL));
