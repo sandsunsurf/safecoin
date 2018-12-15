@@ -455,7 +455,7 @@ void CTxMemPool::removeExpired(unsigned int nBlockHeight)
     {
         const CTransaction& tx = it->GetTx();
         tipindex = chainActive.LastTip();
-	if (IsExpiredTx(tx, nBlockHeight) || tipindex != 0)
+	if (IsExpiredTx(tx, nBlockHeight))
         {
             transactionsToRemove.push_back(tx);
         }
