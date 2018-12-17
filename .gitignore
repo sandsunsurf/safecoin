@@ -11,6 +11,7 @@ src/zcash-cli
 src/zcash-gtest
 src/zcash-tx
 src/test/test_bitcoin
+src/wallet-utility
 
 # Zcash utilities
 src/zcash/GenerateParams
