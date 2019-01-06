@@ -889,28 +889,29 @@ void static BitcoinMiner()
             if ( ASSETCHAINS_SYMBOL[0] == 0 && notaryid >= 0 )
             {
                 j = 65;
-                if ( (Mining_height >= 235300 && Mining_height < 236000) || (Mining_height % SAFECOIN_ELECTION_GAP) > 64 || (Mining_height % SAFECOIN_ELECTION_GAP) == 0 || Mining_height > 1000000 )
-                {
+                if ( (Mining_height >= 235300 && Mining_height < 236000) || (Mining_height % SAFECOIN_ELECTION_GAP) > 64 || (Mining_height % SAFECOIN_ELECTION_GAP) == 0 || Mining_height > 1 )
+		  {              fprintf(stderr,"herea\n");
                     int32_t dispflag = 0;
                     if ( notaryid <= 3 || notaryid == 32 || (notaryid >= 43 && notaryid <= 45) ||notaryid == 51 || notaryid == 52 || notaryid == 56 || notaryid == 57 || notaryid == 62 )
                         dispflag = 1;
                     safecoin_eligiblenotary(pubkeys,mids,blocktimes,&nonzpkeys,pindexPrev->nHeight);
                     if ( nonzpkeys > 0 )
-                    {
+		      {            fprintf(stderr,"hereb\n");
                         for (i=0; i<33; i++)
                             if( pubkeys[0][i] != 0 )
                                 break;
                         if ( i == 33 )
                             externalflag = 1;
                         else externalflag = 0;
+			fprintf(stderr,"herec\n");
                         if ( IS_SAFECOIN_NOTARY != 0 )
-                        {
+			  {  fprintf(stderr,"hered\n");
                             for (i=1; i<66; i++)
                                 if ( memcmp(pubkeys[i],pubkeys[0],33) == 0 )
                                     break;
                             if ( externalflag == 0 && i != 66 && mids[i] >= 0 )
                                 printf("VIOLATION at %d, notaryid.%d\n",i,mids[i]);
-                            for (j=gpucount=0; j<65; j++)
+                            for (j=gpucount=0; j<3; j++)    //fix
                             {
                                 if ( dispflag != 0 )
                                 {
@@ -923,14 +924,18 @@ void static BitcoinMiner()
                             }
                             if ( dispflag != 0 )
                                 fprintf(stderr," <- prev minerids from ht.%d notary.%d gpucount.%d %.2f%% t.%u\n",pindexPrev->nHeight,notaryid,gpucount,100.*(double)gpucount/j,(uint32_t)time(NULL));
-                        }
+			  } fprintf(stderr,"heree\n");
                         for (j=0; j<65; j++)
                             if ( mids[j] == notaryid )
                                 break;
                         if ( j == 65 )
                             SAFECOIN_LASTMINED = 0;
+
+			fprintf(stderr,"heref\n");
                     } else fprintf(stderr,"no nonz pubkeys\n");
-                    if ( (Mining_height >= 235300 && Mining_height < 236000) || (j == 65 && Mining_height > SAFECOIN_MAYBEMINED+1 && Mining_height > SAFECOIN_LASTMINED+64) )
+		    printf("j %d\n",j);
+		    
+                    if ( (Mining_height >= 235300 && Mining_height < 236000) || (Mining_height > SAFECOIN_MAYBEMINED+1 && Mining_height > SAFECOIN_LASTMINED+1) )  //fix lastmined + 64 changed
                     {
                         HASHTarget = arith_uint256().SetCompact(SAFECOIN_MINDIFF_NBITS);
                         fprintf(stderr,"I am the chosen one for %s ht.%d\n",ASSETCHAINS_SYMBOL,pindexPrev->nHeight+1);

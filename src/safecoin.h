@@ -750,11 +750,11 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                 for (k=0; k<32; k++)
                     if ( scriptbuf[len+k] != 0 )
                         break;
-                if ( k == 32 )
-                {
+		//		 if ( k == 32 )
+		//		 {
                     *isratificationp = 1;
                     printf("ISRATIFICATION (%s)\n",(char *)&scriptbuf[len+32*2+4]);
-                }
+		    //		     }
             }
             
             if ( *isratificationp == 0 && (signedmask != 0 || (scriptbuf[len] != 'X' && scriptbuf[len] != 'A')) ) // && scriptbuf[len] != 'I')

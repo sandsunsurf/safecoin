@@ -723,13 +723,13 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
             {
                 if ( 0 && strcmp(NOTARY_PUBKEY.c_str(),"03b7621b44118017a16043f19b30cc8a4cfe068ac4e42417bae16ba460c80f3828") == 0 )
                     fprintf(stderr,">>>>>>>>>>>>> DUST ht.%d strangout.%d notmatched.%d <<<<<<<<<\n",height,strangeout,notmatched);
-                if ( height > 1000000 && strangeout != 0 )
+                if ( height > 1 && strangeout != 0 )
                     return(-1);
             }
-            else if ( height > 814000 )
+            else if ( height > 8 )
             {
                 script = (uint8_t *)block.vtx[0].vout[0].scriptPubKey.data();
-                return(-1 * (safecoin_electednotary(&num,script+1,height,0) >= 0) * (height > 1000000));
+                return(-1 * (safecoin_electednotary(&num,script+1,height,0) >= 0) * (height > 1));
             }
         }
         else
@@ -808,7 +808,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                     printf("%02x",pubkey33[i]);
                 printf(" checkpubkey check %.8f v %.8f dest.(%s) safeheight.%d height.%d\n",dstr(checktoshis),dstr(value),destaddr,safeheight,height);
             }
-            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (safeheight > 195000 || safeheight <= height) )
+            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (safeheight > 1 || safeheight <= height) )
             {
                 didstats = 0;
                 if ( safecoin_paxcmp(base,safeheight,value,checktoshis,safeheight < 225000 ? seed : 0) == 0 )

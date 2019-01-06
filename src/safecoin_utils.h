@@ -39,11 +39,11 @@ typedef struct queue
 
 #include "mini-gmp.c"
 
-#define CRYPTO777_PUBSECPSTR "020e46e79a2a8d12b9b5d12c7a91adb4e454edfae43c0a0cb805427d2ac7613fd9"
-#define CRYPTO777_SAFEADDR "RXL3YXG2ceaB6C5hfJcN4fvmLH2C34knhA"
-#define CRYPTO777_RMD160STR "f1dce4182fce875748c4986b240ff7d7bc3fffb0"
+#define CRYPTO777_PUBSECPSTR "02004a23684b6e12441ac4c913775f4f74584c48a9167d2fb65da6a2ddc9852761"
+#define CRYPTO777_SAFEADDR "RfcUEDp6F2ryar92H1eqg5moxx7cpWwe2n"
+#define CRYPTO777_RMD160STR "4cb928806e9288448d7add21d37fff7026bbc56a"
 
-#define SAFECOIN_PUBTYPE 60
+#define SAFECOIN_PUBTYPE 61
 
 struct sha256_vstate { uint64_t length; uint32_t state[8],curlen; uint8_t buf[64]; };
 struct rmd160_vstate { uint64_t length; uint8_t buf[64]; uint32_t curlen, state[5]; };
@@ -1433,7 +1433,7 @@ uint32_t safecoin_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int3
 {
     uint8_t buf[512]; uint32_t crc0=0; int32_t len = 0; bits256 hash;
     if ( strcmp(symbol,"SAFE") == 0 )
-        return(0x8de4eef9);
+        return(0x8fe2edf1);
     len = safenodes_rwnum(1,&buf[len],sizeof(supply),(void *)&supply);
     strcpy((char *)&buf[len],symbol);
     len += strlen(symbol);
@@ -1447,8 +1447,8 @@ uint32_t safecoin_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int3
 
 uint16_t safecoin_assetport(uint32_t magic,int32_t extralen)
 {
-    if ( magic == 0x8de4eef9 )
-        return(7770);
+    if ( magic == 0x8fe2edf1 )
+        return(8770);
     else if ( extralen == 0 )
         return(8000 + (magic % 7777));
     else return(16000 + (magic % 49500));
@@ -1458,8 +1458,8 @@ uint16_t safecoin_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *ex
 {
     if ( symbol == 0 || symbol[0] == 0 || strcmp("SAFE",symbol) == 0 )
     {
-        *magicp = 0x8de4eef9;
-        return(7770);
+        *magicp = 0x8fe2edf1;
+        return(8770);
     }
     *magicp = safecoin_assetmagic(symbol,supply,extraptr,extralen);
     return(safecoin_assetport(*magicp,extralen));

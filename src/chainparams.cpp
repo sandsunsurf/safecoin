@@ -103,7 +103,7 @@ public:
         assert(maxUint/UintToArith256(consensus.powLimit) >= consensus.nPowAveragingWindow);
         consensus.nPowMaxAdjustDown = 32; // 32% adjustment down
         consensus.nPowMaxAdjustUp = 16; // 16% adjustment up
-        consensus.nPowTargetSpacing = 1 * 60;
+        consensus.nPowTargetSpacing = 0.5 * 60;
         consensus.fPowAllowMinDifficultyBlocks = false; //false;
         consensus.vUpgrades[Consensus::BASE_SPROUT].nProtocolVersion = 170002;
         consensus.vUpgrades[Consensus::BASE_SPROUT].nActivationHeight =
@@ -158,8 +158,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x0e8398ad8ba699fa41e1c56fe6112ca2530719c32b7e3d0cdb6610a458bd7e14"));
         vFixedSeeds.clear();
         vSeeds.clear();
-		vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
-		vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
+        //vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
+        //vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
+        //vSeeds.push_back(CDNSSeedData("dnsseed3", "safenodeseed.ipv6admin.com"));
         // TODO: set up bootstrapping for mainnet
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,86);
@@ -175,7 +176,7 @@ public:
 
         vFixedSeeds = std::vector<SeedSpec6>(pnSeed6_main, pnSeed6_main + ARRAYLEN(pnSeed6_main));
 
-        fMiningRequiresPeers = true;
+        fMiningRequiresPeers = false;
         fDefaultConsistencyChecks = false;
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
@@ -244,22 +245,9 @@ void *chainparams_commandline(void *ptr)
 		checkpointData = //(Checkpoints::CCheckpointData)
 		{
 			boost::assign::map_list_of
-				(0, mainParams.consensus.hashGenesisBlock)
-				(10000, uint256S("0x0000003fac4b19715f7c926678efa76580ec6677f00f986e6d62df24c2c33c40"))
-				(20000, uint256S("0x000001abf017b27b1ed2830915b07840a03ff692130e92ea618abf7dd199bffd"))
-				(30000, uint256S("0x0000020087dd554bee50fd4f2bdd267f1e05b8a8825eb6b147de9f5d708c0087"))
-				(40000, uint256S("0x00000071520e510befabaee27357de84f7d624b019096693845a392b28fdc017"))
-				(50000, uint256S("0x000001130278ac0759ba6edf6c046db74b5b5be14536779d9a78e67b97f7f55c"))
-				(60000, uint256S("0x00000072465c9f88a415a4543be84365b036415032cebe35d7cfd247335799cd"))
-				(70000, uint256S("0x00000031541bd6ea69b38450121d993cfb41663ab167fcfce47f598073dd534e"))
-				(75000, uint256S("0x00000012f1f0aa4ac984d46739767d503e87087f2ad022eea22e67f2e21a6805"))
-				(80000, uint256S("0x000000010f731dad693d6e60f32f504db5ffdb2e2e9793ece5f2a22dbe53ee0d"))
-				(84748, uint256S("0x00000042f72109bb83060ed5c34505740fcfa5676ccfb724c38b048456ae838a"))
-				(102864, uint256S("0x00000025561af0c339a1df438fee5ccfa7c49bfcfdcb4d070b0d96cb429bedb5"))
-				(170242, uint256S("0x00000011069f756ed14d4967b9862331ebb2f41a2928291066981258adc672d5"))	//switch to equihash 144,5
-				(360000, uint256S("0x00000260ec5c16afbc1d4e70f9616e60bbc3222ad3604c0d2acdf716da7f8b9c")),
-				(int64_t)1540539546,	// * UNIX timestamp of last checkpoint block
-				(int64_t)649731,		// * total number of transactions between genesis and last checkpoint
+				(0, mainParams.consensus.hashGenesisBlock),
+				(int64_t)1518052105,	// * UNIX timestamp of last checkpoint block
+				(int64_t)1,		// * total number of transactions between genesis and last checkpoint
 										//   (the tx=... number in the SetBestChain debug.log lines)
 				(double)2283			// * estimated number of transactions per day after checkpoint
 										//   total number of tx / (checkpoint block height / (24 * 24))

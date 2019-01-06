@@ -15,7 +15,7 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "version.h"
-#define _COINBASE_MATURITY 100
+#define _COINBASE_MATURITY 10
 
 using namespace std;
 
@@ -455,7 +455,7 @@ void CTxMemPool::removeExpired(unsigned int nBlockHeight)
     {
         const CTransaction& tx = it->GetTx();
         tipindex = chainActive.LastTip();
-	if (IsExpiredTx(tx, nBlockHeight) || tipindex != 0)
+	if (IsExpiredTx(tx, nBlockHeight))
         {
             transactionsToRemove.push_back(tx);
         }

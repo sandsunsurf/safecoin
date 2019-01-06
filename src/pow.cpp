@@ -151,10 +151,10 @@ void safecoin_index2pubkey33(uint8_t *pubkey33,CBlockIndex *pindex,int32_t heigh
 extern int32_t SAFECOIN_CHOSEN_ONE;
 extern uint64_t ASSETCHAINS_STAKED;
 extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
-#define SAFECOIN_ELECTION_GAP 2000
+#define SAFECOIN_ELECTION_GAP 1
 
 int32_t safecoin_eligiblenotary(uint8_t pubkeys[66][33],int32_t *mids,uint32_t blocktimes[66],int32_t *nonzpkeysp,int32_t height);
-int32_t SAFECOIN_LOADINGBLOCKS = 1;
+int32_t SAFECOIN_LOADINGBLOCKS = 2000;
 
 extern std::string NOTARY_PUBKEY;
 
@@ -175,7 +175,7 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
         height = safecoin_currentheight() + 1;
         //fprintf(stderr,"set height to %d\n",height);
     }
-    if ( height > 34000 && ASSETCHAINS_SYMBOL[0] == 0 ) // 0 -> non-special notary
+    if ( height > 0 && ASSETCHAINS_SYMBOL[0] == 0 ) // 0 -> non-special notary
     {
         special = safecoin_chosennotary(&notaryid,height,pubkey33,tiptime);
         for (i=0; i<33; i++)
@@ -192,17 +192,17 @@ bool CheckProofOfWork(int32_t height,uint8_t *pubkey33,uint256 hash,unsigned int
         special2 = safecoin_is_special(pubkeys,mids,blocktimes,height,pubkey33,blocktime);
         if ( notaryid >= 0 )
         {
-            if ( height > 10000 && height < 80000 && (special != 0 || special2 > 0) )
+            if ( height > 1 && height < 80000 && (special != 0 || special2 > 0) )
                 flag = 1;
-            else if ( height >= 80000 && height < 108000 && special2 > 0 )
+            else if ( height >= 1 && height < 108000 && special2 > 0 )
                 flag = 1;
-            else if ( height >= 108000 && special2 > 0 )
-                flag = (height > 1000000 || (height % SAFECOIN_ELECTION_GAP) > 64 || (height % SAFECOIN_ELECTION_GAP) == 0);
+            else if ( height >= 1 && special2 > 0 )
+                flag = (height > 1 || (height % SAFECOIN_ELECTION_GAP) > 64 || (height % SAFECOIN_ELECTION_GAP) == 0);
             else if ( height == 790833 )
                 flag = 1;
             else if ( special2 < 0 )
             {
-                if ( height > 108800 )
+                if ( height > 1 )
                     flag = 0;
                 else fprintf(stderr,"ht.%d notaryid.%d special.%d flag.%d special2.%d\n",height,notaryid,special,flag,special2);
             }

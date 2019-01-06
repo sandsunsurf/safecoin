@@ -922,15 +922,21 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
 {
     int32_t i,j,notaryid=0,minerid,limit,nid; uint8_t destpubkey33[33];
     safecoin_chosennotary(&notaryid,height,pubkey33,blocktimes[0]);
-    if ( height >= 82000 )
+    if ( height >= 1 )
     {
+
+      fprintf(stderr,"here0\n");
         if ( notaryid >= 0 )
         {
-            for (i=1; i<66; i++)
+
+	  fprintf(stderr,"here1\n");
+            for (i=0; i<66; i++)
             {
                 if ( mids[i] == notaryid )
                 {
-                    if ( height > 108800 )
+
+		  fprintf(stderr,"here2\n");
+                    if ( height > 1 )
                     {
                         for (j=0; j<66; j++)
                             fprintf(stderr,"%d ",mids[j]);
@@ -944,12 +950,13 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
                 if ( height > 807000 )
                     return(-2);
             }
+	    fprintf(stderr,"here3\n");
             return(1);
         } else return(0);
     }
     else
-    {
-        if ( height >= 34000 && notaryid >= 0 )
+      {               fprintf(stderr,"here4\n");
+        if ( height >= 1 && notaryid >= 0 )
         {
             if ( height < 79693 )
                 limit = 64;
@@ -961,14 +968,14 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
                 safecoin_chosennotary(&nid,height-i,pubkey33,blocktimes[i]);
                 if ( nid == notaryid )
                 {
-                    //for (j=0; j<66; j++)
-                    //    fprintf(stderr,"%d ",mids[j]);
-                    //fprintf(stderr,"ht.%d repeat mids[%d] nid.%d notaryid.%d\n",height-i,i,nid,notaryid);
+                    for (j=0; j<66; j++)
+                        fprintf(stderr,"%d ",mids[j]);
+                    fprintf(stderr,"ht.%d repeat mids[%d] nid.%d notaryid.%d\n",height-i,i,nid,notaryid);
                     if ( height > 225000 )
                         return(-1);
                 }
             }
-            //fprintf(stderr,"special notaryid.%d ht.%d limit.%d\n",notaryid,height,limit);
+            fprintf(stderr,"special notaryid.%d ht.%d limit.%d\n",notaryid,height,limit);
             return(1);
         }
     }
@@ -1000,12 +1007,12 @@ int32_t safecoin_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 h
     *notarized_heightp = notarized_height;
     if ( notarized_height >= 0 && notarized_height <= pindex->nHeight && (notary= mapBlockIndex[notarized_hash]) != 0 )
     {
-        //printf("nHeight.%d -> (%d %s)\n",pindex->Tip()->nHeight,notarized_height,notarized_hash.ToString().c_str());
+      //    printf("nHeight.%d -> (%d %s)\n",pindex->Tip()->nHeight,notarized_height,notarized_hash.ToString().c_str());
         if ( notary->nHeight == notarized_height ) // if notarized_hash not in chain, reorg
         {
             if ( nHeight < notarized_height )
             {
-                //fprintf(stderr,"[%s] nHeight.%d < NOTARIZED_HEIGHT.%d\n",ASSETCHAINS_SYMBOL,nHeight,notarized_height);
+                fprintf(stderr,"[%s] nHeight.%d < NOTARIZED_HEIGHT.%d\n",ASSETCHAINS_SYMBOL,nHeight,notarized_height);
                 return(-1);
             }
             else if ( nHeight == notarized_height && memcmp(&hash,&notarized_hash,sizeof(hash)) != 0 )
@@ -1013,10 +1020,10 @@ int32_t safecoin_checkpoint(int32_t *notarized_heightp,int32_t nHeight,uint256 h
                 fprintf(stderr,"[%s] nHeight.%d == NOTARIZED_HEIGHT.%d, diff hash\n",ASSETCHAINS_SYMBOL,nHeight,notarized_height);
                 return(-1);
             }
-        } //else fprintf(stderr,"[%s] unexpected error notary_hash %s ht.%d at ht.%d\n",ASSETCHAINS_SYMBOL,notarized_hash.ToString().c_str(),notarized_height,notary->nHeight);
+        } else fprintf(stderr,"[%s] unexpected error notary_hash %s ht.%d at ht.%d\n",ASSETCHAINS_SYMBOL,notarized_hash.ToString().c_str(),notarized_height,notary->nHeight);
     }
-    //else if ( notarized_height > 0 && notarized_height != 73880 && notarized_height >= 170000 )
-    //    fprintf(stderr,"[%s] couldnt find notarized.(%s %d) ht.%d\n",ASSETCHAINS_SYMBOL,notarized_hash.ToString().c_str(),notarized_height,pindex->nHeight);
+    else if ( notarized_height > 0 && notarized_height != 73880 && notarized_height >= 170000 )
+        fprintf(stderr,"[%s] couldnt find notarized.(%s %d) ht.%d\n",ASSETCHAINS_SYMBOL,notarized_hash.ToString().c_str(),notarized_height,pindex->nHeight);
     return(0);
 }
 
