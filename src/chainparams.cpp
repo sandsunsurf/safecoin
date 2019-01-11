@@ -259,9 +259,10 @@ void *chainparams_commandline(void *ptr)
 				(102864, uint256S("0x00000025561af0c339a1df438fee5ccfa7c49bfcfdcb4d070b0d96cb429bedb5"))
 				(170242, uint256S("0x00000011069f756ed14d4967b9862331ebb2f41a2928291066981258adc672d5"))	//switch to equihash 144,5
 				(360000, uint256S("0x00000260ec5c16afbc1d4e70f9616e60bbc3222ad3604c0d2acdf716da7f8b9c"))
-				(420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4")),       //add TLS
-				(int64_t)1544156648,	// * UNIX timestamp of last checkpoint block
-				(int64_t)738900,		// * total number of transactions between genesis and last checkpoint
+				(420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4"))       //add TLS
+				(469630, uint256S("0x000001712c534cca9aca4fac0cf565557ddd8a60ae60b1b8a66f16a0072d608a")),       			
+				(int64_t)1547217229,	// * UNIX timestamp of last checkpoint block
+				(int64_t)828942,		// * total number of transactions between genesis and last checkpoint
 										//   (the tx=... number in the SetBestChain debug.log lines)
 				(double)2283			// * estimated number of transactions per day after checkpoint
 										//   total number of tx / (checkpoint block height / (24 * 24))
