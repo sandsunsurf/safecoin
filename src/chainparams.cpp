@@ -161,6 +161,12 @@ public:
         vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
         vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
         vSeeds.push_back(CDNSSeedData("dnsseed3", "dnsseed.fair.exchange"));
+        vSeeds.push_back(CDNSSeedData("explorer", "explorer.safecoin.org"));
+		// TLS parent full nodes
+        vSeeds.push_back(CDNSSeedData("tls1", "45.63.13.60"));
+        vSeeds.push_back(CDNSSeedData("tls2", "185.20.184.51"));
+        vSeeds.push_back(CDNSSeedData("tls3", "176.107.179.32"));
+        vSeeds.push_back(CDNSSeedData("tls4", "node.safc.cc"));
         // TODO: set up bootstrapping for mainnet
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,61);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,86);

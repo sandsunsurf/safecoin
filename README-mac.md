@@ -54,6 +54,11 @@ txindex=1
 addnode=dnsseedua.local.support
 addnode=dnsseed.ipv6admin.com
 addnode=dnsseed.fair.exchange
+addnode=explorer.safecoin.org
+addnode=45.63.13.60
+addnode=185.20.184.51
+addnode=176.107.179.32
+addnode=node.safc.cc
 ```
 
 Happy Building
