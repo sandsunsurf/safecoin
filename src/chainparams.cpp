@@ -268,9 +268,9 @@ void *chainparams_commandline(void *ptr)
 				(420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4"))       //add TLS
 				(469630, uint256S("0x000001712c534cca9aca4fac0cf565557ddd8a60ae60b1b8a66f16a0072d608a")),       			
 				(int64_t)1547217229,	// * UNIX timestamp of last checkpoint block
-				(int64_t)828942,		// * total number of transactions between genesis and last checkpoint
+				(int64_t)814979,		// * total number of transactions between genesis and last checkpoint
 										//   (the tx=... number in the SetBestChain debug.log lines)
-				(double)2283			// * estimated number of transactions per day after checkpoint
+				(double)1000			// * estimated number of transactions per day after checkpoint
 										//   total number of tx / (checkpoint block height / (24 * 24))
 		};
     }
