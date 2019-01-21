@@ -158,10 +158,13 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x0e8398ad8ba699fa41e1c56fe6112ca2530719c32b7e3d0cdb6610a458bd7e14"));
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
-        vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
-        vSeeds.push_back(CDNSSeedData("dnsseed3", "dnsseed.fair.exchange"));
+        //Disabled until dnsseder is updated to support TLS connections.
+        //vSeeds.push_back(CDNSSeedData("dnsseed1", "dnsseed.ipv6admin.com"));		// SafeCoin
+        //vSeeds.push_back(CDNSSeedData("dnsseed2", "dnsseedua.local.support"));		// OleksandrBlack
+        //vSeeds.push_back(CDNSSeedData("dnsseed3", "dnsseed.fair.exchange"));
+        //END Disabled
         vSeeds.push_back(CDNSSeedData("explorer", "explorer.safecoin.org"));
+        vSeeds.push_back(CDNSSeedData("explorer2", "explorer.deepsky.space"));
 		// TLS parent full nodes
         vSeeds.push_back(CDNSSeedData("tls1", "45.63.13.60"));
         vSeeds.push_back(CDNSSeedData("tls2", "185.20.184.51"));
