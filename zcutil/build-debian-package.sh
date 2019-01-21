@@ -6,10 +6,14 @@ set -e
 set -x
 
 BUILD_PATH="/tmp/zcbuild"
-PACKAGE_NAME="zcash"
+PACKAGE_NAME="safecoin"
 SRC_PATH=`pwd`
 SRC_DEB=$SRC_PATH/contrib/debian
 SRC_DOC=$SRC_PATH/doc
+ARCH=amd64
+if $(uname -m | grep -q 'aarch64\|arm64'); then
+    ARCH=arm64
+fi
 
 umask 022
 
@@ -17,9 +21,9 @@ if [ ! -d $BUILD_PATH ]; then
     mkdir $BUILD_PATH
 fi
 
-PACKAGE_VERSION=$($SRC_PATH/src/zcashd --version | grep version | cut -d' ' -f4 | tr -d v)
+PACKAGE_VERSION=$($SRC_PATH/src/safecoind --version | grep version | cut -d' ' -f4 | tr -d v)
 DEBVERSION=$(echo $PACKAGE_VERSION | sed 's/-beta/~beta/' | sed 's/-rc/~rc/' | sed 's/-/+/')
-BUILD_DIR="$BUILD_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-amd64"
+BUILD_DIR="$BUILD_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-$ARCH"
 
 if [ -d $BUILD_DIR ]; then
     rm -R $BUILD_DIR
@@ -38,8 +42,8 @@ chmod 0755 -R $BUILD_DIR/*
 #cp $SRC_DEB/preinst $BUILD_DIR/DEBIAN
 #cp $SRC_DEB/prerm $BUILD_DIR/DEBIAN
 # Copy binaries
-cp $SRC_PATH/src/zcashd $DEB_BIN
-cp $SRC_PATH/src/zcash-cli $DEB_BIN
+cp $SRC_PATH/src/safecoind $DEB_BIN
+cp $SRC_PATH/src/safecoin-cli $DEB_BIN
 cp $SRC_PATH/zcutil/fetch-params.sh $DEB_BIN/zcash-fetch-params
 # Copy docs
 cp $SRC_PATH/doc/release-notes/release-notes-1.0.0.md $DEB_DOC/changelog
@@ -47,28 +51,29 @@ cp $SRC_DEB/changelog $DEB_DOC/changelog.Debian
 cp $SRC_DEB/copyright $DEB_DOC
 cp -r $SRC_DEB/examples $DEB_DOC
 # Copy manpages
-cp $SRC_DOC/man/zcashd.1 $DEB_MAN
-cp $SRC_DOC/man/zcash-cli.1 $DEB_MAN
-cp $SRC_DOC/man/zcash-fetch-params.1 $DEB_MAN
+cp $SRC_DOC/man/safecoind.1 $DEB_MAN/safecoind.1
+cp $SRC_DOC/man/safecoin-cli.1 $DEB_MAN/safecoin-cli.1
+cp $SRC_DOC/man/zcash-fetch-params.1 $DEB_MAN/zcash-fetch-params.1
 # Copy bash completion files
-cp $SRC_PATH/contrib/zcashd.bash-completion $DEB_CMP/zcashd
-cp $SRC_PATH/contrib/zcash-cli.bash-completion $DEB_CMP/zcash-cli
+cp $SRC_PATH/contrib/safecoind.bash-completion $DEB_CMP/safecoind
+cp $SRC_PATH/contrib/safecoin-cli.bash-completion $DEB_CMP/safecoin-cli
 # Gzip files
 gzip --best -n $DEB_DOC/changelog
 gzip --best -n $DEB_DOC/changelog.Debian
-gzip --best -n $DEB_MAN/zcashd.1
-gzip --best -n $DEB_MAN/zcash-cli.1
+
+gzip --best -n $DEB_MAN/safecoind.1
+gzip --best -n $DEB_MAN/safecoin-cli.1
 gzip --best -n $DEB_MAN/zcash-fetch-params.1
 
 cd $SRC_PATH/contrib
 
 # Create the control file
-dpkg-shlibdeps $DEB_BIN/zcashd $DEB_BIN/zcash-cli
+dpkg-shlibdeps $DEB_BIN/safecoind $DEB_BIN/safecoin-cli
 dpkg-gencontrol -P$BUILD_DIR -v$DEBVERSION
 
 # Create the Debian package
 fakeroot dpkg-deb --build $BUILD_DIR
-cp $BUILD_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-amd64.deb $SRC_PATH
+cp $BUILD_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-$ARCH.deb $SRC_PATH
 # Analyze with Lintian, reporting bugs and policy violations
-lintian -i $SRC_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-amd64.deb
+lintian -i $SRC_PATH/$PACKAGE_NAME-$PACKAGE_VERSION-$ARCH.deb
 exit 0
