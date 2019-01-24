@@ -506,10 +506,11 @@ CBlockTemplate* CreateNewBlock(const CScript& _scriptPubKeyIn, int32_t gpucount,
 
         txNew.vout.resize(1);
         txNew.vout[0].scriptPubKey = scriptPubKeyIn;
-        txNew.vout[0].nValue = GetBlockSubsidy(nHeight,consensusParams) + nFees;
+        txNew.vout[0].nValue = GetBlockSubsidy(nHeight+1,consensusParams) + nFees;
 
         txNew.nExpiryHeight = 0;
         txNew.nLockTime = std::max(pindexPrev->GetMedianTimePast()+1, GetAdjustedTime());
+
 
         if ( ASSETCHAINS_SYMBOL[0] == 0 && IS_SAFECOIN_NOTARY != 0 && My_notaryid >= 0 )
             txNew.vout[0].nValue += 5000;
