@@ -2197,13 +2197,36 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
-        if ( nHeight == 1 )
-            return(100000000 * COIN); // ICO allocation
-        else if ( nHeight < SAFECOIN_ENDOFERA )
-            return(3 * COIN);
-        else if ( nHeight < 2*SAFECOIN_ENDOFERA )
-            return(2 * COIN);
-        else return(COIN);
+   if ( nHeight == 1 ) nSubsidy = (4000000 * COIN);
+      else if ( nHeight == 80185 ) nSubsidy = (665600 * COIN); //refund for interest rate attack
+      else if ( nHeight < 123840 ) nSubsidy = (128 * COIN);
+      else if ( nHeight < 178378 ) nSubsidy = (64 * COIN);
+      else if ( nHeight < 181378 ) nSubsidy = (56 * COIN);
+      else if ( nHeight < 184378 ) nSubsidy = (48 * COIN);
+      else if ( nHeight < 187378 ) nSubsidy = (40 * COIN);
+      else if ( nHeight < 197378 ) nSubsidy = (32 * COIN);
+      else if ( nHeight < 207378 ) nSubsidy = (28 * COIN);
+      else if ( nHeight < 217378 ) nSubsidy = (24 * COIN);
+      else if ( nHeight < 227378 ) nSubsidy = (22 * COIN);
+      else if ( nHeight < 237378 ) nSubsidy = (20 * COIN);
+      else if ( nHeight < 247378 ) nSubsidy = (18 * COIN);
+      else if ( nHeight < 287378 ) nSubsidy = (16 * COIN);
+      else if ( nHeight < 327378 ) nSubsidy = (15 * COIN);
+      else if ( nHeight < 367378 ) nSubsidy = (14 * COIN);
+      else if ( nHeight < 407378 ) nSubsidy = (13 * COIN);
+      else if ( nHeight < 447378 ) nSubsidy = (12 * COIN);
+      else if ( nHeight < 487378 ) nSubsidy = (11 * COIN);
+      else if ( nHeight < 517378 ) nSubsidy = (10 * COIN);  
+      else if ( nHeight < 557378 ) nSubsidy = (5 * COIN);      //ends in 2019
+      else if ( nHeight < 1207378 ) nSubsidy = (4 * COIN);     //ends in 2020
+      else if ( nHeight < 1707378 ) nSubsidy = (3 * COIN);     //ends in 2021
+      else if ( nHeight < 2207378 ) nSubsidy = (2 * COIN);     //ends in 2022
+      else if ( nHeight < 2707378 ) nSubsidy = (1 * COIN);     //ends in 2023
+      else if ( nHeight < 3707378 ) nSubsidy = (0.5 * COIN);   //ends in 2025
+      else if ( nHeight < 4707378 ) nSubsidy = (0.25 * COIN);  //ends in 2027
+      else if ( nHeight < 5707378 ) nSubsidy = (0.125 * COIN); // 2029 10 Year Mark
+      else nSubsidy = 0;  // TX fees and additional implementations
+      return nSubsidy;
     }
     else
     {
