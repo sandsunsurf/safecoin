@@ -9,16 +9,16 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 
 ## Development Resources
 
-- Safecoin Website: [https://safecoinplatform.com](https://safecoinplatform.com/)
+- Safecoin Website: [https://safecoin.org](https://safecoin.org/)
 - Safecoin Blockexplorer: [https://safeexplorer.io](https://safeexplorer.io/)
-- Safecoin Discord: [https://safecoinplatform.com/discord](https://safecoinplatform.com/discord)
-- Forum: [https://forum.safecoinplatform.com](https://forum.safecoinplatform.com/)
-- Mail: [info@safecoinplatform.com](mailto:info@safecoinplatform.com)
-- Support: [https://support.safecoinplatform.com/support/home](https://support.safecoinplatform.com/support/home)
-- Knowledgebase & How-to: [https://support.safecoinplatform.com/en/support/solutions](https://support.safecoinplatform.com/en/support/solutions)
-- API references & Dev Documentation: [https://docs.safecoinplatform.com](https://docs.safecoinplatform.com/)
-- Blog: [https://blog.safecoinplatform.com](https://blog.safecoinplatform.com/)
-- Whitepaper: [Safecoin Whitepaper](https://safecoinplatform.com/whitepaper)
+- Safecoin Discord: [https://safecoin.org/discord](https://safecoin.org/discord)
+- Forum: [https://forum.safecoin.org](https://forum.safecoin.org/)
+- Mail: [info@safecoin.org](mailto:info@safecoin.org)
+- Support: [https://support.safecoin.org/support/home](https://support.safecoin.org/support/home)
+- Knowledgebase & How-to: [https://support.safecoin.org/en/support/solutions](https://support.safecoin.org/en/support/solutions)
+- API references & Dev Documentation: [https://docs.safecoin.org](https://docs.safecoin.org/)
+- Blog: [https://blog.safecoin.org](https://blog.safecoin.org/)
+- Whitepaper: [Safecoin Whitepaper](https://safecoin.org/whitepaper)
 - Safecoin Platform public material: [Safecoin Platform public material](https://docs.google.com/document/d/1AbhWrtagu4vYdkl-vsWz-HSNyNvK-W-ZasHCqe7CZy0)
 
 ## List of Safecoin Platform Technologies
@@ -34,7 +34,7 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Peerchains - Scalability solution where sibling chains form a network of blockchains  
 - More in depth covered [here](https://docs.google.com/document/d/1AbhWrtagu4vYdkl-vsWz-HSNyNvK-W-ZasHCqe7CZy0)  
 - Also note you receive 5% Active User Reward on your balance.  
-[See this article for more details](https://support.safecoinplatform.com/en/support/solutions/articles/29000024515-how-to-claim-the-safe-active-user-reward-in-safewallet)
+[See this article for more details](https://support.safecoin.org/en/support/solutions/articles/29000024515-how-to-claim-the-safe-active-user-reward-in-safewallet)
 
 ## Tech Specification
 - Max Supply: 200 million SAFE
@@ -43,7 +43,7 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Mining Algorithm: Equihash
 
 ## About this Project
-Safecoin is based on Zcash and has been extended by our innovative consensus algorithm called dPoW which utilizes Bitcoin's hashrate to store Safecoin blockchain information into the Bitcoin blockchain. Other new and native Safecoin features are the privacy technology called JUMBLR, our assetchain capabilities (one click plug and play blockchain solutions) and a set of financial decentralization and interoperability technologies. More details are available under https://safecoinplatform.com/ and https://blog.safecoinplatform.com.
+Safecoin is based on Zcash and has been extended by our innovative consensus algorithm called dPoW which utilizes Bitcoin's hashrate to store Safecoin blockchain information into the Bitcoin blockchain. Other new and native Safecoin features are the privacy technology called JUMBLR, our assetchain capabilities (one click plug and play blockchain solutions) and a set of financial decentralization and interoperability technologies. More details are available under https://safecoin.org/ and https://blog.safecoin.org.
 
 ## Getting started
 

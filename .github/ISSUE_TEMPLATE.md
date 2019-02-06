@@ -2,7 +2,7 @@
 
 This issue tracker is only for technical issues related to safecoind
 
-General Safecoin questions and/or support requests and are best directed to [Discord](https://safecoinplatform.com/discord)
+General Safecoin questions and/or support requests and are best directed to [Discord](https://safecoin.org/discord)
 
 ### Describe the issue
 Please provide a general summary of the issue you're experiencing

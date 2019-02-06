@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER Mihail Fedorov <kolo@safecoinplatform.com>
+MAINTAINER <safe@safecoin.org>
 
 RUN apt-get -y update && \
     apt-get -y upgrade && \
