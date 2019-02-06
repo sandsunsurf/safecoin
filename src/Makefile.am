@@ -52,6 +52,7 @@ LIBCRYPTOCONDITIONS=cryptoconditions/libcryptoconditions_core.la
 LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
 LIBZCASH=libzcash.a
+LIBSAFECOIN=libsafecoin.a
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -65,8 +66,7 @@ endif
 if ENABLE_WALLET
 LIBBITCOIN_WALLET=libbitcoin_wallet.a
 endif
-LIBZCASH=libzcash.a -lcurl
-LIBSAFECOIN=libsafecoin.a
+
 
 
 $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
@@ -95,7 +95,6 @@ $(LIBCRYPTOCONDITIONS): $(wildcard cryptoconditions/src/*) $(wildcard cryptocond
 
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
-<<<<<<< HEAD
 EXTRA_LIBRARIES += \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBVERUS_CRYPTO) \
@@ -105,7 +104,6 @@ EXTRA_LIBRARIES += \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_CLI) \
   libzcash.a
-=======
 EXTRA_LIBRARIES = \
 	crypto/libbitcoin_crypto.a \
 	libbitcoin_util.a \
@@ -114,8 +112,6 @@ EXTRA_LIBRARIES = \
 	libbitcoin_cli.a \
 	libzcash.a \
 	libsafecoin.a
-
->>>>>>> 6838abba1... add libsafecoin
 if ENABLE_WALLET
 BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += $(LIBBITCOIN_WALLET)
