@@ -1438,9 +1438,6 @@ void static BitcoinMiner()
                 //sleep(3);
             }
 
-<<<<<<< HEAD
-=======
-
 
 
             // Get the height of current tip
@@ -1449,7 +1446,7 @@ void static BitcoinMiner()
 	      LogPrintf("Error in BitcoinZ Miner: chainActive.Height() returned -1\n");
 	      return;
 	    }
-	    CBlockIndex* pindexPrev = chainActive[nHeight];
+	    //   CBlockIndex* pindexPrev = chainActive[nHeight];
 
 	    // Get equihash parameters for the next block to be mined.
 	    EHparameters ehparams[MAX_EH_PARAM_LIST_LEN]; //allocate on-stack space for parameters list
@@ -1464,8 +1461,6 @@ void static BitcoinMiner()
 
 	    
 
-	    
->>>>>>> 428167beb... Equihash 144,5 courtesy of Bitcoinz
 #ifdef ENABLE_WALLET
             // notaries always default to staking
             CBlockTemplate *ptr = CreateNewBlockWithKey(reservekey, pindexPrev->GetHeight()+1, gpucount, ASSETCHAINS_STAKED != 0 && GetArg("-genproclimit", 0) == 0);
