@@ -1966,7 +1966,7 @@ void safecoin_args(char *argv0)
     {
         char fname[512],username[512],password[4096]; int32_t iter; FILE *fp;
         ASSETCHAINS_P2PPORT = 7770;
-        ASSETCHAINS_RPCPORT = 7771;
+        ASSETCHAINS_RPCPORT = 8771;
         for (iter=0; iter<2; iter++)
         {
             strcpy(fname,GetDataDir().string().c_str());
