@@ -12,7 +12,7 @@
 #include "chainparams.h"
 
 static const std::string CLIENT_VERSION_STR = FormatVersion(CLIENT_VERSION);
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 void EnforceNodeDeprecation(int nHeight, bool forceLogging, bool fThread) {
 
@@ -33,7 +33,7 @@ void EnforceNodeDeprecation(int nHeight, bool forceLogging, bool fThread) {
         if (blocksToDeprecation == 0 || forceLogging) {
             msg = strprintf(_("This version has been deprecated as of block height %d."),
                                  DEPRECATION_HEIGHT) + " " +
-                       _("You should upgrade to the latest version of Komodo.");
+                       _("You should upgrade to the latest version of Safecoin.");
             LogPrintf("*** %s\n", msg);
             CAlert::Notify(msg, fThread);
             uiInterface.ThreadSafeMessageBox(msg, "", CClientUIInterface::MSG_ERROR);
@@ -42,7 +42,7 @@ void EnforceNodeDeprecation(int nHeight, bool forceLogging, bool fThread) {
     } else if (blocksToDeprecation == DEPRECATION_WARN_LIMIT || (blocksToDeprecation < DEPRECATION_WARN_LIMIT && forceLogging)) {
         msg = strprintf(_("This version will be deprecated at block height %d, and will automatically shut down."),
                             DEPRECATION_HEIGHT) + " " +
-                  _("You should upgrade to the latest version of Komodo.");
+                  _("You should upgrade to the latest version of Safecoin.");
         LogPrintf("*** %s\n", msg);
         CAlert::Notify(msg, fThread);
         uiInterface.ThreadSafeMessageBox(msg, "", CClientUIInterface::MSG_WARNING);

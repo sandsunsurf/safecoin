@@ -65,7 +65,7 @@ bool GetBackNotarisation(uint256 notarisationHash, Notarisation &n)
 
 
 /*
- * Write an index of KMD notarisation id -> backnotarisation
+ * Write an index of SAFE notarisation id -> backnotarisation
  */
 void WriteBackNotarisations(const NotarisationsInBlock notarisations, CDBBatch &batch)
 {

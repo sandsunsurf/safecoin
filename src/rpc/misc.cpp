@@ -44,19 +44,19 @@ using namespace std;
 
 int32_t Jumblr_depositaddradd(char *depositaddr);
 int32_t Jumblr_secretaddradd(char *secretaddr);
-uint64_t komodo_interestsum();
-int32_t komodo_longestchain();
-int32_t komodo_notarized_height(int32_t *prevhtp,uint256 *hashp,uint256 *txidp);
-bool komodo_txnotarizedconfirmed(uint256 txid);
-uint32_t komodo_chainactive_timestamp();
-int32_t komodo_whoami(char *pubkeystr,int32_t height,uint32_t timestamp);
-extern uint64_t KOMODO_INTERESTSUM,KOMODO_WALLETBALANCE;
-extern int32_t KOMODO_LASTMINED,JUMBLR_PAUSE,KOMODO_LONGESTCHAIN;
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
-uint32_t komodo_segid32(char *coinaddr);
-int64_t komodo_coinsupply(int64_t *zfundsp,int64_t *sproutfundsp,int32_t height);
-int32_t notarizedtxid_height(char *dest,char *txidstr,int32_t *kmdnotarized_heightp);
-#define KOMODO_VERSION "0.3.3b"
+uint64_t safecoin_interestsum();
+int32_t safecoin_longestchain();
+int32_t safecoin_notarized_height(int32_t *prevhtp,uint256 *hashp,uint256 *txidp);
+bool safecoin_txnotarizedconfirmed(uint256 txid);
+uint32_t safecoin_chainactive_timestamp();
+int32_t safecoin_whoami(char *pubkeystr,int32_t height,uint32_t timestamp);
+extern uint64_t SAFECOIN_INTERESTSUM,SAFECOIN_WALLETBALANCE;
+extern int32_t SAFECOIN_LASTMINED,JUMBLR_PAUSE,SAFECOIN_LONGESTCHAIN;
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
+uint32_t safecoin_segid32(char *coinaddr);
+int64_t safecoin_coinsupply(int64_t *zfundsp,int64_t *sproutfundsp,int32_t height);
+int32_t notarizedtxid_height(char *dest,char *txidstr,int32_t *safenotarized_heightp);
+#define SAFECOIN_VERSION "0.3.3b"
 #define VERUS_VERSION "0.4.0g"
 extern uint16_t ASSETCHAINS_P2PPORT,ASSETCHAINS_RPCPORT;
 extern uint32_t ASSETCHAINS_CC;
@@ -68,7 +68,7 @@ extern std::string NOTARY_PUBKEY; extern uint8_t NOTARY_PUBKEY33[];
 
 UniValue getinfo(const UniValue& params, bool fHelp)
 {
-    uint256 notarized_hash,notarized_desttxid; int32_t prevMoMheight,notarized_height,longestchain,kmdnotarized_height,txid_height;
+    uint256 notarized_hash,notarized_desttxid; int32_t prevMoMheight,notarized_height,longestchain,safenotarized_height,txid_height;
     if (fHelp || params.size() != 0)
         throw runtime_error(
             "getinfo\n"
@@ -78,7 +78,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
             "  \"version\": xxxxx,           (numeric) the server version\n"
             "  \"protocolversion\": xxxxx,   (numeric) the protocol version\n"
             "  \"walletversion\": xxxxx,     (numeric) the wallet version\n"
-            "  \"balance\": xxxxxxx,         (numeric) the total Komodo balance of the wallet\n"
+            "  \"balance\": xxxxxxx,         (numeric) the total Safecoin balance of the wallet\n"
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
@@ -104,33 +104,33 @@ UniValue getinfo(const UniValue& params, bool fHelp)
 
     proxyType proxy;
     GetProxy(NET_IPV4, proxy);
-    notarized_height = komodo_notarized_height(&prevMoMheight,&notarized_hash,&notarized_desttxid);
+    notarized_height = safecoin_notarized_height(&prevMoMheight,&notarized_hash,&notarized_desttxid);
     //fprintf(stderr,"after notarized_height %u\n",(uint32_t)time(NULL));
 
     UniValue obj(UniValue::VOBJ);
     obj.push_back(Pair("version", CLIENT_VERSION));
     obj.push_back(Pair("protocolversion", PROTOCOL_VERSION));
-    obj.push_back(Pair("KMDversion", KOMODO_VERSION));
+    obj.push_back(Pair("SAFEversion", SAFECOIN_VERSION));
     //obj.push_back(Pair("VRSCversion", VERUS_VERSION));
     obj.push_back(Pair("notarized", notarized_height));
     obj.push_back(Pair("prevMoMheight", prevMoMheight));
     obj.push_back(Pair("notarizedhash", notarized_hash.ToString()));
     obj.push_back(Pair("notarizedtxid", notarized_desttxid.ToString()));
-    txid_height = notarizedtxid_height(ASSETCHAINS_SYMBOL[0] != 0 ? (char *)"KMD" : (char *)"BTC",(char *)notarized_desttxid.ToString().c_str(),&kmdnotarized_height);
+    txid_height = notarizedtxid_height(ASSETCHAINS_SYMBOL[0] != 0 ? (char *)"SAFE" : (char *)"BTC",(char *)notarized_desttxid.ToString().c_str(),&safenotarized_height);
     if ( txid_height > 0 )
         obj.push_back(Pair("notarizedtxid_height", txid_height));
     else obj.push_back(Pair("notarizedtxid_height", "mempool"));
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
-        obj.push_back(Pair("KMDnotarized_height", kmdnotarized_height));
-    obj.push_back(Pair("notarized_confirms", txid_height < kmdnotarized_height ? (kmdnotarized_height - txid_height + 1) : 0));
+        obj.push_back(Pair("SAFEnotarized_height", safenotarized_height));
+    obj.push_back(Pair("notarized_confirms", txid_height < safenotarized_height ? (safenotarized_height - txid_height + 1) : 0));
     //fprintf(stderr,"after notarized_confirms %u\n",(uint32_t)time(NULL));
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         obj.push_back(Pair("walletversion", pwalletMain->GetVersion()));
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
-            obj.push_back(Pair("interest",       ValueFromAmount(KOMODO_INTERESTSUM)));
-            obj.push_back(Pair("balance",       ValueFromAmount(KOMODO_WALLETBALANCE))); //pwalletMain->GetBalance()
+            obj.push_back(Pair("interest",       ValueFromAmount(SAFECOIN_INTERESTSUM)));
+            obj.push_back(Pair("balance",       ValueFromAmount(SAFECOIN_WALLETBALANCE))); //pwalletMain->GetBalance()
         }
         else
         {
@@ -140,7 +140,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
 #endif
     //fprintf(stderr,"after wallet %u\n",(uint32_t)time(NULL));
     obj.push_back(Pair("blocks",        (int)chainActive.Height()));
-    if ( (longestchain= KOMODO_LONGESTCHAIN) != 0 && chainActive.Height() > longestchain )
+    if ( (longestchain= SAFECOIN_LONGESTCHAIN) != 0 && chainActive.Height() > longestchain )
         longestchain = chainActive.Height();
     //fprintf(stderr,"after longestchain %u\n",(uint32_t)time(NULL));
     obj.push_back(Pair("longestchain",        longestchain));
@@ -164,19 +164,19 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("errors",        GetWarnings("statusbar")));
     {
         char pubkeystr[65]; int32_t notaryid;
-        if ( (notaryid= komodo_whoami(pubkeystr,(int32_t)chainActive.LastTip()->GetHeight(),komodo_chainactive_timestamp())) >= 0 )
+        if ( (notaryid= safecoin_whoami(pubkeystr,(int32_t)chainActive.LastTip()->GetHeight(),safecoin_chainactive_timestamp())) >= 0 )
         {
             obj.push_back(Pair("notaryid",        notaryid));
             obj.push_back(Pair("pubkey",        pubkeystr));
-            if ( KOMODO_LASTMINED != 0 )
-                obj.push_back(Pair("lastmined",        KOMODO_LASTMINED));
+            if ( SAFECOIN_LASTMINED != 0 )
+                obj.push_back(Pair("lastmined",        SAFECOIN_LASTMINED));
         } else if ( NOTARY_PUBKEY33[0] != 0 ) {
             obj.push_back(Pair("pubkey", NOTARY_PUBKEY));
         }
     }
     if ( ASSETCHAINS_CC != 0 )
         obj.push_back(Pair("CCid",        (int)ASSETCHAINS_CC));
-    obj.push_back(Pair("name",        ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL));
+    obj.push_back(Pair("name",        ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL));
     obj.push_back(Pair("sapling", ASSETCHAINS_SAPLING));
 
     obj.push_back(Pair("p2pport",        ASSETCHAINS_P2PPORT));
@@ -291,7 +291,7 @@ UniValue coinsupply(const UniValue& params, bool fHelp)
             "\nResult:\n"
             "{\n"
             "  \"result\" : \"success\",         (string) If the request was successful.\n"
-            "  \"coin\" : \"KMD\",               (string) The currency symbol of the coin for asset chains, otherwise KMD.\n"
+            "  \"coin\" : \"SAFE\",               (string) The currency symbol of the coin for asset chains, otherwise SAFE.\n"
             "  \"height\" : 420,               (integer) The height of this coin supply data\n"
             "  \"supply\" : \"777.0\",           (float) The transparent coin supply\n"
             "  \"zfunds\" : \"0.777\",           (float) The shielded coin supply (in zaddrs)\n"
@@ -308,10 +308,10 @@ UniValue coinsupply(const UniValue& params, bool fHelp)
     currentHeight = chainActive.Height();
 
     if (height >= 0 && height <= currentHeight) {
-        if ( (supply= komodo_coinsupply(&zfunds,&sproutfunds,height)) > 0 )
+        if ( (supply= safecoin_coinsupply(&zfunds,&sproutfunds,height)) > 0 )
         {
             result.push_back(Pair("result", "success"));
-            result.push_back(Pair("coin", ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL));
+            result.push_back(Pair("coin", ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL));
             result.push_back(Pair("height", (int)height));
             result.push_back(Pair("supply", ValueFromAmount(supply)));
             result.push_back(Pair("zfunds", ValueFromAmount(zfunds)));
@@ -386,14 +386,14 @@ UniValue validateaddress(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
         throw runtime_error(
-            "validateaddress \"komodoaddress\"\n"
-            "\nReturn information about the given Komodo address.\n"
+            "validateaddress \"safecoinaddress\"\n"
+            "\nReturn information about the given Safecoin address.\n"
             "\nArguments:\n"
-            "1. \"komodoaddress\"     (string, required) The Komodo address to validate\n"
+            "1. \"safecoinaddress\"     (string, required) The Safecoin address to validate\n"
             "\nResult:\n"
             "{\n"
             "  \"isvalid\" : true|false,         (boolean) If the address is valid or not. If not, this is the only property returned.\n"
-            "  \"address\" : \"komodoaddress\",   (string) The Komodo address validated\n"
+            "  \"address\" : \"safecoinaddress\",   (string) The Safecoin address validated\n"
             "  \"scriptPubKey\" : \"hex\",       (string) The hex encoded scriptPubKey generated by the address\n"
             "  \"ismine\" : true|false,          (boolean) If the address is yours or not\n"
             "  \"isscript\" : true|false,        (boolean) If the key is a script\n"
@@ -424,7 +424,7 @@ UniValue validateaddress(const UniValue& params, bool fHelp)
 
         CScript scriptPubKey = GetScriptForDestination(dest);
         ret.push_back(Pair("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end())));
-        ret.push_back(Pair("segid", (int32_t)komodo_segid32((char *)params[0].get_str().c_str()) & 0x3f));
+        ret.push_back(Pair("segid", (int32_t)safecoin_segid32((char *)params[0].get_str().c_str()) & 0x3f));
 #ifdef ENABLE_WALLET
         isminetype mine = pwalletMain ? IsMine(*pwalletMain, dest) : ISMINE_NO;
         ret.push_back(Pair("ismine", (mine & ISMINE_SPENDABLE) ? true : false));
@@ -597,9 +597,9 @@ UniValue createmultisig(const UniValue& params, bool fHelp)
 
             "\nArguments:\n"
             "1. nrequired      (numeric, required) The number of required signatures out of the n keys or addresses.\n"
-            "2. \"keys\"       (string, required) A json array of keys which are Komodo addresses or hex-encoded public keys\n"
+            "2. \"keys\"       (string, required) A json array of keys which are Safecoin addresses or hex-encoded public keys\n"
             "     [\n"
-            "       \"key\"    (string) Komodo address or hex-encoded public key\n"
+            "       \"key\"    (string) Safecoin address or hex-encoded public key\n"
             "       ,...\n"
             "     ]\n"
 
@@ -633,10 +633,10 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 3)
         throw runtime_error(
-            "verifymessage \"komodoaddress\" \"signature\" \"message\"\n"
+            "verifymessage \"safecoinaddress\" \"signature\" \"message\"\n"
             "\nVerify a signed message\n"
             "\nArguments:\n"
-            "1. \"komodoaddress\"    (string, required) The Komodo address to use for the signature.\n"
+            "1. \"safecoinaddress\"    (string, required) The Safecoin address to use for the signature.\n"
             "2. \"signature\"       (string, required) The signature provided by the signer in base 64 encoding (see signmessage).\n"
             "3. \"message\"         (string, required) The message that was signed.\n"
             "\nResult:\n"
@@ -1113,7 +1113,7 @@ UniValue getaddressbalance(const UniValue& params, bool fHelp)
 
 }
 
-UniValue komodo_snapshot(int top);
+UniValue safecoin_snapshot(int top);
 
 UniValue getsnapshot(const UniValue& params, bool fHelp)
 {
@@ -1158,7 +1158,7 @@ UniValue getsnapshot(const UniValue& params, bool fHelp)
 			    + HelpExampleRpc("getsnapshot", "1000")
                             );
     }
-    result = komodo_snapshot(top);
+    result = safecoin_snapshot(top);
     if ( result.size() > 0 ) {
         result.push_back(Pair("end_time", (int) time(NULL)));
     } else {
@@ -1318,7 +1318,7 @@ UniValue txnotarizedconfirmed(const UniValue& params, bool fHelp)
         throw runtime_error(msg);
     }
     txid = uint256S((char *)params[0].get_str().c_str());
-    notarizedconfirmed=komodo_txnotarizedconfirmed(txid);
+    notarizedconfirmed=safecoin_txnotarizedconfirmed(txid);
     UniValue result(UniValue::VOBJ);
     result.push_back(Pair("result", notarizedconfirmed));    
     return result;

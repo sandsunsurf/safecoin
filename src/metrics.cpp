@@ -26,7 +26,7 @@
 
 extern uint64_t ASSETCHAINS_TIMELOCKGTE;
 extern uint32_t ASSETCHAINS_ALGO, ASSETCHAINS_VERUSHASH;
-int64_t komodo_block_unlocktime(uint32_t nHeight);
+int64_t safecoin_block_unlocktime(uint32_t nHeight);
 
 void AtomicTimer::start()
 {
@@ -358,7 +358,7 @@ int printMetrics(size_t cols, bool mining)
                     }
 
                     if ((std::max(0, COINBASE_MATURITY - (tipHeight - height)) > 0) ||
-                        (tipHeight < komodo_block_unlocktime(height) && subsidy >= ASSETCHAINS_TIMELOCKGTE)) {
+                        (tipHeight < safecoin_block_unlocktime(height) && subsidy >= ASSETCHAINS_TIMELOCKGTE)) {
                         immature += subsidy;
                     } else {
                         mature += subsidy;

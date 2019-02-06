@@ -24,7 +24,7 @@ script:
 notifications:
   irc:
     channels:
-    - chat.freenode.net#komodoplatform
+    - chat.freenode.net#safecoinplatform
     template:
     - "%{repository}/%{branch} (%{commit} - %{author}): %{message}"
     - 'Alt Message : %{repository_slug} - (%{commit} - %{author}): %{message}, Build
@@ -39,8 +39,8 @@ deploy:
   api_key:
     secure: Jms7dz5GMZmuXUCHl5u6iZUtAybv86oW3x36DCJfdzbDiO4B9EWB04z7zA0qvoomefyujHTmQUHxyOKfd4h9/rVMFFv9hgmUxWkrcg7KyLNisOQRaovVOuNtu2lRNXTOSF16Cy+xFGkVh1ObBRhAoMsVKPhMl6PCDiKhNWIekRR9pBtjafKsClQ2ieknUYfqhuvgj7zmqCedeyVaVQyt2W/J65leD0BkfCUESTpANSprHs4bQB65VuQIKKMi+URKx2VgpDdUcWJySt9jAHVPIbI5cT5maAT6RUMnE4oha7Ca1Ox8StBqjQ/hkkMyDbN0keIlN7RjZlwdZQf/qUnT/dPQhsyUCdPXOxmEJ2jekezEK/LGr4Fb+v+vjd9dhLNkD5nVn9zp36biGSCjiMpffQ3fjMeM0YGmVEVRP9kZXLWVRYQoVKrzjyzg5dY8iChbiQEfYpTeBuU+e2rqj4mns+Jvy0zjUbMy6Tyva+iqdZ/PdsBDbiB7c+FIgB1IUTVOD+GgKx6dhCtBZEccn5EyWFwZF9IdQJHZCYV4PA7nuzfm1Ol9SDdZkGHd2OgRCqK/sTwyfTHv8exNqZ1k+epGJp2a0q4IOEknc9aPCAF+m9pHahk7s7VO5gmhO6pvbvuKoeEtEXRZHRzCkGkXfzJlBk+23X5gBexKb6inRdBlj6M=
   file: 
-    - src/komodod
-    - src/komodo-cli
+    - src/safecoind
+    - src/safecoin-cli
   skip_cleanup: true
   on:
-    repo: KomodoPlatform/komodo
+    repo: fair-exchange/safecoin

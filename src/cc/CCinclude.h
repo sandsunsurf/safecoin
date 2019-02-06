@@ -33,7 +33,7 @@ one effect from using a different eval code is that even if the rest of the CC s
 and this allows efficient segregation of one CC contracts transactions from another
 the final part that will make it all clear how the funds can be locked inside the contract. this is what makes a contract, a contract. I put both the privkey and pubkey for a randomly chosen address and associate it with each CC contract. That means anybody can sign outputs for that privkey. However, it is a CC output, so in addition to the signature, whatever constraints a CC contract implements must also be satistifed. This allows funds to be locked and yet anybody is able to spend it, assuming they satisfy the CC's rules
 
-one other technical note is that komodod has the insight-explorer extensions built in. so it can lookup directly all transactions to any address. this is a key performance boosting thing as if it wasnt there, trying to get all the utxo for an address not in the wallet is quite time consuming
+one other technical note is that safecoind has the insight-explorer extensions built in. so it can lookup directly all transactions to any address. this is a key performance boosting thing as if it wasnt there, trying to get all the utxo for an address not in the wallet is quite time consuming
 */
 
 #include <cc/eval.h>
@@ -47,11 +47,11 @@ one other technical note is that komodod has the insight-explorer extensions bui
 #include "../wallet/wallet.h"
 #include <univalue.h>
 #include <exception>
-#include "../komodo_defs.h"
+#include "../safecoin_defs.h"
 #include "../utlist.h"
 #include "../uthash.h"
 
-extern int32_t KOMODO_CONNECTING,KOMODO_CCACTIVATE,KOMODO_DEALERNODE;
+extern int32_t SAFECOIN_CONNECTING,SAFECOIN_CCACTIVATE,SAFECOIN_DEALERNODE;
 extern uint32_t ASSETCHAINS_CC;
 extern char ASSETCHAINS_SYMBOL[];
 extern std::string CCerror;
@@ -104,8 +104,8 @@ struct oracleprice_info
 extern CWallet* pwalletMain;
 #endif
 bool GetAddressUnspent(uint160 addressHash, int type,std::vector<std::pair<CAddressUnspentKey,CAddressUnspentValue> > &unspentOutputs);
-CBlockIndex *komodo_getblockindex(uint256 hash);
-int32_t komodo_nextheight();
+CBlockIndex *safecoin_getblockindex(uint256 hash);
+int32_t safecoin_nextheight();
 
 static const uint256 zeroid;
 bool myGetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock);
@@ -171,7 +171,7 @@ bool Getscriptaddress(char *destaddr,const CScript &scriptPubKey);
 std::vector<uint8_t> Mypubkey();
 bool Myprivkey(uint8_t myprivkey[]);
 int64_t CCduration(int32_t &numblocks,uint256 txid);
-bool komodo_txnotarizedconfirmed(uint256 txid);
+bool safecoin_txnotarizedconfirmed(uint256 txid);
 // CCtx
 bool SignTx(CMutableTransaction &mtx,int32_t vini,int64_t utxovalue,const CScript scriptPubKey);
 std::string FinalizeCCTx(uint64_t skipmask,struct CCcontract_info *cp,CMutableTransaction &mtx,CPubKey mypk,uint64_t txfee,CScript opret);

@@ -28,17 +28,17 @@ cd VerusCoin
 ./zcutil/fetch-params.sh
 ```
 
-To build a distributable version of VerusCoin then run the makeReleaseMac.sh script after building. This will fix the dependency references and move the komodod and komodo-cli binaries to the kmd/mac/verus-cli directory along with the 6 libraries required for it to work properly.
+To build a distributable version of VerusCoin then run the makeReleaseMac.sh script after building. This will fix the dependency references and move the safecoind and safecoin-cli binaries to the safe/mac/verus-cli directory along with the 6 libraries required for it to work properly.
 
-When you are done building, you need to create `Komodo.conf` the Mac way. 
+When you are done building, you need to create `Safecoin.conf` the Mac way. 
 
 ```shell
-mkdir ~/Library/Application\ Support/Komodo
-touch ~/Library/Application\ Support/Komodo/Komodo.conf
-nano ~/Library/Application\ Support/Komodo/Komodo.conf
+mkdir ~/Library/Application\ Support/Safecoin
+touch ~/Library/Application\ Support/Safecoin/Safecoin.conf
+nano ~/Library/Application\ Support/Safecoin/Safecoin.conf
 ```
 
-Add the following lines to the Komodo.conf file:
+Add the following lines to the Safecoin.conf file:
 
 ```shell
 rpcuser=dontuseweakusernameoryougetrobbed

@@ -63,7 +63,7 @@ class CryptoconditionsGatewaysTest(CryptoconditionsTestFramework):
         assert convertion_txid, "got txid"
 
         # binding gateway
-        bind_hex = rpc.gatewaysbind(token_txid, oracle_txid, "KMD", "100000000", "1", "1", self.pubkey)
+        bind_hex = rpc.gatewaysbind(token_txid, oracle_txid, "SAFE", "100000000", "1", "1", self.pubkey)
         assert_success(bind_hex)
         bind_txid = self.send_and_mine(bind_hex["hex"], rpc)
         assert bind_txid, "got txid"

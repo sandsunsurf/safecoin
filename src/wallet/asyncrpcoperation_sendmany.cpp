@@ -353,11 +353,11 @@ bool AsyncRPCOperation_sendmany::main_impl() {
                 CAmount amount = std::get<2>(t);
                 builder_.AddTransparentInput(COutPoint(txid, vout), scriptPubKey, amount);
             }
-            // for Komodo, set lock time to accure interest, for other chains, set
+            // for Safecoin, set lock time to accure interest, for other chains, set
             // locktime to spend time locked coinbases
             if (ASSETCHAINS_SYMBOL[0] == 0)
             {
-                builder_.SetLockTime((uint32_t)time(NULL) - 60); // set lock time for Komodo interest
+                builder_.SetLockTime((uint32_t)time(NULL) - 60); // set lock time for Safecoin interest
             }
         } else {
             CMutableTransaction rawTx(tx_);

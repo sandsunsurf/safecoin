@@ -55,7 +55,7 @@ bool Eval::ImportCoin(const std::vector<uint8_t> params, const CTransaction &imp
     if (targetCcid != GetAssetchainsCC() || targetSymbol != GetAssetchainsSymbol())
         return Invalid("importcoin-wrong-chain");
 
-    if (targetCcid < KOMODO_FIRSTFUNGIBLEID)
+    if (targetCcid < SAFECOIN_FIRSTFUNGIBLEID)
         return Invalid("chain-not-fungible");
 
     // check burn amount

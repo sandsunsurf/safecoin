@@ -18,23 +18,23 @@
             <show>1</show>
             <componentList>
                 <component>
-                    <name>Agama</name>
-                    <description>Verus-Enhanced Agama Wallet</description>
+                    <name>Safewallet</name>
+                    <description>Verus-Enhanced Safewallet Wallet</description>
                     <canBeEdited>1</canBeEdited>
                     <downloadable>1</downloadable>
                     <selected>1</selected>
                     <show>1</show>
                     <desktopShortcutList>
                         <shortcut>
-                            <comment>Start Agama App</comment>
+                            <comment>Start Safewallet App</comment>
                             <exec></exec>
-                            <icon>../assets/icons/agama_icons/256x256.png</icon>
-                            <name>Agama App</name>
+                            <icon>../assets/icons/safewallet_icons/256x256.png</icon>
+                            <name>Safewallet App</name>
                             <path></path>
                             <platforms>all</platforms>
                             <runAsAdmin>0</runAsAdmin>
                             <runInTerminal>0</runInTerminal>
-                            <windowsExec>${installdir}/Agama/Agama-win32-x64/Agama.exe</windowsExec>
+                            <windowsExec>${installdir}/Safewallet/Safewallet-win32-x64/Safewallet.exe</windowsExec>
                             <windowsExecArgs></windowsExecArgs>
                             <windowsIcon></windowsIcon>
                             <windowsPath>${windows_folder_common_programs}/</windowsPath>
@@ -42,13 +42,13 @@
                     </desktopShortcutList>
                     <folderList>
                         <folder>
-                            <description>Verus-Enhanced Agama Wallet</description>
-                            <destination>${installdir}/Agama</destination>
-                            <name>Agama</name>
+                            <description>Verus-Enhanced Safewallet Wallet</description>
+                            <destination>${installdir}/Safewallet</destination>
+                            <name>Safewallet</name>
                             <platforms>all</platforms>
                             <distributionFileList>
                                 <distributionDirectory>
-                                    <origin>../Agama-win32-x64</origin>
+                                    <origin>../Safewallet-win32-x64</origin>
                                 </distributionDirectory>
                             </distributionFileList>
                         </folder>
@@ -120,7 +120,7 @@
         </runProgram>
         <deleteFile>
             <explanation>Deleting user data</explanation>
-            <path>${windows_folder_appdata}/Agama</path>
+            <path>${windows_folder_appdata}/Safewallet</path>
             <progressText>Deleting user data</progressText>
             <ruleList>
                 <compareValues>
@@ -183,7 +183,7 @@
             <actionList>
                 <httpGet>
                     <abortOnError>0</abortOnError>
-                    <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Agama daemon</explanation>
+                    <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Safewallet daemon</explanation>
                     <filename>${system_temp_directory}/vc_redist.x64.exe</filename>
                     <progressText>Downloading Visual C++ Redistributable for Visual Studio 2015</progressText>
                     <showMessageOnError>0</showMessageOnError>
@@ -199,7 +199,7 @@
         </showProgressDialog>
         <runProgram>
             <abortOnError>0</abortOnError>
-            <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Agama daemon</explanation>
+            <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Safewallet daemon</explanation>
             <program>${system_temp_directory}/vc_redist.x64.exe</program>
             <programArguments>/install /passive</programArguments>
             <progressText>Downloading Visual C++ Redistributable for Visual Studio 2015</progressText>
@@ -210,7 +210,7 @@
             <actionList>
                 <httpGet>
                     <abortOnError>0</abortOnError>
-                    <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Agama daemon</explanation>
+                    <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Safewallet daemon</explanation>
                     <filename>${system_temp_directory}/vc_redist.x86.exe</filename>
                     <progressText>Downloading Visual C++ Redistributable for Visual Studio 2015</progressText>
                     <showMessageOnError>0</showMessageOnError>
@@ -226,7 +226,7 @@
         </showProgressDialog>
         <runProgram>
             <abortOnError>0</abortOnError>
-            <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Agama daemon</explanation>
+            <explanation>Visual C++ Redistributable for Visual Studio 2015 library files are needed for Safewallet daemon</explanation>
             <program>${system_temp_directory}/vc_redist.x86.exe</program>
             <programArguments>/install /passive</programArguments>
             <progressText>Downloading Visual C++ Redistributable for Visual Studio 2015</progressText>

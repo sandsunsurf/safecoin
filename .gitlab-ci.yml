@@ -8,12 +8,12 @@ variables:
   PACKAGE_DIR_LINUX: linux64
   PACKAGE_DIR_WINDOWS: win64
   PACKAGE_DIR_MACOS: macos
-  AGAMA_ARTIFACTS_LINUX: ${PACKAGE_DIR_LINUX}.tar.gz
-  AGAMA_ARTIFACTS_WINDOWS: ${PACKAGE_DIR_WINDOWS}.zip
-  AGAMA_ARTIFACTS_MACOS: ${PACKAGE_DIR_MACOS}.tar.gz
-  AGAMA_ARTIFACTS_LINUX_CHECKSUM: ${AGAMA_ARTIFACTS_LINUX}.md5
-  AGAMA_ARTIFACTS_WINDOWS_CHECKSUM: ${AGAMA_ARTIFACTS_WINDOWS}.md5
-  AGAMA_ARTIFACTS_MACOS_CHECKSUM: ${AGAMA_ARTIFACTS_MACOS}.md5
+  SAFEWALLET_ARTIFACTS_LINUX: ${PACKAGE_DIR_LINUX}.tar.gz
+  SAFEWALLET_ARTIFACTS_WINDOWS: ${PACKAGE_DIR_WINDOWS}.zip
+  SAFEWALLET_ARTIFACTS_MACOS: ${PACKAGE_DIR_MACOS}.tar.gz
+  SAFEWALLET_ARTIFACTS_LINUX_CHECKSUM: ${SAFEWALLET_ARTIFACTS_LINUX}.md5
+  SAFEWALLET_ARTIFACTS_WINDOWS_CHECKSUM: ${SAFEWALLET_ARTIFACTS_WINDOWS}.md5
+  SAFEWALLET_ARTIFACTS_MACOS_CHECKSUM: ${SAFEWALLET_ARTIFACTS_MACOS}.md5
   ARTIFACT_EXPIRATION: 1 week
 
 ########################################################################################################################
@@ -21,14 +21,14 @@ variables:
 ########################################################################################################################
 ########################################################################################################################
 ########################################################################################################################
-####START####          Build Stage: compile and package komodo binaries for the Agama Wallet.             ####START#####
+####START####          Build Stage: compile and package safecoin binaries for the Safewallet Wallet.             ####START#####
 ########################################################################################################################
 ########################################################################################################################
 ####START####                                            LINUX                                             ####START####
 ########################################################################################################################
 build:ubuntu:
   stage: build
-  image: ca333/komodo-builders:komodo-ubuntu
+  image: ca333/safecoin-builders:safecoin-ubuntu
   variables:
     DOCKER_DRIVER: overlay2
   cache:
@@ -38,17 +38,17 @@ build:ubuntu:
   script:
   - zcutil/build.sh -j$(nproc)
   - mkdir ${PACKAGE_DIR_LINUX}
-  - cp src/komodod
-    src/komodo-cli
+  - cp src/safecoind
+    src/safecoin-cli
     ${PACKAGE_DIR_LINUX}
-  - chmod +x ${PACKAGE_DIR_LINUX}/komodod
-  - chmod +x ${PACKAGE_DIR_LINUX}/komodo-cli
-  - tar -czvf ${AGAMA_ARTIFACTS_LINUX} ${PACKAGE_DIR_LINUX}
-  - md5sum ${AGAMA_ARTIFACTS_LINUX} > ${AGAMA_ARTIFACTS_LINUX_CHECKSUM}
+  - chmod +x ${PACKAGE_DIR_LINUX}/safecoind
+  - chmod +x ${PACKAGE_DIR_LINUX}/safecoin-cli
+  - tar -czvf ${SAFEWALLET_ARTIFACTS_LINUX} ${PACKAGE_DIR_LINUX}
+  - md5sum ${SAFEWALLET_ARTIFACTS_LINUX} > ${SAFEWALLET_ARTIFACTS_LINUX_CHECKSUM}
   artifacts:
     paths:
-    - ${AGAMA_ARTIFACTS_LINUX}
-    - ${AGAMA_ARTIFACTS_LINUX_CHECKSUM}
+    - ${SAFEWALLET_ARTIFACTS_LINUX}
+    - ${SAFEWALLET_ARTIFACTS_LINUX_CHECKSUM}
     expire_in: 1 week
 
 ########################################################################################################################
@@ -58,7 +58,7 @@ build:ubuntu:
 ########################################################################################################################
 build:windows:
   stage: build
-  image:  ca333/komodo-builders:komodo-windows
+  image:  ca333/safecoin-builders:safecoin-windows
   variables:
     DOCKER_DRIVER: overlay2
   cache:
@@ -68,16 +68,16 @@ build:windows:
   script:
   - zcutil/build-win.sh -j$(nproc)
   - mkdir ${PACKAGE_DIR_WINDOWS}
-  - cp src/komodod.exe
-    src/komodo-cli.exe
-    src/komodo-tx.exe
+  - cp src/safecoind.exe
+    src/safecoin-cli.exe
+    src/safecoin-tx.exe
     ${PACKAGE_DIR_WINDOWS}
   - zip -r ${PACKAGE_DIR_WINDOWS}.zip ${PACKAGE_DIR_WINDOWS}
-  - md5sum ${AGAMA_ARTIFACTS_WINDOWS} > ${AGAMA_ARTIFACTS_WINDOWS_CHECKSUM}
+  - md5sum ${SAFEWALLET_ARTIFACTS_WINDOWS} > ${SAFEWALLET_ARTIFACTS_WINDOWS_CHECKSUM}
   artifacts:
     paths:
-    - ${AGAMA_ARTIFACTS_WINDOWS}
-    - ${AGAMA_ARTIFACTS_WINDOWS_CHECKSUM}
+    - ${SAFEWALLET_ARTIFACTS_WINDOWS}
+    - ${SAFEWALLET_ARTIFACTS_WINDOWS_CHECKSUM}
     expire_in: 1 week
 ########################################################################################################################
 ####END####                                             WINDOWS                                              ####END####
@@ -94,12 +94,12 @@ build:macos:
   script:
   - zcutil/build-mac.sh -j$(sysctl -n hw.physicalcpu)
   - ./makeRelease.sh ${PACKAGE_DIR_MACOS}
-  - tar -czvf ${AGAMA_ARTIFACTS_MACOS} ${PACKAGE_DIR_MACOS}
-  - md5sum ${AGAMA_ARTIFACTS_MACOS} > ${AGAMA_ARTIFACTS_MACOS_CHECKSUM}
+  - tar -czvf ${SAFEWALLET_ARTIFACTS_MACOS} ${PACKAGE_DIR_MACOS}
+  - md5sum ${SAFEWALLET_ARTIFACTS_MACOS} > ${SAFEWALLET_ARTIFACTS_MACOS_CHECKSUM}
   artifacts:
     paths:
-    - ${AGAMA_ARTIFACTS_MACOS}
-    - ${AGAMA_ARTIFACTS_MACOS_CHECKSUM}
+    - ${SAFEWALLET_ARTIFACTS_MACOS}
+    - ${SAFEWALLET_ARTIFACTS_MACOS_CHECKSUM}
     expire_in: 1 week
 ########################################################################################################################
 ####END####                                              MACOS                                               ####END####
