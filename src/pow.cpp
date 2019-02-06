@@ -56,11 +56,11 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
 
     // Reset the difficulty after the algo fork
-    if (pindexLast->nHeight > chainParams.eh_epoch_1_end() - 1
-	&& pindexLast->nHeight < chainParams.eh_epoch_1_end() + params.nPowAveragingWindow) {
-      LogPrint("pow", "Reset the difficulty for the eh_epoch_2 algo change: %d\n", nProofOfWorkLimit);
-      return nProofOfWorkLimit;
-    }
+    //if (pindexLast->nHeight > chainParams.eh_epoch_1_end() - 1
+    //	&& pindexLast->nHeight < chainParams.eh_epoch_1_end() + params.nPowAveragingWindow) {
+    //      LogPrint("pow", "Reset the difficulty for the eh_epoch_2 algo change: %d\n", nProofOfWorkLimit);
+    //     return nProofOfWorkLimit;
+    //    }
 
        
 
@@ -327,14 +327,10 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
 
 bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& params)
 {
-<<<<<<< HEAD
+
     if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH)
         return true;
 
-    unsigned int n = params.EquihashN();
-    unsigned int k = params.EquihashK();
-=======
-  
   //Set parameters N,K from solution size. Filtering of valid parameters
   //for the givenblock height will be carried out in main.cpp/ContextualCheckBlockHeader
   unsigned int n,k;
@@ -348,7 +344,6 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
   }
 
   LogPrint("pow", "selected n,k : %d, %d \n", n,k);
->>>>>>> 428167beb... Equihash 144,5 courtesy of Bitcoinz
 
   //need to put block height param switching code here
   
