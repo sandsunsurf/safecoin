@@ -16,7 +16,6 @@
 #include "consensus/validation.h"
 #ifdef ENABLE_MINING
 #include "crypto/equihash.h"
-#include "crypto/verus_hash.h"
 #endif
 #include "hash.h"
 #include "key_io.h"
@@ -1034,11 +1033,8 @@ void static VerusStaker(CWallet *pwallet)
             printf("Found block %d \n", Mining_height );
             printf("staking reward %.8f %s!\n", (double)subsidy / (double)COIN, ASSETCHAINS_SYMBOL);
             arith_uint256 post;
-            post.SetCompact(pblock->GetVerusPOSTarget());
             pindexPrev = get_chainactive(Mining_height - 100);
             CTransaction &sTx = pblock->vtx[pblock->vtx.size()-1];
-            printf("POS hash: %s  \ntarget:   %s\n",
-                CTransaction::_GetVerusPOSHash(&(pblock->nNonce), sTx.vin[0].prevout.hash, sTx.vin[0].prevout.n, Mining_height, pindexPrev->GetBlockHeader().GetVerusEntropyHash(Mining_height - 100), sTx.vout[0].nValue).GetHex().c_str(), ArithToUint256(post).GetHex().c_str());
             if (unlockTime > Mining_height && subsidy >= ASSETCHAINS_TIMELOCKGTE)
                 printf("- timelocked until block %i\n", unlockTime);
             else
@@ -1225,20 +1221,14 @@ void static BitcoinMiner_noeq()
             {
                 arith_uint256 arNonce = UintToArith256(pblock->nNonce);
 
-                CVerusHashWriter ss = CVerusHashWriter(SER_GETHASH, PROTOCOL_VERSION);
-                ss << *((CBlockHeader *)pblock);
-                int64_t *extraPtr = ss.xI64p();
-                CVerusHash &vh = ss.GetState();
                 uint256 hashResult = uint256();
-                vh.ClearExtra();
                 int64_t i, count = ASSETCHAINS_NONCEMASK[ASSETCHAINS_ALGO] + 1;
                 int64_t hashesToGo = ASSETCHAINS_HASHESPERROUND[ASSETCHAINS_ALGO];
 
                 // for speed check NONCEMASK at a time
                 for (i = 0; i < count; i++)
                 {
-                    *extraPtr = i;
-                    vh.ExtraHash((unsigned char *)&hashResult);
+		  //                    *extraPtr = i;
 
                     if ( UintToArith256(hashResult) <= hashTarget )
                     {

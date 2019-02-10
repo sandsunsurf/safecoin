@@ -1330,7 +1330,7 @@ bool CWallet::VerusSelectStakeOutput(CBlock *pBlock, arith_uint256 &hashResult, 
     txnouttype whichType;
     std:vector<std::vector<unsigned char>> vSolutions;
 
-    pBlock->nNonce.SetPOSTarget(bnTarget);
+    //  pBlock->nNonce.SetPOSTarget(bnTarget);
     target.SetCompact(bnTarget);
 
     pwalletMain->AvailableCoins(vecOutputs, true, NULL, false, false);
@@ -1338,9 +1338,9 @@ bool CWallet::VerusSelectStakeOutput(CBlock *pBlock, arith_uint256 &hashResult, 
     if (pastBlockIndex = safecoin_chainactive(nHeight - 100))
     {
         CBlockHeader bh = pastBlockIndex->GetBlockHeader();
-        uint256 pastHash = bh.GetVerusEntropyHash(nHeight - 100);
+	//        uint256 pastHash = bh.GetVerusEntropyHash(nHeight - 100);
         CPOSNonce curNonce;
-
+	/* verus
         BOOST_FOREACH(COutput &txout, vecOutputs)
         {
             if (txout.fSpendable && (UintToArith256(txout.tx->GetVerusPOSHash(&(pBlock->nNonce), txout.i, nHeight, pastHash)) <= target) && (txout.nDepth >= VERUS_MIN_STAKEAGE))
@@ -1361,6 +1361,7 @@ bool CWallet::VerusSelectStakeOutput(CBlock *pBlock, arith_uint256 &hashResult, 
             pBlock->nNonce = curNonce;
             return true;
         }
+	*/
     }
     return false;
 }

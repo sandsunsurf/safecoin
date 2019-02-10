@@ -220,11 +220,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
 
         CBlockHeader hdr = pindexFirst->GetBlockHeader();
 
-        if (hdr.IsVerusPOSBlock())
-        {
-            nBits = hdr.GetVerusPOSTarget();
-            break;
-        }
+
         pindexFirst = pindexFirst->pprev;
     }
 
@@ -245,11 +241,7 @@ uint32_t lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::
                 return nProofOfStakeLimit;
 
             CBlockHeader hdr = pindexFirst->GetBlockHeader();
-            if (hdr.IsVerusPOSBlock())
-            {
-                nBits = hdr.GetVerusPOSTarget();
-                break;
-            }
+
         }
 
         if (x)
@@ -450,7 +442,7 @@ bool CheckProofOfWork(const CBlockHeader &blkHeader, uint8_t *pubkey33, int32_t 
         bnTarget.SetCompact(SAFECOIN_MINDIFF_NBITS,&fNegative,&fOverflow);
     }
     // Check proof of work matches claimed amount
-    if ( UintToArith256(hash = blkHeader.GetHash()) > bnTarget && !blkHeader.IsVerusPOSBlock() )
+    if ( UintToArith256(hash = blkHeader.GetHash()) > bnTarget )
     {
         if ( SAFECOIN_LOADINGBLOCKS != 0 )
             return true;

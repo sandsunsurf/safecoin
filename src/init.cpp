@@ -1164,14 +1164,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     globalVerifyHandle.reset(new ECCVerifyHandle());
 
     // set the hash algorithm to use for this chain
-    extern uint32_t ASSETCHAINS_ALGO, ASSETCHAINS_VERUSHASH;
-    CVerusHash::init();
-    CVerusHashV2::init();
-    if (ASSETCHAINS_ALGO == ASSETCHAINS_VERUSHASH)
-    {
-        // initialize VerusHash
-        CBlockHeader::SetVerusHash();
-    }
+    extern uint32_t ASSETCHAINS_ALGO;
 
     // Sanity check
     if (!InitSanityCheck())

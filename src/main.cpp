@@ -4748,14 +4748,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
                 Tx = tx;
                 if ( myAddtomempool(Tx, &state, true) == false ) // happens with out of order tx in block on resync
                 {
-                    //LogPrintf("Rejected by mempool, reason: .%s.\n", state.GetRejectReason().c_str());
-                    // take advantage of other checks, but if we were only rejected because it is a valid staking
-                    // transaction, sync with wallets and don't mark as a reject
-                    if (i == (block.vtx.size() - 1) && ASSETCHAINS_LWMAPOS && block.IsVerusPOSBlock() && state.GetRejectReason() == "staking")
-                    {
-                        sTx = Tx;
-                        ptx = &sTx;
-                    } else rejects++;
+                rejects++;
                 }
                 // here we remove any txs in the temp mempool that were included in the block.
                 tmpmempool.remove(tx, removed, false);

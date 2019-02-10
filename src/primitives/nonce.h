@@ -38,24 +38,6 @@ public:
         return nBits;
     }
 
-    bool IsPOSNonce() const
-    {
-        arith_uint256 arNonce = UintToArith256(*this);
-        arith_uint256 tmpNonce = ((arNonce << 128) >> 128);
-        CVerusHashWriter hashWriter = CVerusHashWriter(SER_GETHASH, PROTOCOL_VERSION);
-        hashWriter << ArithToUint256(tmpNonce);
-        return (*this == ArithToUint256(UintToArith256(hashWriter.GetHash()) << 128 | tmpNonce));
-    }
-
-    void SetPOSTarget(uint32_t nBits)
-    {
-        CVerusHashWriter hashWriter = CVerusHashWriter(SER_GETHASH, PROTOCOL_VERSION);
-
-        arith_uint256 arNonce = (UintToArith256(*this) & entropyMask) | nBits;
-        hashWriter << ArithToUint256(arNonce);
-
-        (uint256 &)(*this) = ArithToUint256(UintToArith256(hashWriter.GetHash()) << 128 | arNonce);
-    }
 
     void SetPOSEntropy(const uint256 &pastHash, uint256 txid, int32_t voutNum);
     bool CheckPOSEntropy(const uint256 &pastHash, uint256 txid, int32_t voutNum);

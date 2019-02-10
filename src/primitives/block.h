@@ -97,42 +97,7 @@ public:
         return (int64_t)nTime;
     }
 
-    uint32_t GetVerusPOSTarget() const
-    {
-        uint32_t nBits = 0;
 
-        for (const unsigned char *p = nNonce.begin() + 3; p >= nNonce.begin(); p--)
-        {
-            nBits <<= 8;
-            nBits += *p;
-        }
-        return nBits;
-    }
-
-    bool IsVerusPOSBlock() const
-    {
-        if ( ASSETCHAINS_LWMAPOS != 0 )
-            return nNonce.IsPOSNonce();
-        else return(0);
-    }
-
-    void SetVerusPOSTarget(uint32_t nBits)
-    {
-        CVerusHashWriter hashWriter = CVerusHashWriter(SER_GETHASH, PROTOCOL_VERSION);
-
-        arith_uint256 arNonce = UintToArith256(nNonce);
-
-        // printf("before svpt: %s\n", ArithToUint256(arNonce).GetHex().c_str());
-
-        arNonce = (arNonce & CPOSNonce::entropyMask) | nBits;
-
-        // printf("after clear: %s\n", ArithToUint256(arNonce).GetHex().c_str());
-
-        hashWriter << ArithToUint256(arNonce);
-        nNonce = CPOSNonce(ArithToUint256(UintToArith256(hashWriter.GetHash()) << 128 | arNonce));
-
-        // printf(" after svpt: %s\n", nNonce.GetHex().c_str());
-    }
 };
 
 // this class is used to address the type mismatch that existed between nodes, where block headers
