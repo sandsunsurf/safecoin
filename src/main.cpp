@@ -3198,7 +3198,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     if ( fCheckPOW != 0 && !ContextualCheckBlock(block, state, pindex->pprev) ) // Activate Jan 15th, 2019
     {
         fprintf(stderr,"ContextualCheckBlock failed ht.%d\n",(int32_t)pindex->GetHeight());
-        if ( pindex->nTime > 1547510400 )
+        if ( pindex->nTime > 1551571200 )
             return false;
         fprintf(stderr,"grandfathered exception, until jan 15th 2019\n");
     }
