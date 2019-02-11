@@ -144,8 +144,8 @@ public:
         eh_epoch_3 = eh192_7;
         eh_epoch_1_endblock = 175374;
         eh_epoch_2_startblock = 175344;
-        eh_epoch_2_endblock = 555120;
-        eh_epoch_3_startblock = 555000;
+        eh_epoch_2_endblock = 523230;
+        eh_epoch_3_startblock = 523200;
 
 
         CMutableTransaction txNew;
