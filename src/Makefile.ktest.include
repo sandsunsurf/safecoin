@@ -10,7 +10,6 @@ safecoin_test_SOURCES = \
 	test-safecoin/test_coinimport.cpp \
 	test-safecoin/test_eval_bet.cpp \
 	test-safecoin/test_eval_notarisation.cpp \
-	test-safecoin/test_crosschain.cpp \
 	test-safecoin/test_parse_notarisation.cpp
 
 safecoin_test_CPPFLAGS = $(safecoind_CPPFLAGS)

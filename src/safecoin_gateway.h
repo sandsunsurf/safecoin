@@ -177,10 +177,10 @@ int32_t safecoin_rwapproval(int32_t rwflag,uint8_t *opretbuf,struct pax_transact
         pax->vout += ((uint32_t)opretbuf[len++] << 8);
         //printf(" txid v.%d\n",pax->vout);
     }
-    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->safecoinshis),&pax->safecoinshis);
-    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->fiatoshis),&pax->fiatoshis);
-    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->height),&pax->height);
-    len += safenodes_rwnum(rwflag,&opretbuf[len],sizeof(pax->otherheight),&pax->otherheight);
+    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->safecoinshis),&pax->safecoinshis);
+    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->fiatoshis),&pax->fiatoshis);
+    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->height),&pax->height);
+    len += iguana_rwnum(rwflag,&opretbuf[len],sizeof(pax->otherheight),&pax->otherheight);
     if ( rwflag != 0 )
     {
         memcpy(&opretbuf[len],pax->rmd160,20), len += 20;
@@ -612,9 +612,8 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
     return(0);
 }
 
-
 const char *banned_txids[] =
-  {
+{
     "bcdf70f737f466d7d6331aac897dd02e74e5abf0ac2fb0cf846f7c9e3f015663", //////
     "75056885ca3be4fa65af4c54b98e1145010a2d635eb908f2bbad4d10e6a6d28e", //////
     "9030a5776795a6a595ed61433f9ebbb961faa8aaab9452a07d62425353ef5b7a", // #77197 Apr 7, 2018 2:26:15 PM
@@ -637,10 +636,7 @@ const char *banned_txids[] =
     "31d6bdfbcfad0d47589eb4ccb6a7b4e5940ee4e0cc1c752d1c0c26c5979c5c5c",
     "817dd96f69c23b62ea4d706ccffc8d032d1629807619ecefd78259ce29875865",
     "0fb11c0e7e4cc52475f3155e53ea5d863b1b8ef8ea1646dbb333a05002490a3b",
-  };
-
-
-
+};
 
 int32_t safecoin_bannedset(int32_t *indallvoutsp,uint256 *array,int32_t max)
 {
@@ -695,15 +691,17 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
             }
         }
     }
-    n = block.vtx[0].vout.size();
-    //script = (uint8_t *)block.vtx[0].vout[n-1].scriptPubKey.data();
-    //if ( n <= 2 || script[0] != 0x6a )
+    // we don't want these checks in VRSC, leave it at the Sapling upgrade
+    if ( ASSETCHAINS_SYMBOL[0] == 0 || 
+         (ASSETCHAINS_COMMISSION != 0 && height > 1) ||
+         NetworkUpgradeActive(height, Params().GetConsensus(), Consensus::UPGRADE_SAPLING) )
     {
+        n = block.vtx[0].vout.size();
         int64_t val,prevtotal = 0; int32_t strangeout=0,overflow = 0;
         total = 0;
         for (i=1; i<n; i++)
         {
-            script = (uint8_t *)block.vtx[0].vout[i].scriptPubKey.data();
+            script = (uint8_t *)&block.vtx[0].vout[i].scriptPubKey[0];
             if ( (val= block.vtx[0].vout[i].nValue) < 0 || val >= MAX_MONEY )
             {
                 overflow = 1;
@@ -745,7 +743,7 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
             }
             else if ( height > 814000 )
             {
-                script = (uint8_t *)block.vtx[0].vout[0].scriptPubKey.data();
+                script = (uint8_t *)&block.vtx[0].vout[0].scriptPubKey[0];
                 return(-1 * (safecoin_electednotary(&num,script+1,height,0) >= 0) * (height > 1000000));
             }
         }
@@ -770,12 +768,12 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
             {
                 fprintf(stderr,"checkdeposit: ht.%d checktoshis %.8f overflow.%d total %.8f strangeout.%d\n",height,dstr(checktoshis),overflow,dstr(total),strangeout);
                 if ( strangeout != 0 )
-                    fprintf(stderr,">>>>>>>>>>>>> %s DUST ht.%d strangout.%d notmatched.%d <<<<<<<<<\n",ASSETCHAINS_SYMBOL,height,strangeout,notmatched);
+                    fprintf(stderr,">>>>>>>>>>>>> %s DUST ht.%d strangeout.%d notmatched.%d <<<<<<<<<\n",ASSETCHAINS_SYMBOL,height,strangeout,notmatched);
                 return(-1);
             }
         }
-        return(0);
     }
+    return(0);
 }
 
 const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,int32_t opretlen,uint256 txid,uint16_t vout,char *source)
@@ -806,7 +804,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
         tosafecoin = 0;
         if ( opretlen == 38 ) // any SAFE tx
         {
-            safenodes_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
+            iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
             memset(base,0,sizeof(base));
             PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&fiatoshis);
             bitcoin_address(coinaddr,addrtype,rmd160,20);
@@ -949,7 +947,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
             return(typestr);
         }
         tosafecoin = 1;
-        safenodes_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
+        iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
         memset(base,0,sizeof(base));
         PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&safecoinshis);
         bitcoin_address(coinaddr,addrtype,rmd160,20);
@@ -1379,7 +1377,7 @@ void safecoin_passport_iteration()
 {
     static long lastpos[34]; static char userpass[33][1024]; static uint32_t lasttime,callcounter,lastinterest;
     int32_t maxseconds = 10;
-    FILE *fp; uint8_t *filedata; long fpos,datalen,lastfpos; int32_t baseid,limit,n,ht,isrealtime,expired,refid,blocks,longest; struct safecoin_state *sp,*refsp; char *retstr,fname[512],*base,symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; uint32_t buf[3],starttime; cJSON *infoobj,*result; uint64_t RTmask = 0;
+    FILE *fp; uint8_t *filedata; long fpos,datalen,lastfpos; int32_t baseid,limit,n,ht,isrealtime,expired,refid,blocks,longest; struct safecoin_state *sp,*refsp; char *retstr,fname[512],*base,symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; uint32_t buf[3],starttime; cJSON *infoobj,*result; uint64_t RTmask = 0; //CBlockIndex *pindex;
     expired = 0;
     while ( SAFECOIN_INITDONE == 0 )
     {
@@ -1388,12 +1386,13 @@ void safecoin_passport_iteration()
     }
     if ( safecoin_chainactive_timestamp() > lastinterest )
     {
-        safecoin_interestsum();
-        safecoin_longestchain();
+        if ( ASSETCHAINS_SYMBOL[0] == 0 )
+            safecoin_interestsum();
+        //safecoin_longestchain();
         lastinterest = safecoin_chainactive_timestamp();
     }
     refsp = safecoin_stateptr(symbol,dest);
-    if ( ASSETCHAINS_SYMBOL[0] == 0 )
+    if ( ASSETCHAINS_SYMBOL[0] == 0 || strcmp(ASSETCHAINS_SYMBOL,"SAFECC") == 0 )
     {
         refid = 33;
         limit = 10000000;
@@ -1500,7 +1499,7 @@ void safecoin_passport_iteration()
             safecoin_statefname(fname,baseid<32?base:(char *)"",(char *)"realtime");
             if ( (fp= fopen(fname,"wb")) != 0 )
             {
-                buf[0] = (uint32_t)chainActive.LastTip()->nHeight;
+                buf[0] = (uint32_t)chainActive.LastTip()->GetHeight();
                 buf[1] = (uint32_t)safecoin_longestchain();
                 if ( buf[0] != 0 && buf[0] == buf[1] )
                 {

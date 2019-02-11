@@ -19,8 +19,8 @@ BITCOIN_CLI_BIN=$(top_builddir)/src/safecoin-cli$(EXEEXT)
 BITCOIN_WIN_INSTALLER=$(PACKAGE)-$(PACKAGE_VERSION)-win$(WINDOWS_BITS)-setup$(EXEEXT)
 
 if TARGET_DARWIN
-OSX_APP=Bitcoin-Qt.app
-OSX_DMG=Bitcoin-Core.dmg
+OSX_APP=Safewallet.app
+OSX_DMG=Safewallet.dmg
 OSX_BACKGROUND_IMAGE=background.tiff
 OSX_DEPLOY_SCRIPT=$(top_srcdir)/contrib/macdeploy/macdeployqtplus
 OSX_FANCY_PLIST=$(top_srcdir)/contrib/macdeploy/fancy.plist

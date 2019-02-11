@@ -10,10 +10,25 @@
 #include "utilstrencodings.h"
 #include "crypto/common.h"
 
-uint256 CBlockHeader::GetHash() const
+extern uint32_t ASSETCHAINS_ALGO, ASSETCHAINS_VERUSHASH;
+
+// default hash algorithm for block
+uint256 (CBlockHeader::*CBlockHeader::hashFunction)() const = &CBlockHeader::GetSHA256DHash;
+
+uint256 CBlockHeader::GetSHA256DHash() const
 {
     return SerializeHash(*this);
 }
+
+
+void CBlockHeader::SetSHA256DHash()
+{
+    CBlockHeader::hashFunction = &CBlockHeader::GetSHA256DHash;
+}
+
+
+
+
 
 
 uint256 BuildMerkleTree(bool* fMutated, const std::vector<uint256> leaves,
@@ -131,12 +146,12 @@ uint256 CBlock::CheckMerkleBranch(uint256 hash, const std::vector<uint256>& vMer
 std::string CBlock::ToString() const
 {
     std::stringstream s;
-    s << strprintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, hashReserved=%s, nTime=%u, nBits=%08x, nNonce=%s, vtx=%u)\n",
+    s << strprintf("CBlock(hash=%s, ver=%d, hashPrevBlock=%s, hashMerkleRoot=%s, hashFinalSaplingRoot=%s, nTime=%u, nBits=%08x, nNonce=%s, vtx=%u)\n",
         GetHash().ToString(),
         nVersion,
         hashPrevBlock.ToString(),
         hashMerkleRoot.ToString(),
-        hashReserved.ToString(),
+        hashFinalSaplingRoot.ToString(),
         nTime, nBits, nNonce.ToString(),
         vtx.size());
     for (unsigned int i = 0; i < vtx.size(); i++)

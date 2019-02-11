@@ -36,10 +36,11 @@ struct EHparameters {
 
 //EH sol size = (pow(2, k) * ((n/(k+1))+1)) / 8;
 static const EHparameters eh200_9 = {200,9,1344};
+static const EHparameters eh192_7 = {192,7,400};
 static const EHparameters eh144_5 = {144,5,100};
 static const EHparameters eh96_5 = {96,5,68};
 static const EHparameters eh48_5 = {48,5,36};
-static const unsigned int MAX_EH_PARAM_LIST_LEN = 2;
+static const unsigned int MAX_EH_PARAM_LIST_LEN = 3;
 
 /**
  * CChainParams defines various tweakable parameters of a given instance of the
@@ -71,6 +72,15 @@ public:
         double fTransactionsPerDay;
     };
 
+    enum Bech32Type {
+        SAPLING_PAYMENT_ADDRESS,
+        SAPLING_FULL_VIEWING_KEY,
+        SAPLING_INCOMING_VIEWING_KEY,
+        SAPLING_EXTENDED_SPEND_KEY,
+
+        MAX_BECH32_TYPES
+    };
+
     const Consensus::Params& GetConsensus() const { return consensus; }
     const CMessageHeader::MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
@@ -83,15 +93,18 @@ public:
     bool DefaultConsistencyChecks() const { return fDefaultConsistencyChecks; }
     /** Policy: Filter transactions that do not match well-defined patterns */
     bool RequireStandard() const { return fRequireStandard; }
-    int64_t MaxTipAge() const { return nMaxTipAge; }
     int64_t PruneAfterHeight() const { return nPruneAfterHeight; }
 
     EHparameters eh_epoch_1_params() const { return eh_epoch_1; }
     EHparameters eh_epoch_2_params() const { return eh_epoch_2; }
+    EHparameters eh_epoch_3_params() const { return eh_epoch_3; }
     unsigned long eh_epoch_1_end() const { return eh_epoch_1_endblock; }
     unsigned long eh_epoch_2_start() const { return eh_epoch_2_startblock; }
+    unsigned long eh_epoch_2_end() const { return eh_epoch_2_endblock; }
+    unsigned long eh_epoch_3_start() const { return eh_epoch_3_startblock; }
     
     std::string CurrencyUnits() const { return strCurrencyUnits; }
+    uint32_t BIP44CoinType() const { return bip44CoinType; }
     /** Make miner stop after a block is found. In RPC, don't return until nGenProcLimit blocks are generated */
     bool MineBlocksOnDemand() const { return fMineBlocksOnDemand; }
     /** In the future use NetworkIDString() for RPC fields */
@@ -100,6 +113,7 @@ public:
     std::string NetworkIDString() const { return strNetworkID; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
+    const std::string& Bech32HRP(Bech32Type type) const { return bech32HRPs[type]; }
     const std::vector<SeedSpec6>& FixedSeeds() const { return vFixedSeeds; }
     const CCheckpointData& Checkpoints() const { return checkpointData; }
     /** Return the founder's reward address and script for a given block height */
@@ -116,7 +130,6 @@ public:
     //void settimestamp(uint32_t timestamp) { genesis.nTime = timestamp; }
     //void setgenesis(CBlock &block) { genesis = block; }
     //void recalc_genesis(uint32_t nonce) { genesis = CreateGenesisBlock(ASSETCHAINS_TIMESTAMP, nonce, GENESIS_NBITS, 1, COIN); };
-    int nDefaultPort = 0;
     CMessageHeader::MessageStartChars pchMessageStart; // jl777 moved
     Consensus::Params consensus;
 
@@ -127,17 +140,23 @@ protected:
     std::vector<unsigned char> vAlertPubKey;
     int nMinerThreads = 0;
     long nMaxTipAge = 0;
+    int nDefaultPort = 0;
     uint64_t nPruneAfterHeight = 0;
 
     EHparameters eh_epoch_1 = eh200_9;
     EHparameters eh_epoch_2 = eh144_5;
+    EHparameters eh_epoch_3 = eh192_7;
     unsigned long eh_epoch_1_endblock = 150000;
     unsigned long eh_epoch_2_startblock = 140000;
+    unsigned long eh_epoch_2_endblock = 170000;
+    unsigned long eh_epoch_3_startblock = 160000;
     
     std::vector<CDNSSeedData> vSeeds;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
+    std::string bech32HRPs[MAX_BECH32_TYPES];
     std::string strNetworkID;
     std::string strCurrencyUnits;
+    uint32_t bip44CoinType;
     CBlock genesis;
     std::vector<SeedSpec6> vFixedSeeds;
     bool fMiningRequiresPeers = false;

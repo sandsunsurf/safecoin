@@ -112,7 +112,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                     errs++;
                 if ( fread(&MoMdepth,1,sizeof(MoMdepth),fp) != sizeof(MoMdepth) )
                     errs++;
-                if ( 1 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
+                if ( 0 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
                     printf("%s load[%s.%d -> %s] NOTARIZED %d %s MoM.%s %d CCid.%u\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str(),MoM.ToString().c_str(),MoMdepth&0xffff,(MoMdepth>>16)&0xffff);
             }
             else
@@ -257,7 +257,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
                     errs++;
                 if ( memread(&MoMdepth,sizeof(MoMdepth),filedata,&fpos,datalen) != sizeof(MoMdepth) )
                     errs++;
-                if ( 1 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
+                if ( 0 && ASSETCHAINS_SYMBOL[0] != 0 && sp != 0 )
                     printf("%s load[%s.%d -> %s] NOTARIZED %d %s MoM.%s %d CCid.%u\n",ASSETCHAINS_SYMBOL,symbol,sp->NUM_NPOINTS,dest,notarized_height,notarized_hash.ToString().c_str(),MoM.ToString().c_str(),MoMdepth&0xffff,(MoMdepth>>16)&0xffff);
             }
             else
@@ -510,7 +510,7 @@ int32_t safecoin_validate_chain(uint256 srchash,int32_t notarized_height)
     static int32_t last_rewind; int32_t rewindtarget; CBlockIndex *pindex; struct safecoin_state *sp; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN];
     if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
         return(0);
-    if ( IsInitialBlockDownload() == 0 && ((pindex= mapBlockIndex[srchash]) == 0 || pindex->nHeight != notarized_height) )
+    if ( IsInitialBlockDownload() == 0 && ((pindex= safecoin_getblockindex(srchash)) == 0 || pindex->GetHeight() != notarized_height) )
     {
         if ( sp->NOTARIZED_HEIGHT > 0 && sp->NOTARIZED_HEIGHT < notarized_height )
             rewindtarget = sp->NOTARIZED_HEIGHT - 1;
@@ -621,10 +621,10 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                 notarized = 1;
             if ( 0 && opretlen != 149 )
                 printf("[%s].%d (%s) matched.%d i.%d j.%d notarized.%d %llx opretlen.%d len.%d offset.%d opoffset.%d\n",ASSETCHAINS_SYMBOL,height,ccdata.symbol,matched,i,j,notarized,(long long)signedmask,opretlen,len,offset,opoffset);
-            len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&srchash);
-            len += safenodes_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
+            len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&srchash);
+            len += iguana_rwnum(0,&scriptbuf[len],sizeof(*notarizedheightp),(uint8_t *)notarizedheightp);
             if ( matched != 0 )
-                len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
+                len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&desttxid);
             if ( matched != 0 )
                 validated = safecoin_validate_chain(srchash,*notarizedheightp);
             else validated = 1;
@@ -642,13 +642,13 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                 //printf("nameoffset.%d len.%d + 36 %d opoffset.%d vs opretlen.%d\n",nameoffset,len,len+36,opoffset,opretlen);
                 if ( len+36-opoffset <= opretlen )
                 {
-                    len += safenodes_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
-                    len += safenodes_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
+                    len += iguana_rwbignum(0,&scriptbuf[len],32,(uint8_t *)&MoM);
+                    len += iguana_rwnum(0,&scriptbuf[len],sizeof(MoMdepth),(uint8_t *)&MoMdepth);
                     ccdata.MoMdata.MoM = MoM;
                     ccdata.MoMdata.MoMdepth = MoMdepth & 0xffff;
                     if ( len+sizeof(ccdata.CCid)-opoffset <= opretlen )
                     {
-                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(ccdata.CCid),(uint8_t *)&ccdata.CCid);
+                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(ccdata.CCid),(uint8_t *)&ccdata.CCid);
                         //if ( ((MoMdepth>>16) & 0xffff) != (ccdata.CCid & 0xffff) )
                         //    fprintf(stderr,"%s CCid mismatch %u != %u\n",ASSETCHAINS_SYMBOL,((MoMdepth>>16) & 0xffff),(ccdata.CCid & 0xffff));
                         ccdata.len = sizeof(ccdata.CCid);
@@ -657,19 +657,19 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
                             // MoMoM, depth, numpairs, (notarization ht, MoMoM offset)
                             if ( len+48-opoffset <= opretlen && strcmp(ccdata.symbol,ASSETCHAINS_SYMBOL) == 0 )
                             {
-                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safestarti);
-                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safeendi);
-                                len += safenodes_rwbignum(0,&scriptbuf[len],sizeof(MoMoMdata.MoMoM),(uint8_t *)&MoMoMdata.MoMoM);
-                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.MoMoMdepth);
-                                len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.numpairs);
+                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safestarti);
+                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.safeendi);
+                                len += iguana_rwbignum(0,&scriptbuf[len],sizeof(MoMoMdata.MoMoM),(uint8_t *)&MoMoMdata.MoMoM);
+                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.MoMoMdepth);
+                                len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.numpairs);
                                 MoMoMdata.len += sizeof(MoMoMdata.MoMoM) + sizeof(uint32_t)*4;
                                 if ( len+MoMoMdata.numpairs*8-opoffset == opretlen )
                                 {
                                     MoMoMdata.pairs = (struct safecoin_ccdatapair *)calloc(MoMoMdata.numpairs,sizeof(*MoMoMdata.pairs));
                                     for (k=0; k<MoMoMdata.numpairs; k++)
                                     {
-                                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(int32_t),(uint8_t *)&MoMoMdata.pairs[k].notarized_height);
-                                        len += safenodes_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.pairs[k].MoMoMoffset);
+                                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(int32_t),(uint8_t *)&MoMoMdata.pairs[k].notarized_height);
+                                        len += iguana_rwnum(0,&scriptbuf[len],sizeof(uint32_t),(uint8_t *)&MoMoMdata.pairs[k].MoMoMoffset);
                                         MoMoMdata.len += sizeof(uint32_t) * 2;
                                     }
                                 } else ccdata.len = MoMoMdata.len = 0;
@@ -800,33 +800,33 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
     uint8_t scriptbuf[10001],pubkeys[64][33],rmd160[20],scriptPubKey[35]; uint256 zero,btctxid,txhash;
     int32_t i,j,k,numnotaries,notarized,scriptlen,isratification,nid,numvalid,specialtx,notarizedheight,notaryid,len,numvouts,numvins,height,txn_count;
     memset(&zero,0,sizeof(zero));
-    safecoin_init(pindex->nHeight);
+    safecoin_init(pindex->GetHeight());
     SAFECOIN_INITDONE = (uint32_t)time(NULL);
     if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
     {
         fprintf(stderr,"unexpected null safecoinstateptr.[%s]\n",ASSETCHAINS_SYMBOL);
         return;
     }
-    //fprintf(stderr,"%s connect.%d\n",ASSETCHAINS_SYMBOL,pindex->nHeight);
-    numnotaries = safecoin_notaries(pubkeys,pindex->nHeight,pindex->GetBlockTime());
+    //fprintf(stderr,"%s connect.%d\n",ASSETCHAINS_SYMBOL,pindex->GetHeight());
+    numnotaries = safecoin_notaries(pubkeys,pindex->GetHeight(),pindex->GetBlockTime());
     calc_rmd160_sha256(rmd160,pubkeys[0],33);
-    if ( pindex->nHeight > hwmheight )
-        hwmheight = pindex->nHeight;
+    if ( pindex->GetHeight() > hwmheight )
+        hwmheight = pindex->GetHeight();
     else
     {
-        if ( pindex->nHeight != hwmheight )
+        if ( pindex->GetHeight() != hwmheight )
         {
-            printf("%s hwmheight.%d vs pindex->nHeight.%d t.%u reorg.%d\n",ASSETCHAINS_SYMBOL,hwmheight,pindex->nHeight,(uint32_t)pindex->nTime,hwmheight-pindex->nHeight);
-            safecoin_purge_ccdata((int32_t)pindex->nHeight);
-            hwmheight = pindex->nHeight;
+            printf("%s hwmheight.%d vs pindex->GetHeight().%d t.%u reorg.%d\n",ASSETCHAINS_SYMBOL,hwmheight,pindex->GetHeight(),(uint32_t)pindex->nTime,hwmheight-pindex->GetHeight());
+            safecoin_purge_ccdata((int32_t)pindex->GetHeight());
+            hwmheight = pindex->GetHeight();
         }
-        safecoin_event_rewind(sp,symbol,pindex->nHeight);
-        safecoin_stateupdate(pindex->nHeight,0,0,0,zero,0,0,0,0,-pindex->nHeight,pindex->nTime,0,0,0,0,zero,0);
+        safecoin_event_rewind(sp,symbol,pindex->GetHeight());
+        safecoin_stateupdate(pindex->GetHeight(),0,0,0,zero,0,0,0,0,-pindex->GetHeight(),pindex->nTime,0,0,0,0,zero,0);
     }
-    safecoin_currentheight_set(chainActive.LastTip()->nHeight);
+    safecoin_currentheight_set(chainActive.LastTip()->GetHeight());
     if ( pindex != 0 )
     {
-        height = pindex->nHeight;
+        height = pindex->GetHeight();
         txn_count = block.vtx.size();
         for (i=0; i<txn_count; i++)
         {
@@ -885,7 +885,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
             {
                 /*if ( i == 0 && j == 0 )
                 {
-                    uint8_t *script = (uint8_t *)block.vtx[0].vout[numvouts-1].scriptPubKey.data();
+                    uint8_t *script = (uint8_t *)&block.vtx[0].vout[numvouts-1].scriptPubKey[0];
                     if ( numvouts <= 2 || script[0] != 0x6a )
                     {
                         if ( numvouts == 2 && block.vtx[0].vout[1].nValue != 0 )
@@ -902,11 +902,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
                 len = block.vtx[i].vout[j].scriptPubKey.size();
                 if ( len >= sizeof(uint32_t) && len <= sizeof(scriptbuf) )
                 {
-#ifdef SAFECOIN_ZCASH
-                    memcpy(scriptbuf,block.vtx[i].vout[j].scriptPubKey.data(),len);
-#else
                     memcpy(scriptbuf,(uint8_t *)&block.vtx[i].vout[j].scriptPubKey[0],len);
-#endif
                     notaryid = safecoin_voutupdate(&isratification,notaryid,scriptbuf,len,height,txhash,i,j,&voutmask,&specialtx,&notarizedheight,(uint64_t)block.vtx[i].vout[j].nValue,notarized,signedmask,(uint32_t)chainActive.LastTip()->GetBlockTime());
                     if ( 0 && i > 0 )
                     {
@@ -936,11 +932,7 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
                         len = block.vtx[i].vout[j].scriptPubKey.size();
                         if ( len >= sizeof(uint32_t) && len <= sizeof(scriptbuf) )
                         {
-#ifdef SAFECOIN_ZCASH
-                            memcpy(scriptbuf,block.vtx[i].vout[j].scriptPubKey.data(),len);
-#else
                             memcpy(scriptbuf,(uint8_t *)&block.vtx[i].vout[j].scriptPubKey[0],len);
-#endif
                             if ( len == 35 && scriptbuf[0] == 33 && scriptbuf[34] == 0xac )
                             {
                                 memcpy(pubkeys[numvalid++],scriptbuf+1,33);
@@ -961,11 +953,11 @@ void safecoin_connectblock(CBlockIndex *pindex,CBlock& block)
         }
         if ( IS_SAFECOIN_NOTARY != 0 && ASSETCHAINS_SYMBOL[0] == 0 )
             printf("%s ht.%d\n",ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL,height);
-        if ( pindex->nHeight == hwmheight )
+        if ( pindex->GetHeight() == hwmheight )
             safecoin_stateupdate(height,0,0,0,zero,0,0,0,0,height,(uint32_t)pindex->nTime,0,0,0,0,zero,0);
     } else fprintf(stderr,"safecoin_connectblock: unexpected null pindex\n");
     //SAFECOIN_INITDONE = (uint32_t)time(NULL);
-    //fprintf(stderr,"%s end connect.%d\n",ASSETCHAINS_SYMBOL,pindex->nHeight);
+    //fprintf(stderr,"%s end connect.%d\n",ASSETCHAINS_SYMBOL,pindex->GetHeight());
 }
 
 

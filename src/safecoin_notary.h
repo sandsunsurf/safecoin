@@ -18,31 +18,117 @@
 
 #include "safecoin_cJSON.h"
 
-#define SAFECOIN_MAINNET_START 1
+#define SAFECOIN_MAINNET_START 178999
 
 const char *Notaries_genesis[][2] =
 {
-    { "btc_testA", "02566977dc0f2eaf2e7aef467e54bac03e6e0967bd750417b1a1c92bc71a410b9d" },
-    { "zec_testA", "03f18e2cbdd0eee1cd054f61b062f8e9e89f0fe8698097882422581852c97ce5a5" },
-    { "zen_testA", "03b94e3f3e88448d5e957f5c5f25f16b0e2197b8a91da63c7a210821e96672f686" },
+    {"0dev1_jj", "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3" },
+    {"0dev2_oleksandr", "03f5c47ec482fa1a57821edd0c492948aec9b22ab2b4e38e45fba34e4b6f697a29" },
+    {"0dev3_arch", "0248c657bf46ff8b77c230134fc04482dd549b91d4fb2ba27414bec02edac4ae98" },
+    {"0dev4_rag", "030ca5b3f0ad6eac4afd90b2be8e52a74df852960b9bb4b69bcd413ad2df6232fe" },
+    {"bman_1", "02d3d47e14af1be6617c8e92dbab0537efb47f7732f5afb1024209b60a9d84a31c" },
+    {"bman_2", "03608d2368b19ae3c47d9496283630953dfa85526fe1cad159d9ef8b796f3236be" },
+    {"bman_3", "02448b40e1cca6367f6e10aaf00faabdcca9c219d453d67548f2e6fd08ce90c10f" },
+    {"bman_4", "02e55b44a4ce698e0ee6fed3fc571e06d3939dc0537851dc23246734a2b181f1c4" },
+    {"traysi_1", "0255895db02e46d65c6ad6313a467074949efa47feefc003b1d96ec309151c4340" },
+    {"traysi_2", "0221fa83d4c5f04c63b9bb3a7085242e8daa83c9a97024a4f46720dd174ed1764a" },
+    {"safenode_a", "031e332d04f067aad39553330d3dbb99deaaa97fac579e5633b6483abe3f503654" }, // 10
+    {"safenode_b", "03f19b118737f54a586dd33e92dbb397fc29c88413b41ac21b87440bec58070ef9" },
+    {"safenode_c", "02d72b424eee08eb333a9c95d8915bba4e5e05b9a42080eb6811907b73ea30b474" },
+    {"safenode_d", "020cc2dd8eea9955f66eb127236763dd057a845d8f830c5357d90705f9d23797a6" },
+    {"safenode_d", "025f1dde907090870289ee8f8ef7a870473c00080d344365efda5a23c4c305f93a" },
+    {"safenode_e", "0328ac56b5835d03774724fadee4d1b09cea956515e57cbe95d599e6dd0caced4b" },
+    {"safenode_f", "03433e564ba7287dce6883e9bc73354654e6d305204bcb1fab4bf1e42675eb4c2f" },
+    {"safenode_g", "02c8431929d7493a7feb0e397c88a6a1651f1709cb2b420b55e7d732ebc31041e9" },
+    {"safenode_h", "0318cf394b58e9b56ddd62fb03082e5382575a60e440a23fbb7380e7fd50b295eb" },
+    {"safenode_i", "026676e7fa71ca8fd6436bb2a218500e82411d942e2f3dd46bbf31985654a569ed" },
+    {"safenode_j", "02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1" }, // 20
+    {"safenode_k", "036fd60dcac267a26771093df5210511e0317031263d66ddf8d104813a3159d18d" },
+    {"safenode_l", "02d300502f61150d580a42a09963e347a2ad3ce51f11960d358df8f394f9672a67" },
+    {"safenode_m", "02412d9dd21f2457cba8533e08679898a2ffa48fe4c4691e2a696842749c80031f" },
+    {"safenode_n", "0277b12ff3cd22325fde276e706d365b2757d5e27f3c23005dece66ebb0c58a0fe" },
+    {"safenode_o", "0213671eba7c4c03e07629bc30b071571605a478f65b1dfff2343e5275b6974d7c" },
+    {"safenode_p", "025bedc84e35a3bb89c3126656ad83854573928030bb313472e3a13cc52b2f8cf2" },
+    {"safenode_q", "03f5c5dec766e84ac5a378650ed82ea0df459a0022d9f7a85e7f94426d01c7f128" },
+    {"safenode_r", "0357a41230ffd72d1fd9379500ac97ac27d0b0a0a6e4197ba4d1f76ff4f88ff1e2" },
+    {"safenode_s", "02380c684558673aa7cdc638fd8b2ca8f2b7ae5b7d15a622b10b2b406f43c7f1cc" },
+    {"safenode_t", "02d8ddaa4d3dbb38cb1e3fd769f05efc8985243f414a045889be9ec5ad688a1dce" }, // 30
+    {"safenode_u", "039846a7ae3bee6390ef7ee95769a7443aa1bb5d7e85afd676ebe7ad7420010135" },
 };
 
 const char *Notaries_elected0[][2] =
 {
-    { "btc_testB", "02849a95c44ef3026d5078119791811ecf795c1673a0f196bfeb9131db421140c4" },
-    { "zec_testB", "02f5cb4993f1f2ec18e1733c0ec4f4df44b7a638bf1a3a55f6aa43c54c51cf683b" },
-    { "zen_testB", "039846a7ae3bee6390ef7ee95769a7443aa1bb5d7e85afd676ebe7ad7420010135" },
+    {"0dev1_jj", "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3" },
+    {"0dev2_oleksandr", "03f5c47ec482fa1a57821edd0c492948aec9b22ab2b4e38e45fba34e4b6f697a29" },
+    {"0dev3_arch", "0248c657bf46ff8b77c230134fc04482dd549b91d4fb2ba27414bec02edac4ae98" },
+    {"0dev4_rag", "030ca5b3f0ad6eac4afd90b2be8e52a74df852960b9bb4b69bcd413ad2df6232fe" },
+    {"bman_1", "02d3d47e14af1be6617c8e92dbab0537efb47f7732f5afb1024209b60a9d84a31c" },
+    {"bman_2", "03608d2368b19ae3c47d9496283630953dfa85526fe1cad159d9ef8b796f3236be" },
+    {"bman_3", "02448b40e1cca6367f6e10aaf00faabdcca9c219d453d67548f2e6fd08ce90c10f" },
+    {"bman_4", "02e55b44a4ce698e0ee6fed3fc571e06d3939dc0537851dc23246734a2b181f1c4" },
+    {"traysi_1", "0255895db02e46d65c6ad6313a467074949efa47feefc003b1d96ec309151c4340" },
+    {"traysi_2", "0221fa83d4c5f04c63b9bb3a7085242e8daa83c9a97024a4f46720dd174ed1764a" },
+    {"safenode_a", "031e332d04f067aad39553330d3dbb99deaaa97fac579e5633b6483abe3f503654" }, // 10
+    {"safenode_b", "03f19b118737f54a586dd33e92dbb397fc29c88413b41ac21b87440bec58070ef9" },
+    {"safenode_c", "02d72b424eee08eb333a9c95d8915bba4e5e05b9a42080eb6811907b73ea30b474" },
+    {"safenode_d", "020cc2dd8eea9955f66eb127236763dd057a845d8f830c5357d90705f9d23797a6" },
+    {"safenode_d", "025f1dde907090870289ee8f8ef7a870473c00080d344365efda5a23c4c305f93a" },
+    {"safenode_e", "0328ac56b5835d03774724fadee4d1b09cea956515e57cbe95d599e6dd0caced4b" },
+    {"safenode_f", "03433e564ba7287dce6883e9bc73354654e6d305204bcb1fab4bf1e42675eb4c2f" },
+    {"safenode_g", "02c8431929d7493a7feb0e397c88a6a1651f1709cb2b420b55e7d732ebc31041e9" },
+    {"safenode_h", "0318cf394b58e9b56ddd62fb03082e5382575a60e440a23fbb7380e7fd50b295eb" },
+    {"safenode_i", "026676e7fa71ca8fd6436bb2a218500e82411d942e2f3dd46bbf31985654a569ed" },
+    {"safenode_j", "02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1" }, // 20
+    {"safenode_k", "036fd60dcac267a26771093df5210511e0317031263d66ddf8d104813a3159d18d" },
+    {"safenode_l", "02d300502f61150d580a42a09963e347a2ad3ce51f11960d358df8f394f9672a67" },
+    {"safenode_m", "02412d9dd21f2457cba8533e08679898a2ffa48fe4c4691e2a696842749c80031f" },
+    {"safenode_n", "0277b12ff3cd22325fde276e706d365b2757d5e27f3c23005dece66ebb0c58a0fe" },
+    {"safenode_o", "0213671eba7c4c03e07629bc30b071571605a478f65b1dfff2343e5275b6974d7c" },
+    {"safenode_p", "025bedc84e35a3bb89c3126656ad83854573928030bb313472e3a13cc52b2f8cf2" },
+    {"safenode_q", "03f5c5dec766e84ac5a378650ed82ea0df459a0022d9f7a85e7f94426d01c7f128" },
+    {"safenode_r", "0357a41230ffd72d1fd9379500ac97ac27d0b0a0a6e4197ba4d1f76ff4f88ff1e2" },
+    {"safenode_s", "02380c684558673aa7cdc638fd8b2ca8f2b7ae5b7d15a622b10b2b406f43c7f1cc" },
+    {"safenode_t", "02d8ddaa4d3dbb38cb1e3fd769f05efc8985243f414a045889be9ec5ad688a1dce" }, // 30
+    {"safenode_u", "039846a7ae3bee6390ef7ee95769a7443aa1bb5d7e85afd676ebe7ad7420010135" },
 };
 
-//////////  Temporary until SafeNodes release
-#define SAFECOIN_NOTARIES_TIMESTAMP1 2525132800 // May 1st 2018 1530921600 // 7/7/2017
-#define SAFECOIN_NOTARIES_HEIGHT1 9999999999999 //((814000 / SAFECOIN_ELECTION_GAP) * SAFECOIN_ELECTION_GAP)
+#define SAFECOIN_NOTARIES_TIMESTAMP1 1525132800 // May 1st 2018 1530921600 // 7/7/2017
+#define SAFECOIN_NOTARIES_HEIGHT1 ((513000 / SAFECOIN_ELECTION_GAP) * SAFECOIN_ELECTION_GAP)
 
 const char *Notaries_elected1[][2] =
 {
-    {"btc_testC", "026d8c25820e902591a5c9ba090d0b2174adefb183ce122eb20eb91cdf1045cc4d" },
-    {"zec_testC", "0339d7b59dc7501cc00465c77dafff4cdf5df65511b8199537a1390c9a12b3bbfe" },
-    {"zen_testC", "03ba0dd059e200bdc60058be772f1428884a8e7f3d6cd83d1ba07457bb538f64e3" },
+    {"0dev1_jj", "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3" },
+    {"0dev2_oleksandr", "03f5c47ec482fa1a57821edd0c492948aec9b22ab2b4e38e45fba34e4b6f697a29" },
+    {"0dev3_arch", "0248c657bf46ff8b77c230134fc04482dd549b91d4fb2ba27414bec02edac4ae98" },
+    {"0dev4_rag", "030ca5b3f0ad6eac4afd90b2be8e52a74df852960b9bb4b69bcd413ad2df6232fe" },
+    {"bman_1", "02d3d47e14af1be6617c8e92dbab0537efb47f7732f5afb1024209b60a9d84a31c" },
+    {"bman_2", "03608d2368b19ae3c47d9496283630953dfa85526fe1cad159d9ef8b796f3236be" },
+    {"bman_3", "02448b40e1cca6367f6e10aaf00faabdcca9c219d453d67548f2e6fd08ce90c10f" },
+    {"bman_4", "02e55b44a4ce698e0ee6fed3fc571e06d3939dc0537851dc23246734a2b181f1c4" },
+    {"traysi_1", "0255895db02e46d65c6ad6313a467074949efa47feefc003b1d96ec309151c4340" },
+    {"traysi_2", "0221fa83d4c5f04c63b9bb3a7085242e8daa83c9a97024a4f46720dd174ed1764a" },
+    {"safenode_a", "031e332d04f067aad39553330d3dbb99deaaa97fac579e5633b6483abe3f503654" }, // 10
+    {"safenode_b", "03f19b118737f54a586dd33e92dbb397fc29c88413b41ac21b87440bec58070ef9" },
+    {"safenode_c", "02d72b424eee08eb333a9c95d8915bba4e5e05b9a42080eb6811907b73ea30b474" },
+    {"safenode_d", "020cc2dd8eea9955f66eb127236763dd057a845d8f830c5357d90705f9d23797a6" },
+    {"safenode_d", "025f1dde907090870289ee8f8ef7a870473c00080d344365efda5a23c4c305f93a" },
+    {"safenode_e", "0328ac56b5835d03774724fadee4d1b09cea956515e57cbe95d599e6dd0caced4b" },
+    {"safenode_f", "03433e564ba7287dce6883e9bc73354654e6d305204bcb1fab4bf1e42675eb4c2f" },
+    {"safenode_g", "02c8431929d7493a7feb0e397c88a6a1651f1709cb2b420b55e7d732ebc31041e9" },
+    {"safenode_h", "0318cf394b58e9b56ddd62fb03082e5382575a60e440a23fbb7380e7fd50b295eb" },
+    {"safenode_i", "026676e7fa71ca8fd6436bb2a218500e82411d942e2f3dd46bbf31985654a569ed" },
+    {"safenode_j", "02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1" }, // 20
+    {"safenode_k", "036fd60dcac267a26771093df5210511e0317031263d66ddf8d104813a3159d18d" },
+    {"safenode_l", "02d300502f61150d580a42a09963e347a2ad3ce51f11960d358df8f394f9672a67" },
+    {"safenode_m", "02412d9dd21f2457cba8533e08679898a2ffa48fe4c4691e2a696842749c80031f" },
+    {"safenode_n", "0277b12ff3cd22325fde276e706d365b2757d5e27f3c23005dece66ebb0c58a0fe" },
+    {"safenode_o", "0213671eba7c4c03e07629bc30b071571605a478f65b1dfff2343e5275b6974d7c" },
+    {"safenode_p", "025bedc84e35a3bb89c3126656ad83854573928030bb313472e3a13cc52b2f8cf2" },
+    {"safenode_q", "03f5c5dec766e84ac5a378650ed82ea0df459a0022d9f7a85e7f94426d01c7f128" },
+    {"safenode_r", "0357a41230ffd72d1fd9379500ac97ac27d0b0a0a6e4197ba4d1f76ff4f88ff1e2" },
+    {"safenode_s", "02380c684558673aa7cdc638fd8b2ca8f2b7ae5b7d15a622b10b2b406f43c7f1cc" },
+    {"safenode_t", "02d8ddaa4d3dbb38cb1e3fd769f05efc8985243f414a045889be9ec5ad688a1dce" }, // 30
+    {"safenode_u", "039846a7ae3bee6390ef7ee95769a7443aa1bb5d7e85afd676ebe7ad7420010135" },
 };
 #define CRYPTO777_PUBSECPSTR "02004a23684b6e12441ac4c913775f4f74584c48a9167d2fb65da6a2ddc9852761"
 
@@ -107,8 +193,8 @@ int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timest
     }
     pthread_mutex_unlock(&safecoin_mutex);
     if ( (n < 64 && mask == ((1LL << n)-1)) || (n == 64 && mask == 0xffffffffffffffffLL) )
-      //        return(n);
-      //printf("error retrieving notaries ht.%d got mask.%llx for n.%d\n",height,(long long)mask,n);
+        return(n);
+    printf("error retrieving notaries ht.%d got mask.%llx for n.%d\n",height,(long long)mask,n);
     return(-1);
 }
 
@@ -119,8 +205,8 @@ int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t h
     *numnotariesp = n;
     for (i=0; i<n; i++)
     {
-      if ( memcmp(pubkey33,pubkeys[i],33) == 0 )
-	            return(-1);
+        if ( memcmp(pubkey33,pubkeys[i],33) == 0 )
+            return(i);
     }
     return(-1);
 }
@@ -136,7 +222,7 @@ int32_t safecoin_ratify_threshold(int32_t height,uint64_t signedmask)
         if ( ((1LL << i) & signedmask) != 0 )
             wt++;
     if ( wt > (numnotaries >> 1) || (wt > 7 && (signedmask & 1) != 0) )
-             return(0);
+        return(1);
     else return(0);
 }
 

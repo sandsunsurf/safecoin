@@ -1,5 +1,4 @@
 // Copyright (c) 2012-2014 The Bitcoin Core developers
-// Copyright (c) 2018 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,7 +9,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 170020;
+static const int PROTOCOL_VERSION = 170021;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 212;
@@ -30,5 +29,8 @@ static const int BIP0031_VERSION = 60000;
 
 //! "mempool" command, enhanced "getdata" behavior starts with this version
 static const int MEMPOOL_GD_VERSION = 60002;
+
+//! "filter*" commands are disabled without NODE_BLOOM after and including this version
+static const int NO_BLOOM_VERSION = 170004;
 
 #endif // BITCOIN_VERSION_H

@@ -1,5 +1,4 @@
 // Copyright (c) 2016 The Zcash developers
-// Copyright (c) 2018 The Safecoin developers
 // Original code from: https://gist.github.com/laanwj/0e689cfa37b52bcbbb44
 
 /*
@@ -78,16 +77,8 @@ void ThreadSendAlert()
 
     // These versions are protocol versions
     // 170002 : 1.0.0
-    // 170008 : 1.3.85
-    // 170014 : 1.4.95
-    // 170015 : 1.0.15
-    // 170016 : 1.0.15
-    // 170017 : 1.1.01
-    // 170018 : 1.1.01
-    // 170019 : 1.6.0-5
-	
-    alert.nMinVer       = 170002;
-    alert.nMaxVer       = 170019;
+    alert.nMinVer       = 170021;
+    alert.nMaxVer       = 170021;
 
     //
     // main.cpp:
@@ -97,7 +88,7 @@ void ThreadSendAlert()
     //  4000 or higher will put the RPC into safe mode
     alert.nPriority     = 4000;
     alert.strComment    = "";
-    alert.strStatusBar  = "Your client is out of date and incompatible with the SafeNode network upgrade. Please update to the most recent version of Safecoin (v1.6.1-1 or later).";
+    alert.strStatusBar  = "Your client is out of date and incompatible with the SafeNode network upgrade. Please update to the most recent version of Safecoin (2.0.0 or later).";
     alert.strRPCError   = alert.strStatusBar;
 
     // Set specific client version/versions here. If setSubVer is empty, no filtering on subver is done:

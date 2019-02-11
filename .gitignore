@@ -1,21 +1,12 @@
 *.tar.gz
 *.deb
-*.exe
 src/bitcoin
-src/safecoind
-src/safecoin-cli
-src/safecoin-tx
-src/safecoin-test
 src/zcashd
 src/zcash-cli
 src/zcash-gtest
 src/zcash-tx
 src/test/test_bitcoin
 src/wallet-utility
-
-# Zcash utilities
-src/zcash/GenerateParams
-src/zcash/CreateJoinSplit
 
 *zcashTest.pk
 *zcashTest.vk
@@ -52,6 +43,7 @@ src/univalue/gen
 
 .deps
 .dirstamp
+.idea
 .libs
 .*.swp
 *.*~*
@@ -121,3 +113,17 @@ contrib/debian/files
 contrib/debian/substvars
 
 src/rpcmisc~.cpp
+src/safecoin-cli
+src/safecoind
+src/safecoin-tx
+src/safecoin-test
+src/wallet-utility
+src/safecoin-cli.exe
+src/safecoind.exe
+src/safecoin-tx.exe
+
+#output during builds, symbol tables?
+*.dSYM
+
+
+src/cryptoconditions/compile

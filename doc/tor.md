@@ -1,73 +1,11 @@
 *** Warning: Do not assume Tor support does the correct thing in Safecoin; better Tor support is a future feature goal. ***
 
-### TOR SUPPORT IN Safecoin
+TOR SUPPORT IN ZCASH
+====================
 
 It is possible to run Safecoin as a Tor hidden service, and connect to such services.
 
-### BASIC Tor INSTALL AND CONFIGUATION
-
-
-1. Install Tor from the official Repository (Debian based only)
-First add the Tor repository to your package sources
-```
-sudo su -c "echo 'deb http://deb.torproject.org/torproject.org '$(lsb_release -c | cut -f2)' main' > /etc/apt/sources.list.d/torproject.list"
-gpg --keyserver keys.gnupg.net --recv A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
-```
-and install it
-```
-sudo apt-get update
-sudo apt-get install tor deb.torproject.org-keyring
-```
-then add your current user to the `debian-tor` group to be able to use cookie authentication.
-```
-sudo usermod -a -G debian-tor $(whoami)
-```
-Now log out and back in, then edit `/etc/tor/torrc` to enable the control port, enable cookie authentication and make the auth file group readable.
-```
-sudo sed -i 's/#ControlPort 9051/ControlPort 9051/g' /etc/tor/torrc
-sudo sed -i 's/#CookieAuthentication 1/CookieAuthentication 1/g' /etc/tor/torrc
-sudo su -c "echo 'CookieAuthFileGroupReadable 1' >> /etc/tor/torrc"
-```
-Now restart the Tor service.
-```
-sudo systemctl restart tor.service
-```
-
-If you've configured Tor as previously described there is nothing more you need to do. When you start safecoind without any command line options e.g. `./safecoind` it will automatically create a HiddenService and be reachable via the Tor network and clearnet. The node should have created a file `~/.safecoin/onion_private_key`, this file stores the private key of your HiddenService address.
-
-When you use `./safecoin-cli getnetworkinfo` you should see that your node is reachable as a HiddenService like so:
-```
-[...]
-    {
-      "name": "onion",
-      "limited": false,
-      "reachable": true,
-      "proxy": "127.0.0.1:9050",
-      "proxy_randomize_credentials": true
-    }
-  ],
-  "relayfee": 0.00000100,
-  "localaddresses": [
-    {
-      "address": "lbfuusf2bg5e2t3j.onion",
-      "port": 8770,
-      "score": 4
-    }
-[...]
-```
-
-Currently, there is no Safecoin Seed Node to provide Tor node addresses, edit your `~/.safecoin/safecoin.conf` and add:
-```
-addnode=d2y2vsq5rxkcpk6f.onion
-addnode=eorrku3hauy53zup.onion
-```
-
-
-### ADVANCED safecoind/Tor CONFIGURATION OPTIONS
-
-
-The following directions assume you have a Tor proxy running on port 9050 (possibly by following the above). Many distributions default to having a SOCKS proxy listening on port 9050, but others may not. In particular, the Tor Browser Bundle defaults to listening on port 9150. See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort) for how to properly
+The following directions assume you have a Tor proxy running on port 9050. Many distributions default to having a SOCKS proxy listening on port 9050, but others may not. In particular, the Tor Browser Bundle defaults to listening on port 9150. See [Tor Project FAQ:TBBSocksPort](https://www.torproject.org/docs/faq.html.en#TBBSocksPort) for how to properly
 configure Tor.
 
 
@@ -97,7 +35,6 @@ In a typical situation, this suffices to run behind a Tor proxy:
 
 	./safecoind -proxy=127.0.0.1:9050
 
-Note: Running safecoind without the proxy argument will work, however, you will only be able to connect to other nodes on Tor.  The proxy argument allows you to connect to both Tor nodes and Clearnet nodes.
 
 2. Run a Safecoin hidden server
 ----------------------------
@@ -106,17 +43,17 @@ If you configure your Tor system accordingly, it is possible to make your node a
 reachable from the Tor network. Add these lines to your /etc/tor/torrc (or equivalent
 config file):
 
-	HiddenServiceDir /var/lib/tor/safecoin-service/
-	HiddenServicePort 8770 127.0.0.1:8770
-	HiddenServicePort 18770 127.0.0.1:18770
+	HiddenServiceDir /var/lib/tor/zcash-service/
+	HiddenServicePort 8771 127.0.0.1:8771
+	HiddenServicePort 18771 127.0.0.1:18771
 
 The directory can be different of course, but (both) port numbers should be equal to
-your safecoind's P2P listen port (8770 by default).
+your safecoind's P2P listen port (8771 by default).
 
-	-externalip=X   You can tell safecoind about its publicly reachable address using
+	-externalip=X   You can tell Safecoin about its publicly reachable address using
 	                this option, and this can be a .onion address. Given the above
 	                configuration, you can find your onion address in
-	                /var/lib/tor/Safecoin-service/hostname. Onion addresses are given
+	                /var/lib/tor/zcash-service/hostname. Onion addresses are given
 	                preference for your node to advertize itself with, for connections
 	                coming from unroutable addresses (such as 127.0.0.1, where the
 	                Tor proxy typically runs).
@@ -133,25 +70,25 @@ your safecoind's P2P listen port (8770 by default).
 
 In a typical situation, where you're only reachable via Tor, this should suffice:
 
-	./safecoind -proxy=127.0.0.1:9050 -externalip=d2y2vsq5rxkcpk6f.onion -listen
+	./safecoind -proxy=127.0.0.1:9050 -externalip=zctestseie6wxgio.onion -listen
 
-(Replace the Onion address with your own). It should be noted that you still
+(obviously, replace the Onion address with your own). It should be noted that you still
 listen on all devices and another node could establish a clearnet connection, when knowing
 your address. To mitigate this, additionally bind the address of your Tor proxy:
 
-	./safecoind ... -bind=127.0.0.1
+	./zcashd ... -bind=127.0.0.1
 
 If you don't care too much about hiding your node, and want to be reachable on IPv4
 as well, use `discover` instead:
 
 	./safecoind ... -discover
 
-and open port 8770 on your firewall (or use -upnp).
+and open port 8771 on your firewall (or use -upnp).
 
 If you only want to use Tor to reach onion addresses, but not use it as a proxy
 for normal IPv4/IPv6 communication, use:
 
-	./safecoind -onion=127.0.0.1:9050 -externalip=d2y2vsq5rxkcpk6f.onion -discover
+	./safecoind -onion=127.0.0.1:9050 -externalip=zctestseie6wxgio.onion -discover
 
 
 3. Automatically listen on Tor
@@ -162,7 +99,7 @@ API, to create and destroy 'ephemeral' hidden services programmatically.
 Safecoin has been updated to make use of this.
 
 This means that if Tor is running (and proper authentication has been configured),
-safecoind automatically creates a hidden service to listen on. safecoind will also use Tor
+Safecoin automatically creates a hidden service to listen on. Safecoin will also use Tor
 automatically to connect to other .onion nodes if the control socket can be
 successfully opened. This will positively affect the number of available .onion
 nodes and their usage.
@@ -190,51 +127,23 @@ Tor configuration.
 To test your set-up, you might want to try connecting via Tor on a different computer to just a
 a single Safecoin hidden server. Launch safecoind as follows:
 
-	./safecoind -onion=127.0.0.1:9050 -connect=d2y2vsq5rxkcpk6f.onion
+	./safecoind -onion=127.0.0.1:9050 -connect=zctestseie6wxgio.onion
 
-Now use Safecoin-cli to verify there is only a single peer connection.
+Now use safecoin-cli to verify there is only a single peer connection.
 
-	Safecoin-cli getpeerinfo
+	safecoin-cli getpeerinfo
 
 	[
 	    {
 	        "id" : 1,
-	        "addr" : "d2y2vsq5rxkcpk6f.onion:18233",
+	        "addr" : "zctestseie6wxgio.onion:17770",
 	        ...
-	        "version" : 170019,
-	        "subver" : "/SafeNode:1.6.0-5/",
+	        "version" : 170002,
+	        "subver" : "/MagicBean:1.0.0/",
 	        ...
 	    }
 	]
 
 To connect to multiple Tor nodes, use:
 
-	./safecoind -onion=127.0.0.1:9050 -addnode=d2y2vsq5rxkcpk6f.onion -dnsseed=0 -onlynet=onion
-
-### USING Tor PLUGGABLE TRANSPORTS
-
-Pluggable Transports transform the Tor traffic flow between the client and the bridge. This way, censors who monitor traffic between the client and the bridge will see innocent-looking transformed traffic instead of the actual Tor traffic. External programs can talk to Tor clients and Tor bridges using the pluggable transport API, to make it easier to build interoperable programs.
-
-(Currently, only Meek has been confirmed to work with safecoind.)
-
---------------------------------
-1. install `meek-client` (Ubuntu only):
-```
-sudo add-apt-repository ppa:hda-me/meek
-sudo apt-get update
-sudo apt-get install meek-client
-```
-If using Ubuntu, an AppArmor definition is also required to resolve a 'permission denied' error:
-```
-sudo su -c "echo '  /usr/bin/meek-client ix,' >> /etc/apparmor.d/abstractions/tor"
-sudo systemctl resetart apparmor.service
-```
-2. Add these lines to your `/etc/tor/torrc` file:
-```
-UseBridges 1
-ClientTransportPlugin meek exec  /usr/bin/meek-client
-Bridge meek 0.0.2.0:1 B9E7141C594AF25699E0079C1F0146F409495296 url=https://d2cly7j4zqgua7.cloudfront.net/ front=a0.awsstatic.com
-Bridge meek 0.0.2.0:2 97700DFE9F483596DDA6264C4D7DF7641E1E39CE url=https://meek.azureedge.net/ front=ajax.aspnetcdn.com
-```
-An updated list of Tor Meek bridges can be found here:
-https://gitweb.torproject.org/builders/tor-browser-bundle.git/tree/Bundle-Data/PTConfigs/bridge_prefs.js
+	./safecoind -onion=127.0.0.1:9050 -addnode=zctestseie6wxgio.onion -dnsseed=0 -onlynet=onion
