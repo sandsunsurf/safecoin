@@ -23,20 +23,20 @@ using namespace std;
 static const char DB_SPROUT_ANCHOR = 'A';
 static const char DB_SAPLING_ANCHOR = 'Z';
 static const char DB_NULLIFIER = 's';
-static const char DB_SAPLING_NULLIFIER = 'S';
+static const char DB_SAPLING_NULLIFIER = 'S';	//<--
 static const char DB_COINS = 'c';
 static const char DB_BLOCK_FILES = 'f';
 static const char DB_TXINDEX = 't';
 static const char DB_ADDRESSINDEX = 'd';
 static const char DB_ADDRESSUNSPENTINDEX = 'u';
-static const char DB_TIMESTAMPINDEX = 'S';
-static const char DB_BLOCKHASHINDEX = 'z';
+static const char DB_TIMESTAMPINDEX = 'T';	//changed from S
+static const char DB_BLOCKHASHINDEX = 'h';	//changed from z
 static const char DB_SPENTINDEX = 'p';
 static const char DB_BLOCK_INDEX = 'b';
 
 static const char DB_BEST_BLOCK = 'B';
 static const char DB_BEST_SPROUT_ANCHOR = 'a';
-static const char DB_BEST_SAPLING_ANCHOR = 'z';
+static const char DB_BEST_SAPLING_ANCHOR = 'z';	//<--
 static const char DB_FLAG = 'F';
 static const char DB_REINDEX_FLAG = 'R';
 static const char DB_LAST_BLOCK = 'l';
@@ -433,23 +433,7 @@ UniValue CBlockTreeDB::Snapshot(int top)
     result.push_back(Pair("start_time", (int) time(NULL)));
 
     std::map <std::string,int> ignoredMap = {
-	{"RReUxSs5hGE39ELU23DfydX8riUuzdrHAE", 1},
-	{"RMUF3UDmzWFLSKV82iFbMaqzJpUnrWjcT4", 1},
-	{"RA5imhVyJa7yHhggmBytWuDr923j2P1bxx", 1},
-	{"RBM5LofZFodMeewUzoMWcxedm3L3hYRaWg", 1},
-	{"RAdcko2d94TQUcJhtFHZZjMyWBKEVfgn4J", 1},
-	{"RLzUaZ934k2EFCsAiVjrJqM8uU1vmMRFzk", 1},
-	{"RMSZMWZXv4FhUgWhEo4R3AQXmRDJ6rsGyt", 1},
-	{"RUDrX1v5toCsJMUgtvBmScKjwCB5NaR8py", 1},
-	{"RMSZMWZXv4FhUgWhEo4R3AQXmRDJ6rsGyt", 1},
-	{"RRvwmbkxR5YRzPGL5kMFHMe1AH33MeD8rN", 1},
-	{"RQLQvSgpPAJNPgnpc8MrYsbBhep95nCS8L", 1},
-	{"RK8JtBV78HdvEPvtV5ckeMPSTojZPzHUTe", 1},
-	{"RHVs2KaCTGUMNv3cyWiG1jkEvZjigbCnD2", 1},
-	{"RE3SVaDgdjkRPYA6TRobbthsfCmxQedVgF", 1},
-	{"RW6S5Lw5ZCCvDyq4QV9vVy7jDHfnynr5mn", 1},
-	{"RTkJwAYtdXXhVsS3JXBAJPnKaBfMDEswF8", 1},
-	{"RD6GgnrMpPaTSMn8vai6yiGA7mN4QGPVMY", 1} //Burnaddress for null privkey
+	{"RiyjoN1oU2LUcEtSJC16AXuusZxcHriZNq", 1}	//Exploited coins - BURNED
     };
 
     int64_t startingHeight = chainActive.Height();
