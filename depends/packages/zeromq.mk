@@ -8,7 +8,7 @@ $(package)_sha256_hash=bcbabe1e2c7d0eec4ed612e10b94b112dd5f06fcefa994a0c79a45d83
 define $(package)_set_vars
   $(package)_build_env+=
   $(package)_config_opts=--enable-shared=false --enable-static --host=x86_64-w64-mingw32
-  $(package)_config_opts_mingw32=--enable-shared=false --enable-static --host=x86_64-w64-mingw32
+  $(package)_config_opts_mingw32=--enable-shared=false --enable-static --prefix=$(host_prefix) --host=x86_64-w64-mingw32 -disable-curve
   $(package)_cflags=-Wno-error -Wall -Wno-pedantic-ms-format -DLIBCZMQ_EXPORTS -DZMQ_DEFINED_STDINT -lws2_32 -liphlpapi -lrpcrt4
   $(package)_conf_tool=./configure
 endef
