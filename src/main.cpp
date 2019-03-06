@@ -2202,7 +2202,7 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
       else if ( nHeight < 123840 ) nSubsidy = (128 * COIN);
       else if ( nHeight < 178378 ) nSubsidy = (64 * COIN);
       else if ( nHeight < 181378 ) nSubsidy = (56 * COIN);
-      else if ( nHeight < 184378 ) nSubsidy = (48 * COIN);
+      else if ( nHeight < 184376 ) nSubsidy = (48 * COIN);
       else if ( nHeight < 187378 ) nSubsidy = (40 * COIN);
       else if ( nHeight < 197378 ) nSubsidy = (32 * COIN);
       else if ( nHeight < 207378 ) nSubsidy = (28 * COIN);
