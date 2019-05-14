@@ -701,7 +701,7 @@ void IncrementExtraNonce(CBlock* pblock, CBlockIndex* pindexPrev, unsigned int& 
     ++nExtraNonce;
     unsigned int nHeight = pindexPrev->GetHeight()+1; // Height first in coinbase required for block.version=2
     CMutableTransaction txCoinbase(pblock->vtx[0]);
-    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS;
+    txCoinbase.vin[0].scriptSig = (CScript() << nHeight << CScriptNum(nExtraNonce)) + COINBASE_FLAGS << ParseHex(GetArg("-safekey", ""));
     assert(txCoinbase.vin[0].scriptSig.size() <= 100);
 
     pblock->vtx[0] = txCoinbase;
