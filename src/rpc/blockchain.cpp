@@ -842,6 +842,7 @@ int32_t safecoin_paxprices(int32_t *heights,uint64_t *prices,int32_t max,char *b
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_rmd160,int32_t len);
 int32_t safecoin_minerids(uint8_t *minerids,int32_t height,int32_t width);
+int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width);
 int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 
 UniValue kvsearch(const UniValue& params, bool fHelp)
@@ -936,7 +937,7 @@ UniValue minerids(const UniValue& params, bool fHelp)
                     sprintf(&hexstr[j*2],"%02x",pubkeys[i][j]);
                 item.push_back(Pair("notaryid", i));
 
-                bitcoin_address(safeaddr,60,pubkeys[i],33);
+                bitcoin_address(safeaddr, 61, pubkeys[i], 33);
                 m = (int32_t)strlen(safeaddr);
                 safeaddress.resize(m);
                 ptr = (char *)safeaddress.data();
@@ -955,6 +956,69 @@ UniValue minerids(const UniValue& params, bool fHelp)
         ret.push_back(Pair("mined", a));
         ret.push_back(Pair("numnotaries", numnotaries));
     } else ret.push_back(Pair("error", (char *)"couldnt extract minerids"));
+    return ret;
+}
+
+UniValue safeids(const UniValue& params, bool fHelp)
+{
+    uint32_t timestamp = 0;
+    UniValue ret(UniValue::VOBJ);
+    UniValue a(UniValue::VARR);
+    uint8_t safeids[2000], pubkeys[65][33];
+    int32_t i, j, n, numnotaries,tally[129];
+    if ( fHelp || params.size() != 1 )
+        throw runtime_error("safeids needs height\n");
+    LOCK(cs_main);
+    int32_t height = atoi(params[0].get_str().c_str());
+    if ( height <= 0 )
+        height = chainActive.LastTip()->GetHeight();
+    else
+    {
+        CBlockIndex *pblockindex = chainActive[height];
+        if ( pblockindex != 0 )
+            timestamp = pblockindex->GetBlockTime();
+    }
+    if ( (n= safecoin_safeids(safeids, height, (int32_t)(sizeof(safeids)/sizeof(*safeids)))) > 0 )
+    {
+        memset(tally, 0, sizeof(tally));
+        numnotaries = safecoin_notaries(pubkeys, height, timestamp);
+        if ( numnotaries > 0 )
+        {
+            for (i=0; i<n; i++)
+            {
+                if ( safeids[i] >= numnotaries )
+                    tally[128]++;
+                else tally[safeids[i]]++;
+            }
+            for (i = 0; i < numnotaries; i++)
+            {
+                UniValue item(UniValue::VOBJ);
+                std::string hex, safeaddress;
+                char *hexstr, safeaddr[64], *ptr;
+                int32_t m;
+                hex.resize(66);
+                hexstr = (char *)hex.data();
+                for (j = 0; j < 33; j++)
+                    sprintf(&hexstr[j*2],"%02x",pubkeys[i][j]);
+                item.push_back(Pair("notaryid", i));
+                bitcoin_address(safeaddr, 61, pubkeys[i], 33);
+                m = (int32_t)strlen(safeaddr);
+                safeaddress.resize(m);
+                ptr = (char *)safeaddress.data();
+                memcpy(ptr,safeaddr,m);
+                item.push_back(Pair("SAFEaddress", safeaddress));
+                item.push_back(Pair("pubkey", hex));
+                item.push_back(Pair("blocks", tally[i]));
+                a.push_back(item);
+            }
+            UniValue item(UniValue::VOBJ);
+            item.push_back(Pair("pubkey", (char *)"external miners"));
+            item.push_back(Pair("blocks", tally[128]));
+            a.push_back(item);
+        }
+        ret.push_back(Pair("mined", a));
+        ret.push_back(Pair("numnotaries", numnotaries));
+    } else ret.push_back(Pair("error", (char *)"couldnt extract safeids"));
     return ret;
 }
 
@@ -998,7 +1062,7 @@ UniValue notaries(const UniValue& params, bool fHelp)
             memcpy(ptr,btcaddr,m);
             item.push_back(Pair("BTCaddress", btcaddress));
 
-            bitcoin_address(safeaddr,60,pubkeys[i],33);
+            bitcoin_address(safeaddr, 61, pubkeys[i], 33);
             m = (int32_t)strlen(safeaddr);
             safeaddress.resize(m);
             ptr = (char *)safeaddress.data();

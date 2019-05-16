@@ -427,6 +427,7 @@ extern UniValue migrate_completeimporttransaction(const UniValue& params, bool f
 
 extern UniValue notaries(const UniValue& params, bool fHelp);
 extern UniValue minerids(const UniValue& params, bool fHelp);
+extern UniValue safeids(const UniValue& params, bool fHelp);
 extern UniValue kvsearch(const UniValue& params, bool fHelp);
 extern UniValue kvupdate(const UniValue& params, bool fHelp);
 extern UniValue paxprice(const UniValue& params, bool fHelp);
