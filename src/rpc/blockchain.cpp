@@ -842,7 +842,7 @@ int32_t safecoin_paxprices(int32_t *heights,uint64_t *prices,int32_t max,char *b
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_rmd160,int32_t len);
 int32_t safecoin_minerids(uint8_t *minerids,int32_t height,int32_t width);
-int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width);
+int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width, std::string *safepubs);
 int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 
 UniValue kvsearch(const UniValue& params, bool fHelp)
@@ -960,11 +960,11 @@ UniValue minerids(const UniValue& params, bool fHelp)
 }
 
 UniValue safeids(const UniValue& params, bool fHelp)
-{
+{  string safepubs[2000];
     uint32_t timestamp = 0;
     UniValue ret(UniValue::VOBJ);
     UniValue a(UniValue::VARR);
-    uint8_t safeids[2000], pubkeys[65][33];
+    uint8_t safeids[20000], pubkeys[65][33];
     int32_t i, j, n, numnotaries,tally[129];
     if ( fHelp || params.size() != 1 )
         throw runtime_error("safeids needs height\n");
@@ -978,8 +978,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
         if ( pblockindex != 0 )
             timestamp = pblockindex->GetBlockTime();
     }
-    if ( (n= safecoin_safeids(safeids, height, (int32_t)(sizeof(safeids)/sizeof(*safeids)))) > 0 )
-    {
+    if (n= (safecoin_safeids(safeids, height, (int32_t)(sizeof(safeids)/sizeof(*safeids)), safepubs)) > 0 )
+      {   
         memset(tally, 0, sizeof(tally));
         numnotaries = safecoin_notaries(pubkeys, height, timestamp);
         if ( numnotaries > 0 )
@@ -1008,6 +1008,7 @@ UniValue safeids(const UniValue& params, bool fHelp)
                 memcpy(ptr,safeaddr,m);
                 item.push_back(Pair("SAFEaddress", safeaddress));
                 item.push_back(Pair("pubkey", hex));
+		item.push_back(Pair("safekey", safepubs[i]));
                 item.push_back(Pair("blocks", tally[i]));
                 a.push_back(item);
             }
@@ -1017,6 +1018,7 @@ UniValue safeids(const UniValue& params, bool fHelp)
             a.push_back(item);
         }
         ret.push_back(Pair("mined", a));
+	ret.push_back(Pair("SafeNodes", n));
         ret.push_back(Pair("numnotaries", numnotaries));
     } else ret.push_back(Pair("error", (char *)"couldnt extract safeids"));
     return ret;

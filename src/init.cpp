@@ -607,6 +607,8 @@ void CleanupBlockRevFiles()
     remove(safecoinstate);
     path minerids = GetDataDir() / "minerids";
     remove(minerids);
+    path safeids = GetDataDir() / "safeids";
+    remove(safeids);
     // Remove all block files that aren't part of a contiguous set starting at
     // zero by walking the ordered map (keys are block file indices) by
     // keeping a separate counter.  Once we hit a gap (or if 0 doesn't exist)

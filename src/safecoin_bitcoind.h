@@ -730,31 +730,75 @@ int32_t safecoin_block2pubkey33(uint8_t *pubkey33,CBlock *block)
     return(0);
 }
 
+
+
+
+
+
+std::string safecoin_safeid_from_block(CBlock *block)
+{
+  if (block->vtx[0].IsCoinBase())
+    {
+      if (block->vtx[0].vin[0].scriptSig.size() < 37) return "";
+      else
+	{
+	  std::string script_sig_str = HexStr(block->vtx[0].vin[0].scriptSig.begin(), block->vtx[0].vin[0].scriptSig.end());
+	  std::string safeid_str = script_sig_str.substr(script_sig_str.length() - 66, 66);
+	  //	  vector<unsigned char> tmp_safeid = ParseHex(safeid_str);
+	  //	  CPubKey test_pubkey(tmp_safeid);
+	  //  if (test_pubkey.IsValid())
+	  //  {
+	  //    LogPrintf("SAFEID: found valid safeid pubkey %s in block with hash %s\n", safeid_str.c_str(), block->GetHash().GetHex().c_str());
+	      return safeid_str.c_str();
+	      //  }
+	  // LogPrintf("SAFEID: found INVALID safeid pubkey %s in block with hash %s (probably pool signature)\n", safeid_str.c_str(), block->GetHash().GetHex().c_str());
+	}
+    }
+  return "";
+}
+
+
 int32_t safecoin_block2safeid33(uint8_t *safeid33, CBlock *block)
 {
-	int32_t n;
-	if ( SAFECOIN_LOADINGBLOCKS == 0 ) memset(safeid33,0xff,33);
-	else memset(safeid33,0,33);
-	if ( block->vtx[0].IsCoinBase() )
+  int32_t n;
+  if ( SAFECOIN_LOADINGBLOCKS == 0 ) memset(safeid33,0xff,33);
+  else memset(safeid33,0,33);
+  if ( block->vtx[0].IsCoinBase() )
+    {
+      if (block->vtx[0].vin[0].scriptSig.size() < 37) return 0;
+      else
 	{
-		if (block->vtx[0].vin[0].scriptSig.size() < 37) return 0;
-		else 
+	  std::string script_sig_str = HexStr(block->vtx[0].vin[0].scriptSig.begin(), block->vtx[0].vin[0].scriptSig.end());
+	  std::string safeid_str = script_sig_str.substr(script_sig_str.length() - 66, 66);
+	  vector<unsigned char> tmp_safeid = ParseHex(safeid_str);
+	  CPubKey test_pubkey(tmp_safeid);
+	  if (test_pubkey.IsValid())
+	    {
+	      memcpy(safeid33, tmp_safeid.data(), 33);
+	      LogPrintf("SAFEID: found valid safeid pubkey %s in block with hash %s\n", safeid_str.c_str(), block->GetHash().GetHex().c_str());
+
+	      char psz[66 + 1];
+	      for (unsigned int i = 0; i < 33; i++)
 		{
-			std::string script_sig_str = HexStr(block->vtx[0].vin[0].scriptSig.begin(), block->vtx[0].vin[0].scriptSig.end());
-			std::string safeid_str = script_sig_str.substr(script_sig_str.length() - 66, 66);
-			vector<unsigned char> tmp_safeid = ParseHex(safeid_str);
-			CPubKey test_pubkey(tmp_safeid);
-			if (test_pubkey.IsValid())
-			{
-				memcpy(safeid33, tmp_safeid.data(), 33);
-				LogPrintf("SAFEID: found valid safeid pubkey %s in block with hash %s\n", safeid_str.c_str(), block->GetHash().GetHex().c_str());			
-				return true;
-			}
-			// LogPrintf("SAFEID: found INVALID safeid pubkey %s in block with hash %s (probably pool signature)\n", safeid_str.c_str(), block->GetHash().GetHex().c_str()); 
+		  sprintf(psz + i * 2, "%02x", safeid33[i]);
 		}
+	      std::string string_from_buffer = std::string(psz, psz + 66);
+	      //	      LogPrintf("STRING_FROM_BUFFER: %s\n", string_from_buffer.c_str());
+
+	      //	      LogPrintf("FROM safecoin_safeid_from_block() %s\n", safecoin_safeid_from_block(block));
+
+	      return true;
+	    }
+	  // LogPrintf("SAFEID: found INVALID safeid pubkey %s in block with hash %s (probably pool signature)\n", safeid_str.c_str(), block->GetHash().GetHex().c_str());
 	}
-	return(0);
+    }
+  return(0);
 }
+
+
+
+
+
 
 int32_t safecoin_blockload(CBlock& block,CBlockIndex *pindex)
 {
@@ -942,7 +986,7 @@ int32_t safecoin_minerids(uint8_t *minerids,int32_t height,int32_t width)
     return(nonz);
 }
 
-int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width)
+int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width, std::string *safepubs)
 {
     int32_t i, j, nonz, numnotaries;
     CBlock block;
@@ -957,13 +1001,16 @@ int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width)
         {
             if ( safecoin_blockload(block,pindex) == 0 )
             {
-                safecoin_block2safeid33(pubkey33, &block);
+	      safecoin_block2safeid33(pubkey33, &block);
+
                 for (j=0; j<numnotaries; j++)
                 {
                     if ( memcmp(notarypubs33[j],pubkey33,33) == 0 )
                     {
-                        safeids[nonz++] = j;
-                        break;
+		      safepubs[j]=safecoin_safeid_from_block(&block);
+		      safeids[nonz++] = j;
+		      LogPrintf(" Safepubs.%s  safeid number.%d nonz.%d block.%d pubkey hash.%s\n",safepubs[j],safeids[nonz],nonz,height,block.GetHash().GetHex().c_str());
+		      break;
                     }
                 }
                 if ( j == numnotaries )
