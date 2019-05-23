@@ -756,6 +756,48 @@ int32_t safecoin_block2safeid33(uint8_t *safeid33, CBlock *block)
 	return(0);
 }
 
+
+std::string safecoin_pubkey_from_block(CBlock *block)
+{
+	if (block->vtx[0].IsCoinBase())
+	{
+		if (block->vtx[0].vout.size() > 0)
+		{
+			txnouttype whichType;
+			vector<vector<unsigned char>> vch = vector<vector<unsigned char>>();
+			if (Solver(block->vtx[0].vout[0].scriptPubKey, whichType, vch) && whichType == TX_PUBKEY)
+			{
+				CPubKey pubKey(vch[0]);
+				if (pubKey.IsValid())
+				{
+					return HexStr(vch[0].begin(), vch[0].end());
+				}
+			}
+		}
+	}
+    return "invalid";
+}
+
+
+std::string safecoin_safeid_from_block(CBlock *block)
+{
+    if (block->vtx[0].IsCoinBase())
+    {
+        if (block->vtx[0].vin[0].scriptSig.size() < 37) return "invalid";
+        else 
+        {
+            std::string safeid_str = HexStr(block->vtx[0].vin[0].scriptSig.end()-33, block->vtx[0].vin[0].scriptSig.end());
+            CPubKey test_pubkey(ParseHex(safeid_str));
+            if (test_pubkey.IsValid())
+            {  
+                return safeid_str;
+            }
+        }
+    }
+    return "invalid";
+}
+
+
 int32_t safecoin_blockload(CBlock& block,CBlockIndex *pindex)
 {
     block.SetNull();
@@ -973,6 +1015,95 @@ int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width)
     }
     return(nonz);
 }
+
+// replacement for safecoin_safeids()
+std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt_safecoin_safeids(int32_t height, int32_t width)
+{
+    int32_t i, j, nonz;
+    CBlock block;
+    CBlockIndex *pindex;
+    uint8_t pubkey33[33];
+    std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt;
+    std::vector<std::string> vs_pubkeys;
+    std::vector<uint32_t> vu_pubkey_blocks_count;
+    std::vector<std::vector<pair<std::string, uint32_t>>> vvp_pubkey_safeids;
+        
+    for (i = nonz = 0; i < width; i++)
+    {
+        if (height-i <= 0)
+            continue;
+        if ((pindex = safecoin_chainactive(height - width + i + 1)) != 0)
+        {
+            if (safecoin_blockload(block, pindex) == 0)
+            {
+                // extract pubkey and safeid from block
+                std::string s_pubkey = safecoin_pubkey_from_block(&block);
+                std::string s_safeid = safecoin_safeid_from_block(&block);
+                std::vector<std::string>::iterator it;
+                
+                if (s_pubkey != "invalid")
+                {
+					// check if extracted pubkey is already in the result list
+					it = std::find(vs_pubkeys.begin(), vs_pubkeys.end(), s_pubkey);
+					if (it != vs_pubkeys.end())
+					{
+						// found !
+						// get the element index
+						uint32_t index = std::distance(vs_pubkeys.begin(), it);
+						
+						// increase the block count
+						vu_pubkey_blocks_count.at(index) = vu_pubkey_blocks_count.at(index) + 1;
+						
+						// get this pubkey safeids
+						std::vector<pair<std::string, uint32_t>> vp_safeids = vvp_pubkey_safeids.at(index);
+						
+						// check if extracted safeid is already in the current pubkey safeids list
+						auto p = find_if(vp_safeids.begin(), vp_safeids.end(), [&s_safeid](const pair<string, uint32_t>& r){return r.first == s_safeid;});
+
+						if (p != vp_safeids.end())
+						{
+							// found safeid entry within current pubkey 
+							
+							// get the element index
+							uint32_t p_index = std::distance(vp_safeids.begin(), p);
+							
+							// // increase the safeid block count 
+							(vvp_pubkey_safeids.at(index)).at(p_index).second = vp_safeids.at(p_index).second + 1;
+						}
+						else
+						{
+							// not found, add safeid and block count of 1 to the current pubkey	
+							(vvp_pubkey_safeids.at(index)).push_back(std::make_pair(s_safeid, 1));
+						}
+					}
+					else
+					{
+						// not found
+						// insert both pubkey and safeid, block counts of 1
+						vs_pubkeys.push_back(s_pubkey);
+						vu_pubkey_blocks_count.push_back(1);
+						std::vector<pair<std::string, uint32_t>> vp_init_safeid;
+						vp_init_safeid.push_back(std::make_pair(s_safeid, 1));
+						vvp_pubkey_safeids.push_back(vp_init_safeid);
+					}
+				}
+            }
+            else fprintf(stderr,"couldnt load block.%d\n",height);
+        }
+    }
+    
+    // join pubkeys and safeids in result tuple
+    for (unsigned k = 0; k < vs_pubkeys.size(); k++)
+    {
+		std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>> tup;
+		std::get<0>(tup) = vs_pubkeys.at(k);
+		std::get<1>(tup) = vu_pubkey_blocks_count.at(k);
+		std::get<2>(tup) = vvp_pubkey_safeids.at(k);
+		vt.push_back(tup);
+	}
+    return vt;
+}
+
 
 int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t blocktimes[66],int32_t height,uint8_t pubkey33[33],uint32_t blocktime)
 {

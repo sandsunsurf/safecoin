@@ -841,8 +841,12 @@ uint64_t safecoin_paxprice(uint64_t *seedp,int32_t height,char *base,char *rel,u
 int32_t safecoin_paxprices(int32_t *heights,uint64_t *prices,int32_t max,char *base,char *rel);
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_rmd160,int32_t len);
+std::string str_safe_address(std::string pubkey);
 int32_t safecoin_minerids(uint8_t *minerids,int32_t height,int32_t width);
 int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width);
+
+std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt_safecoin_safeids(int32_t height, int32_t width);
+
 int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 
 UniValue kvsearch(const UniValue& params, bool fHelp)
@@ -961,11 +965,10 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue safeids(const UniValue& params, bool fHelp)
 {
+    uint32_t width = 20000, notary_miners_count = 0, external_miners_count;
     uint32_t timestamp = 0;
-    UniValue ret(UniValue::VOBJ);
-    UniValue a(UniValue::VARR);
-    uint8_t safeids[2000], pubkeys[65][33];
-    int32_t i, j, n, numnotaries,tally[129];
+    UniValue uv_result(UniValue::VOBJ);
+    
     if ( fHelp || params.size() != 1 )
         throw runtime_error("safeids needs height\n");
     LOCK(cs_main);
@@ -978,48 +981,43 @@ UniValue safeids(const UniValue& params, bool fHelp)
         if ( pblockindex != 0 )
             timestamp = pblockindex->GetBlockTime();
     }
-    if ( (n= safecoin_safeids(safeids, height, (int32_t)(sizeof(safeids)/sizeof(*safeids)))) > 0 )
-    {
-        memset(tally, 0, sizeof(tally));
-        numnotaries = safecoin_notaries(pubkeys, height, timestamp);
-        if ( numnotaries > 0 )
-        {
-            for (i=0; i<n; i++)
-            {
-                if ( safeids[i] >= numnotaries )
-                    tally[128]++;
-                else tally[safeids[i]]++;
-            }
-            for (i = 0; i < numnotaries; i++)
-            {
-                UniValue item(UniValue::VOBJ);
-                std::string hex, safeaddress;
-                char *hexstr, safeaddr[64], *ptr;
-                int32_t m;
-                hex.resize(66);
-                hexstr = (char *)hex.data();
-                for (j = 0; j < 33; j++)
-                    sprintf(&hexstr[j*2],"%02x",pubkeys[i][j]);
-                item.push_back(Pair("notaryid", i));
-                bitcoin_address(safeaddr, 61, pubkeys[i], 33);
-                m = (int32_t)strlen(safeaddr);
-                safeaddress.resize(m);
-                ptr = (char *)safeaddress.data();
-                memcpy(ptr,safeaddr,m);
-                item.push_back(Pair("SAFEaddress", safeaddress));
-                item.push_back(Pair("pubkey", hex));
-                item.push_back(Pair("blocks", tally[i]));
-                a.push_back(item);
-            }
-            UniValue item(UniValue::VOBJ);
-            item.push_back(Pair("pubkey", (char *)"external miners"));
-            item.push_back(Pair("blocks", tally[128]));
-            a.push_back(item);
-        }
-        ret.push_back(Pair("mined", a));
-        ret.push_back(Pair("numnotaries", numnotaries));
-    } else ret.push_back(Pair("error", (char *)"couldnt extract safeids"));
-    return ret;
+    
+	UniValue uv_pubkeys(UniValue::VARR);
+	std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt = vt_safecoin_safeids(height, width);
+	
+	if (vt.size() > 0)
+	{
+		for (unsigned k = 0; k < vt.size(); k++)
+		{
+			std::string s_pubkey = std::get<0>(vt.at(k));
+			uint32_t u_block_count = std::get<1>(vt.at(k));
+			if (s_pubkey != "invalid") notary_miners_count += u_block_count;
+			std::vector<pair<std::string, uint32_t>> v_safeids = std::get<2>(vt.at(k));
+			UniValue uv_safeids(UniValue::VARR);
+			for (unsigned l = 0; l < v_safeids.size(); l++)
+			{
+				std::pair<std::string, uint32_t> si_count = v_safeids.at(l);
+				UniValue safeid_item(UniValue::VOBJ);
+				safeid_item.push_back(Pair("safeid", si_count.first.c_str()));
+				safeid_item.push_back(Pair("SAFE-address", str_safe_address(si_count.first).c_str()));
+				safeid_item.push_back(Pair("blocks", (int32_t)si_count.second));
+				uv_safeids.push_back(safeid_item);
+			}
+			UniValue pubkey_item(UniValue::VOBJ);
+			pubkey_item.push_back(Pair("pubkey", s_pubkey.c_str()));
+			pubkey_item.push_back(Pair("SAFE-address", str_safe_address(s_pubkey).c_str()));
+			pubkey_item.push_back(Pair("blocks", (int32_t)u_block_count));
+			pubkey_item.push_back(Pair("safeids", uv_safeids));
+			uv_pubkeys.push_back(pubkey_item);
+		}
+		UniValue externals(UniValue::VOBJ);
+		externals.push_back(Pair("external-miners", (int32_t)(width - notary_miners_count)));
+		uv_pubkeys.push_back(externals);
+		uv_result.push_back(Pair("mined", uv_pubkeys));   
+	}
+	else uv_result.push_back(Pair("error", (char *)"couldnt extract safeids"));
+    
+    return uv_result;
 }
 
 UniValue notaries(const UniValue& params, bool fHelp)
