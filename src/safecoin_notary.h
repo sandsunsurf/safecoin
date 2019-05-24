@@ -198,6 +198,22 @@ int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timest
     return(-1);
 }
 
+
+std::vector<std::string> vs_safecoin_notaries(int32_t height, uint32_t timestamp)
+{
+	uint8_t notary_pubkeys[64][33];
+	std::vector<std::string> vs = std::vector<std::string>();
+	int32_t notaries_count = safecoin_notaries(notary_pubkeys, height, timestamp);
+	
+	if (notaries_count == -1) return vs;
+	for (int i = 0; i < notaries_count; i++)
+	{
+		vs.push_back(HexStr(std::begin(notary_pubkeys[i]), std::end(notary_pubkeys[i])));
+	}
+	return vs;
+}
+
+
 int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t height,uint32_t timestamp)
 {
     int32_t i,n; uint8_t pubkeys[64][33];

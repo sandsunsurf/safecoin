@@ -804,6 +804,16 @@ char *bitcoin_address(char *coinaddr,uint8_t addrtype,uint8_t *pubkey_or_rmd160,
     return(coinaddr);
 }
 
+std::string str_safe_address(std::string pubkey)
+{
+	char safe_address[34];
+	if (Getscriptaddress(safe_address, CScript() << ParseHex(pubkey) << OP_CHECKSIG))
+	{
+		return std::string(safe_address);
+	}
+	else return "invalid";
+}
+
 int32_t safecoin_is_issuer()
 {
     if ( ASSETCHAINS_SYMBOL[0] != 0 && safecoin_baseid(ASSETCHAINS_SYMBOL) >= 0 )
