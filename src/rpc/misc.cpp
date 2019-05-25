@@ -934,6 +934,91 @@ UniValue getaddressutxos(const UniValue& params, bool fHelp)
     }
 }
 
+
+UniValue listutxos(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "listutxos \"address\" ( minconf )\n"
+            "\nReturns all unspent outputs for an address (requires addressindex to be enabled).\n"
+            "\nArguments:\n"
+            "1. \"address\"  (string) The base58check encoded address\n"
+            "2. minconf (number) Minimum number of confirmations\n"
+            "}\n"
+            "\nResult\n"
+            "[\n"
+            "  {\n"
+            "    \"address\"  (string) The address base58check encoded\n"
+            "    \"txid\"  (string) The output txid\n"
+            "    \"height\"  (number) The block height\n"
+            "    \"outputIndex\"  (number) The output index\n"
+            "    \"script\"  (strin) The script hex encoded\n"
+            "    \"satoshis\"  (number) The number of satoshis of the output\n"
+            "  }\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listutxos", "\"RY5LccmGiX9bUHYGtSWQouNy1yFhc5rM87\" 100")
+            + HelpExampleRpc("listutxos", "\"RY5LccmGiX9bUHYGtSWQouNy1yFhc5rM87\" 100")
+            );
+	
+	std::string str_address = params[0].get_str();
+	uint32_t minconf = (params.size() == 2) ? params[1].get_int() : 1;
+	
+	CBitcoinAddress address(str_address);
+    uint160 hashBytes;
+    int type = 0;
+    std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+    
+    if (!address.GetIndexKey(hashBytes, type))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid addresses");
+    }
+
+    if (!GetAddressUnspent(hashBytes, type, unspentOutputs))
+    {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
+    }
+
+    std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+
+    
+    UniValue uv_result(UniValue::VOBJ);
+    UniValue uv_utxos(UniValue::VARR);
+    UniValue uv_balance(UniValue::VOBJ);
+	int64_t balance_satoshis = 0;
+	
+    for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+    {
+        UniValue output(UniValue::VOBJ);
+        std::string tmp_address;
+        if (!getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address)) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown address type");
+        }
+		
+		uint32_t confirmations = chainActive.Height() - it->second.blockHeight;
+		
+		if (confirmations >= minconf)
+		{
+			output.push_back(Pair("address", tmp_address));
+			output.push_back(Pair("txid", it->first.txhash.GetHex()));
+			output.push_back(Pair("outputIndex", (int)it->first.index));
+			output.push_back(Pair("script", HexStr(it->second.script.begin(), it->second.script.end())));
+			output.push_back(Pair("satoshis", it->second.satoshis));
+			output.push_back(Pair("height", it->second.blockHeight));
+			output.push_back(Pair("confirmations", (int32_t)confirmations));
+			uv_utxos.push_back(output);
+			balance_satoshis += it->second.satoshis;
+		}
+    }
+    
+    uv_result.push_back(Pair("utxos", uv_utxos));
+    uv_result.push_back(Pair("balance_satoshis", balance_satoshis));
+	//uv_result.push_back(uv_balance);
+	
+	return uv_result;
+}
+
+
 UniValue getaddressdeltas(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 1 || !params[0].isObject())

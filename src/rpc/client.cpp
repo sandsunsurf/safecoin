@@ -70,6 +70,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "listunspent", 0 },
     { "listunspent", 1 },
     { "listunspent", 2 },
+    { "listutxos", 1 },
+    { "listutxos", 2 },
     { "getblock", 1 },
     { "getblockheader", 1 },
     { "gettransaction", 1 },
