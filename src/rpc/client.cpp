@@ -144,6 +144,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "notaries", 2 },
     { "minerids", 1 },
     { "safeids", 1 },
+    { "safeids", 2 },
     { "kvsearch", 1 },
     { "kvupdate", 4 },
     { "z_importkey", 2 },

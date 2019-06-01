@@ -971,10 +971,11 @@ UniValue safeids(const UniValue& params, bool fHelp)
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
     
-    if ( fHelp || params.size() != 1 )
-        throw runtime_error("safeids needs height\n");
+    if ( fHelp || params.size() < 1 )
+        throw runtime_error("safeids needs at least height (width is optional)\n");
     LOCK(cs_main);
     int32_t height = atoi(params[0].get_str().c_str());
+    if (params.size() == 2) width = params[1].get_int();
     if ( height <= 0 )
         height = chainActive.LastTip()->GetHeight();
     else
