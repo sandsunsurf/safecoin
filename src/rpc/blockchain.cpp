@@ -35,6 +35,8 @@ void ScriptPubKeyToJSON(const CScript& scriptPubKey, UniValue& out, bool fInclud
 int32_t safecoin_longestchain();
 int32_t safecoin_dpowconfs(int32_t height,int32_t numconfs);
 extern int32_t SAFECOIN_LONGESTCHAIN;
+extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
 
 double GetDifficultyINTERNAL(const CBlockIndex* blockindex, bool networkDifficulty)
 {
@@ -997,10 +999,39 @@ UniValue safeids(const UniValue& params, bool fHelp)
 			for (unsigned l = 0; l < v_safeids.size(); l++)
 			{
 				std::pair<std::string, uint32_t> si_count = v_safeids.at(l);
+				std::string str_si_address = str_safe_address(si_count.first);
 				UniValue safeid_item(UniValue::VOBJ);
 				safeid_item.push_back(Pair("safeid", si_count.first.c_str()));
-				safeid_item.push_back(Pair("SAFE-address", str_safe_address(si_count.first).c_str()));
+				safeid_item.push_back(Pair("SAFE-address", str_si_address.c_str()));
 				safeid_item.push_back(Pair("blocks", (int32_t)si_count.second));
+				int64_t balance_satoshis = 0;
+				uint32_t minconf = width; // required balance maturity set to 20000 
+				int type = 0;
+				CBitcoinAddress address(str_si_address);
+				uint160 hashBytes;
+
+				std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+				if (address.GetIndexKey(hashBytes, type))
+				{
+					if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+					{
+						std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+						for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+						{
+							std::string tmp_address;
+							if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+							{
+								uint32_t confirmations = height - it->second.blockHeight;
+								if (confirmations >= minconf) balance_satoshis += it->second.satoshis;
+							}
+							else LogPrintf("SAFEIDS: Unknown address type %s\n", tmp_address.c_str());
+						}
+					}
+					else LogPrintf("SAFEIDS: No information available for address %s\n", str_si_address.c_str());
+				}
+				else LogPrintf("SAFEIDS: Invalid address %s\n", str_si_address.c_str());
+
+				safeid_item.push_back(Pair("collateral", ValueFromAmount(balance_satoshis)));
 				uv_safeids.push_back(safeid_item);
 			}
 			UniValue pubkey_item(UniValue::VOBJ);
