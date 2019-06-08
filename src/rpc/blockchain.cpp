@@ -970,12 +970,14 @@ UniValue safeids(const UniValue& params, bool fHelp)
     uint32_t width = 20000, notary_miners_count = 0, external_miners_count;
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
+    std::string spubkey = "";
     
     if ( fHelp || params.size() < 1 )
         throw runtime_error("safeids needs at least height (width is optional)\n");
     LOCK(cs_main);
     int32_t height = atoi(params[0].get_str().c_str());
-    if (params.size() == 2) width = params[1].get_int();
+    if (params.size() >= 2) width = params[1].get_int();
+    if (params.size() == 3) spubkey = params[2].get_str().c_str();
     if ( height <= 0 )
         height = chainActive.LastTip()->GetHeight();
     else
@@ -991,8 +993,11 @@ UniValue safeids(const UniValue& params, bool fHelp)
 	if (vt.size() > 0)
 	{
 		for (unsigned k = 0; k < vt.size(); k++)
-		{
+		  { 
 			std::string s_pubkey = std::get<0>(vt.at(k));
+			if (spubkey == "" || spubkey.compare(s_pubkey.c_str()) == 0){
+		      printf("spubkey.%s\n",spubkey.c_str());
+		      printf("s_pubkey.%s\n",s_pubkey.c_str());
 			uint32_t u_block_count = std::get<1>(vt.at(k));
 			if (s_pubkey != "invalid") notary_miners_count += u_block_count;
 			std::vector<pair<std::string, uint32_t>> v_safeids = std::get<2>(vt.at(k));
@@ -1084,6 +1089,7 @@ UniValue safeids(const UniValue& params, bool fHelp)
 			pubkey_item.push_back(Pair("safeids", uv_safeids));
 			uv_pubkeys.push_back(pubkey_item);
 		}
+             }
 		UniValue externals(UniValue::VOBJ);
 		externals.push_back(Pair("external-miners", (int32_t)(width - notary_miners_count)));
 		uv_pubkeys.push_back(externals);
