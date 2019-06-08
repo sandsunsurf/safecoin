@@ -1038,6 +1038,48 @@ UniValue safeids(const UniValue& params, bool fHelp)
 			UniValue pubkey_item(UniValue::VOBJ);
 			pubkey_item.push_back(Pair("pubkey", s_pubkey.c_str()));
 			pubkey_item.push_back(Pair("SAFE-address", str_safe_address(s_pubkey).c_str()));
+
+
+
+
+
+
+
+			int64_t balance_satoshis = 0;
+			uint32_t minconf = 100; // required balance maturity set to 20000
+			int type = 0;
+			CBitcoinAddress address(str_safe_address(s_pubkey));
+			uint160 hashBytes;
+			std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+			if (address.GetIndexKey(hashBytes, type))
+			  {
+			    if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+			      {
+				std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+				for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+				  {
+				    std::string tmp_address;
+				    if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+				      {
+					uint32_t confirmations = height - it->second.blockHeight;
+					if (confirmations > minconf) balance_satoshis += it->second.satoshis;
+				      }
+				    else LogPrintf("SAFEIDS: Unknown address type %s\n", tmp_address.c_str());
+				  }
+			      }
+			    else LogPrintf("SAFEIDS: No information available for address %s\n", str_safe_address(s_pubkey).c_str());
+			  }
+			else LogPrintf("SAFEIDS: Invalid address %s\n", str_safe_address(s_pubkey).c_str());
+
+
+
+
+
+
+			pubkey_item.push_back(Pair("balance", ValueFromAmount(balance_satoshis)));
+
+
+			
 			pubkey_item.push_back(Pair("blocks", (int32_t)u_block_count));
 			pubkey_item.push_back(Pair("safeids", uv_safeids));
 			uv_pubkeys.push_back(pubkey_item);
