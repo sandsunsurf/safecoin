@@ -1337,6 +1337,170 @@ UniValue getaddresstxids(const UniValue& params, bool fHelp)
 
 }
 
+UniValue listfromto(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2)
+        throw runtime_error(
+            "\nlistfromto \"src-address\" \"dst-address\" ( start-height )\n"
+            "\nReturns payments txids from src-address to dst-address (requires addressindex to be enabled).\n"
+            "\nResult:\n"
+            "[\n"
+            "  {\n"
+            "    \"height\"         (numeric) Transaction block height\n"
+            "    \"timestamp\"      (numeric) Transaction timestamp\n"
+            "    \"txid\"           (string)  Transaction id\n"
+            "    \"received_SAFE\"  (numeric) Amount received by dst-address in SAFE\n"
+            "  }\n"
+            "  , ...\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listfromto", "\"RsaEqW1sbbANmjbqD51zHfDJxGP1xMVoVG\" \"RjvitJRxtkeLYe9cvDdrWKrUCVSWk29Hmp\" 683820")
+            + HelpExampleRpc("listfromto", "\"RsaEqW1sbbANmjbqD51zHfDJxGP1xMVoVG\", \"RjvitJRxtkeLYe9cvDdrWKrUCVSWk29Hmp\", 683820")
+        );
+    
+    std::string str_src_address = params[0].get_str();
+    std::string str_dst_address = params[1].get_str();
+	
+	uint32_t start_height = (params.size() == 3) ? params[2].get_int() : 1;
+	uint32_t end_height = chainActive.LastTip()->GetHeight();
+	
+	LOCK(cs_main);
+	
+	CBitcoinAddress src_address(str_src_address);
+	CBitcoinAddress dst_address(str_dst_address);
+    uint160 src_hash_bytes, dst_hash_bytes;
+    int src_type = 0, dst_type = 0;
+    
+	if (!src_address.GetIndexKey(src_hash_bytes, src_type))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid source address");
+    }
+    
+    if (!dst_address.GetIndexKey(dst_hash_bytes, dst_type))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid destination address");
+    }
+    
+    if (start_height > end_height)
+    {
+		throw JSONRPCError(RPC_INVALID_PARAMETER, "Start height above the current chain tip");
+	}
+
+ 
+	std::vector<std::pair<CAddressIndexKey, CAmount> > src_address_index;
+	std::vector<std::pair<CAddressIndexKey, CAmount> > dst_address_index;
+
+	if (!GetAddressIndex(src_hash_bytes, src_type, src_address_index, start_height, end_height))
+	{
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for source address");
+	}
+	
+	if (!GetAddressIndex(dst_hash_bytes, dst_type, dst_address_index, start_height, end_height))
+	{
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for destination address");
+	}
+ 
+    std::set<std::pair<int, std::string> > src_txids, dst_txids, intersect_txids;
+    
+    for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it=src_address_index.begin(); it!=src_address_index.end(); it++)
+	{
+        int height = it->first.blockHeight;
+        std::string txid = it->first.txhash.GetHex();
+		src_txids.insert(std::make_pair(height, txid));
+    }
+    
+    for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it=dst_address_index.begin(); it!=dst_address_index.end(); it++)
+	{
+        int height = it->first.blockHeight;
+        std::string txid = it->first.txhash.GetHex();
+		dst_txids.insert(std::make_pair(height, txid));
+    }
+    
+    std::set_intersection(src_txids.begin(), src_txids.end(),
+                          dst_txids.begin(), dst_txids.end(),
+                          std::inserter(intersect_txids, intersect_txids.end()));
+
+	UniValue result(UniValue::VARR);
+	for (auto const &p: intersect_txids)
+	{
+	    uint32_t height = p.first;
+	    std::string str_txid = p.second;
+	    uint256 hash = ParseHashV(str_txid, "txid");
+
+		CTransaction tx;
+		uint256 hashBlock;
+		int nBlockTime = 0;
+
+		if (GetTransaction(hash, tx, hashBlock, true))
+		{
+			if (!tx.IsCoinBase()) // skip coinbase transactions
+			{
+							
+				BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
+				if (mi != mapBlockIndex.end() && (*mi).second)
+				{
+					CBlockIndex* pindex = (*mi).second;
+					nBlockTime = pindex->GetBlockTime();
+				}
+
+				// we want all inputs to be from src address
+				bool flag_good_src = true;
+				BOOST_FOREACH(const CTxIn& txin, tx.vin)
+				{
+					uint256 prevout_hash;
+					CTransaction prevout_tx;
+					CTxDestination prevout_address;
+					
+					if (GetTransaction(txin.prevout.hash, prevout_tx, prevout_hash, false))
+					{
+						if (ExtractDestination(prevout_tx.vout[txin.prevout.n].scriptPubKey, prevout_address))
+						{
+							flag_good_src = flag_good_src && (CBitcoinAddress(prevout_address) == src_address);
+						}
+						else flag_good_src = false;
+					}
+					else flag_good_src = false;
+					
+					// no need to wait end of the loop if we already know the result
+					if (!flag_good_src) break;	
+				
+				}
+				
+				if (flag_good_src)
+				{
+					// we want at least one output to be dst address
+					int good_vout_count = 0;
+					CAmount received_satoshis = 0;
+					BOOST_FOREACH(const CTxOut& txout, tx.vout)
+					{
+						CTxDestination out_address;
+						if (ExtractDestination(txout.scriptPubKey, out_address))
+						{
+							if (CBitcoinAddress(out_address) == dst_address)
+							{
+								good_vout_count++;
+								received_satoshis += txout.nValue; // only dst address received amount matters
+							}
+						}
+					}
+					
+					if (good_vout_count > 0)
+					{
+						UniValue item(UniValue::VOBJ);
+						item.push_back(Pair("height", (int64_t)height));
+						item.push_back(Pair("timestamp", nBlockTime));
+						item.push_back(Pair("txid", str_txid));
+						item.push_back(Pair("received_SAFE", ValueFromAmount(received_satoshis)));
+						result.push_back(item);
+					}
+				}
+			}
+		}
+	}
+	
+    return result;
+}
+
 UniValue getspentinfo(const UniValue& params, bool fHelp)
 {
 
