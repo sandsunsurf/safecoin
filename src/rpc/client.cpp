@@ -67,6 +67,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "addmultisigaddress", 1 },
     { "createmultisig", 0 },
     { "createmultisig", 1 },
+    { "listfromto", 2 },
     { "listunspent", 0 },
     { "listunspent", 1 },
     { "listunspent", 2 },
