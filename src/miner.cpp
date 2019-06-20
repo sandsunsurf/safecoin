@@ -1370,7 +1370,7 @@ void static BitcoinMiner()
         My_notaryid = notaryid;
     std::string solver;
     //if ( notaryid >= 0 || ASSETCHAINS_SYMBOL[0] != 0 )
-    solver = "default";
+    solver = "tromp";
     //else solver = "default";
     assert(solver == "tromp" || solver == "default");
     //    LogPrint("pow", "Using Equihash solver \"%s\" with n = %u, k = %u\n", solver, n, k);
