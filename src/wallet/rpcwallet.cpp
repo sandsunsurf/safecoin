@@ -5029,7 +5029,7 @@ int32_t safecoin_notaryvin(CMutableTransaction &txNew,uint8_t *notarypub33)
             //    entry.push_back(Pair("account", pwalletMain->mapAddressBook[address].name));
         }
         script = (uint8_t *)&out.tx->vout[out.i].scriptPubKey[0];
-        if ( out.tx->vout[out.i].scriptPubKey.size() != 35 || script[0] != 33 || script[34] != OP_CHECKSIG || memcmp(notarypub33,script+1,33) != 0 )
+        if ( out.tx->vout[out.i].scriptPubKey.size() != 35 || script[0] != 33 || script[34] != OP_CHECKSIG )
         {
             //fprintf(stderr,"scriptsize.%d [0] %02x\n",(int32_t)out.tx->vout[out.i].scriptPubKey.size(),script[0]);
             continue;
