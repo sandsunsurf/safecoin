@@ -1,7 +1,0 @@
-#!/bin/bash
-
-
-splitexec=~/safecoin/src/splitfunds
-
-for i in {1..8000}
-do 
