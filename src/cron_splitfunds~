@@ -1,6 +1,9 @@
 #!/bin/bash
+
 # Minimum number of UTXOs to maintain
 TARGETAMNT=10
+
+splitexec=~/safecoin/src/splitfunds
 
 print_txid () {
   txid=$(echo $1 | jq -r .txid)
@@ -22,18 +25,18 @@ echo $now
 
 echo "Checking SAFE"
 cd ~
+
 echo -n SAFE
 UTXOS="$(safecoin-cli listunspent | grep -c .00010000)"
 echo -n -e '\t\t';echo -n "$UTXOS"
 if [ "$UTXOS" -lt "2500" ]
    then
-     SPLITAMNT=$(( 50 -$UTXOS ))
+     SPLITAMNT=$(( 5 -$UTXOS ))
      echo -n " - SPLITFUNDING SAFE: "
-     RESULT="$(bash splitfunds SAFE $SPLITAMNT)"
+     RESULT="$(bash -c $splitexec $2 &)"
      print_txid $RESULT
    fi
 echo ""
-
 
 
 echo "--------------------------------------------------------------------------------------------------"
