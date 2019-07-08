@@ -358,13 +358,13 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
         portable_mutex_init(&SAFECOIN_CC_mutex);
         didinit = 1;
     }
-    if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
-    {
-        SAFECOIN_INITDONE = (uint32_t)time(NULL);
-        printf("[%s] no safecoin_stateptr\n",ASSETCHAINS_SYMBOL);
-        return;
-    }
-    //printf("[%s] (%s) -> (%s)\n",ASSETCHAINS_SYMBOL,symbol,dest);
+        if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
+        {
+    //        SAFECOIN_INITDONE = (uint32_t)time(NULL);
+    //        printf("[%s] no safecoin_stateptr\n",ASSETCHAINS_SYMBOL);
+    //        return;
+        }
+    printf("[%s] (%s) -> (%s)\n",ASSETCHAINS_SYMBOL,symbol,dest);
     if ( fp == 0 )
     {
         safecoin_statefname(fname,ASSETCHAINS_SYMBOL,(char *)"safecoinstate");
@@ -591,7 +591,7 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
         }
         opoffset = len;
         matched = 0;
-        if ( ASSETCHAINS_SYMBOL[0] == 0 &&  scriptbuf[len] != 'K')
+        if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
             if ( strcmp("SAFE",(char *)&scriptbuf[len+32 * 2 + 4]) == 0 )
                 matched = 1;

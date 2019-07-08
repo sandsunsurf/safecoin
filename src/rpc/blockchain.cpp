@@ -996,8 +996,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
 		  { 
 			std::string s_pubkey = std::get<0>(vt.at(k));
 			if (spubkey == "" || spubkey.compare(s_pubkey.c_str()) == 0){
-		      printf("spubkey.%s\n",spubkey.c_str());
-		      printf("s_pubkey.%s\n",s_pubkey.c_str());
+			  //		      printf("spubkey.%s\n",spubkey.c_str());
+			  //		      printf("s_pubkey.%s\n",s_pubkey.c_str());
 			uint32_t u_block_count = std::get<1>(vt.at(k));
 			if (s_pubkey != "invalid") notary_miners_count += u_block_count;
 			std::vector<pair<std::string, uint32_t>> v_safeids = std::get<2>(vt.at(k));

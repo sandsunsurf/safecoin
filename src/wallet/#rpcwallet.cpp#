@@ -577,19 +577,19 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
     if ( (n= (int32_t)params.size()) >= 3 )
     {
         flags = atoi(params[2].get_str().c_str());
-        //printf("flags.%d (%s) n.%d\n",flags,params[2].get_str().c_str(),n);
+        printf("flags.%d (%s) n.%d\n",flags,params[2].get_str().c_str(),n);
     } else flags = 0;
     if ( n >= 4 )
         privkey = safecoin_kvprivkey(&pubkey,(char *)(n >= 4 ? params[3].get_str().c_str() : "password"));
     haveprivkey = 1;
     flags |= 1;
-    /*for (i=0; i<32; i++)
+    for (i=0; i<32; i++)
         printf("%02x",((uint8_t *)&privkey)[i]);
     printf(" priv, ");
     for (i=0; i<32; i++)
         printf("%02x",((uint8_t *)&pubkey)[i]);
     printf(" pubkey, privkey derived from (%s)\n",(char *)params[3].get_str().c_str());
-    */
+    
     LOCK2(cs_main, pwalletMain->cs_wallet);
     if ( (keylen= (int32_t)strlen(params[0].get_str().c_str())) > 0 )
     {
@@ -600,7 +600,7 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
             valuesize = (int32_t)strlen(params[1].get_str().c_str());
         }
         memcpy(keyvalue,key,keylen);
-        if ( (refvaluesize= safecoin_kvsearch(&refpubkey,chainActive.LastTip()->GetHeight(),&tmpflags,&height,&keyvalue[keylen],key,keylen)) >= 0 )
+        if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,chainActive.LastTip()->GetHeight(),&tmpflags,&height,&keyvalue[keylen],key,keylen)) >= 0 )
         {
             if ( (tmpflags & SAFECOIN_KVPROTECTED) != 0 )
             {
@@ -618,12 +618,12 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
                     ret.push_back(Pair("error",(char *)"error verifying sig, passphrase is probably wrong"));
                     printf("VERIFY ERROR\n");
                     return ret;
-                } // else printf("verified immediately\n");
+                }  else printf("verified immediately\n");
             }
         }
-        //for (i=0; i<32; i++)
-        //    printf("%02x",((uint8_t *)&sig)[i]);
-        //printf(" sig for keylen.%d + valuesize.%d\n",keylen,refvaluesize);
+        for (i=0; i<32; i++)
+            printf("%02x",((uint8_t *)&sig)[i]);
+        printf(" sig for keylen.%d + valuesize.%d\n",keylen,refvaluesize);
         ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL)));
         height = chainActive.LastTip()->GetHeight();
         if ( memcmp(&zeroes,&refpubkey,sizeof(refpubkey)) != 0 )
@@ -661,16 +661,16 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
         }
         if ( (opretlen= safecoin_opreturnscript(opretbuf,'K',keyvalue,coresize)) == 40 )
             opretlen++;
-        //for (i=0; i<opretlen; i++)
-        //    printf("%02x",opretbuf[i]);
-        //printf(" opretbuf keylen.%d valuesize.%d height.%d (%02x %02x %02x)\n",*(uint16_t *)&keyvalue[0],*(uint16_t *)&keyvalue[2],*(uint32_t *)&keyvalue[4],keyvalue[8],keyvalue[9],keyvalue[10]);
+        for (i=0; i<opretlen; i++)
+            printf("%02x",opretbuf[i]);
+        printf(" opretbuf keylen.%d valuesize.%d height.%d (%02x %02x %02x)\n",*(uint16_t *)&keyvalue[0],*(uint16_t *)&keyvalue[2],*(uint32_t *)&keyvalue[4],keyvalue[8],keyvalue[9],keyvalue[10]);
         EnsureWalletIsUnlocked();
         fee = safecoin_kvfee(flags,opretlen,keylen);
         ret.push_back(Pair("fee",(double)fee/COIN));
         CBitcoinAddress destaddress(CRYPTO777_SAFEADDR);
         if (!destaddress.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid dest Bitcoin address");
-        SendMoney(destaddress.Get(),10000,false,wtx,opretbuf,opretlen,fee);
+        SendMoney(destaddress.Get(),1000,false,wtx,opretbuf,opretlen,fee);
         ret.push_back(Pair("txid",wtx.GetHash().GetHex()));
     } else ret.push_back(Pair("error",(char *)"null key"));
     return ret;
@@ -725,8 +725,8 @@ UniValue paxdeposit(const UniValue& params, bool fHelp)
 UniValue paxwithdraw(const UniValue& params, bool fHelp)
 {
     CWalletTx wtx; std::string dest; int32_t safeheight; uint64_t seed,safecoinshis = 0; char destaddr[64]; uint8_t i,pubkey37[37]; bool fSubtractFeeFromAmount = false;
-    if ( ASSETCHAINS_SYMBOL[0] == 0 )
-        return(0);
+    //    if ( ASSETCHAINS_SYMBOL[0] == 0 )
+    //        return(0);
     if (!EnsureWalletIsAvailable(fHelp))
         return 0;
     throw runtime_error("paxwithdraw deprecated");
