@@ -784,33 +784,27 @@ std::string safecoin_pubkey_from_block(CBlock *block)
 
 std::string safecoin_safeid_from_block(CBlock *block)
 {
-    if (block->vtx[0].IsCoinBase())
-    {
-        if (block->vtx[0].vin[0].scriptSig.size() < 37) return "invalid";
-        else 
-        {
-            std::string safeid_str = HexStr(block->vtx[0].vin[0].scriptSig.end()-33, block->vtx[0].vin[0].scriptSig.end());
-            CPubKey test_pubkey(ParseHex(safeid_str));
 
-	    std::string tstr = "testkey";
-	    uint8_t testkey[8];
-	    std::copy(tstr.begin(), tstr.end(), testkey);
-	    int32_t flags = 1;
-	    uint8_t safeidaddr;
-	    uint8_t pubkey33[33];
-	    uint256 pubs;
-	    int32_t height = safecoin_block2height(block);
-	    int32_t heightp;
-	    safecoin_kvsearch((uint256 *)&pubs,height,(uint32_t *)&flags,(int32_t *)&heightp,(uint8_t *)&safeidaddr,testkey,8);
-	    
-            if (test_pubkey.IsValid())
-	      {  if(safeidaddr)
-	      return std::string((char *)safeidaddr); //safeid_str;
-		return "";
-            }
-        }
+  std::string tstr = "testkey";
+  int32_t flags = 1, keylen=7;
+  uint8_t key[keylen];
+  uint8_t value[IGUANA_MAXSCRIPTSIZE*8];
+  uint8_t pubkey33[33];
+  uint256 pubs;
+  int32_t height = safecoin_block2height(block), valuesize;
+  int32_t heightp;
+  memcpy(key,tstr.c_str(),keylen);
+valuesize=safecoin_kvsearch((uint256 *)&pubs,height,(uint32_t *)&flags,(int32_t *)&heightp,(uint8_t *)&value,key,keylen);
+
+ 
+  if(value){
+    std::string val; char *valuestr;
+    val.resize(valuesize);
+    valuestr = (char *)val.data();
+    memcpy(valuestr,value,valuesize);
+	return val; //safeid_str;
     }
-    return "invalid";
+  return "";
 }
 
 
