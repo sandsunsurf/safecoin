@@ -23,6 +23,7 @@
 #include "script/standard.h"
 #include "safecoin_kv.h"
 
+
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 int32_t safecoin_electednotary(int32_t *numnotariesp,uint8_t *pubkey33,int32_t height,uint32_t timestamp);
 unsigned int lwmaGetNextPOSRequired(const CBlockIndex* pindexLast, const Consensus::Params& params);
@@ -785,19 +786,23 @@ std::string safecoin_pubkey_from_block(CBlock *block)
 std::string safecoin_safeid_from_block(CBlock *block)
 {
 
-  std::string tstr = "testkey";
-  int32_t flags = 1, keylen=7;
-  uint8_t key[keylen];
+  int32_t flags = 1, keylen;
   uint8_t value[IGUANA_MAXSCRIPTSIZE*8];
   uint8_t pubkey33[33];
   uint256 pubs;
   int32_t height = safecoin_block2height(block), valuesize;
+  std::string keystr;
+  std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
+  std::string padding = "0";
+  keystr = defaultpub + padding + std::to_string(height) + "1";
+  keylen=keystr.length();
+  uint8_t key[keylen];
   int32_t heightp;
-  memcpy(key,tstr.c_str(),keylen);
+  memcpy(key,keystr.c_str(),keylen);
 valuesize=safecoin_kvsearch((uint256 *)&pubs,height,(uint32_t *)&flags,(int32_t *)&heightp,(uint8_t *)&value,key,keylen);
 
  
-  if(value){
+  if(valuesize > 0){
     std::string val; char *valuestr;
     val.resize(valuesize);
     valuestr = (char *)val.data();
