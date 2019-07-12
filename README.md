@@ -45,17 +45,19 @@ Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a 
 ### Dependencies
 
     1. Ubuntu
-	```{r, engine='bash'}
+	
+```shell
 	#The following packages are needed:
 	sudo apt-get install \
 		build-essential pkg-config libc6-dev m4 \
 		g++-multilib autoconf libtool ncurses-dev \
 		unzip git python python-zmq zlib1g-dev wget \
 		libcurl4-gnutls-dev bsdmainutils automake curl bc dc jq
-	```
+```
 
     2. Windows
-    ```{r, engine='bash'}
+	
+```shell
     sudo apt-get install \
         build-essential pkg-config libc6-dev m4 g++-multilib \
         autoconf libtool ncurses-dev unzip git python \
@@ -63,7 +65,7 @@ Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a 
 		
 		sudo update-alternatives --install /usr/bin/x86_64-w64-mingw32-gcc x86_64-w64-mingw32-gcc /usr/bin/x86_64-w64-mingw32-gcc-posix 100
 		sudo update-alternatives --install /usr/bin/x86_64-w64-mingw32-g++ x86_64-w64-mingw32-g++ /usr/bin/x86_64-w64-mingw32-g++-posix 100
-    ```
+```
 
 Secure Setup
 -----------------
