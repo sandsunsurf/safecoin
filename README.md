@@ -37,7 +37,7 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Mining Algorithm: Equihash 192_7
 
 ## About this Project
-Safecoin is a fork of the Komodo and Zcash projects, although we have incorporated significant changes including TLS Encryption from Horizen and Equihash 144_5, in collaboration with BTCZ.  Safecoin was launched as a pure Proof of Work coin, and has never had any ICO or Sale of any kind.   We are an Open Source, Peer to Peer project and we support and contribute to likewise initiatives.
+Safecoin is a fork of the Komodo and Zcash projects, although we have incorporated significant changes including TLS 1.3 Encryption from Horizen and Equihash 144_5, in collaboration with BTCZ.  Safecoin was launched as a pure Proof of Work coin, and has never had any ICO or Sale of any kind.   We are an Open Source, Peer to Peer project and we support and contribute to likewise initiatives.
 Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a far higher standard of privacy through a sophisticated zero-knowledge proving scheme that preserves confidentiality of transaction metadata. Technical details are available in our [Protocol Specification](https://github.com/zcash/zips/raw/master/protocol/protocol.pdf).
 
 ## Getting started
@@ -109,6 +109,7 @@ cd safecoin
 #This can take some time.
 ```
 The "disable-mining" binaries are compiled with **--disable-mining** in an attempt to reduce Antivirus false positives, use them if you're packaging GUI wallets.
+
 **safecoin is experimental and a work-in-progress.** Use at your own risk.
 
 To reset the Safecoin blockchain change into the *~/.safecoin* data directory and delete the corresponding files by running `rm -rf blocks chainstate debug.log safecoinstate db.log`
