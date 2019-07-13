@@ -92,8 +92,8 @@ void safecoin_eventadd_pricefeed(struct safecoin_state *sp,char *symbol,int32_t 
 void safecoin_eventadd_opreturn(struct safecoin_state *sp,char *symbol,int32_t height,uint256 txid,uint64_t value,uint16_t vout,uint8_t *buf,uint16_t opretlen)
 {
     struct safecoin_event_opreturn O; uint8_t *opret;
-    if ( ASSETCHAINS_SYMBOL[0] != 0 )
-    {
+    //    if ( ASSETCHAINS_SYMBOL[0] != 0 )
+    //    {
         opret = (uint8_t *)calloc(1,sizeof(O) + opretlen + 16);
         O.txid = txid;
         O.value = value;
@@ -105,7 +105,7 @@ void safecoin_eventadd_opreturn(struct safecoin_state *sp,char *symbol,int32_t h
         free(opret);
         if ( sp != 0 )
             safecoin_opreturn(height,value,buf,opretlen,txid,vout,symbol);
-    }
+	//    }
 }
 
 void safecoin_event_undo(struct safecoin_state *sp,struct safecoin_event *ep)
