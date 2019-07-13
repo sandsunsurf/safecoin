@@ -519,7 +519,7 @@ UniValue sendtoaddress(const UniValue& params, bool fHelp)
 #define IGUANA_MAXSCRIPTSIZE 10001
 uint64_t PAX_fiatdest(uint64_t *seedp,int32_t tosafecoin,char *destaddr,uint8_t pubkey37[37],char *coinaddr,int32_t height,char *base,int64_t fiatoshis);
 int32_t safecoin_opreturnscript(uint8_t *script,uint8_t type,uint8_t *opret,int32_t opretlen);
-#define CRYPTO777_SAFEADDR "RXL3YXG2ceaB6C5hfJcN4fvmLH2C34knhA"
+#define CRYPTO777_SAFEADDR "RfcUEDp6F2ryar92H1eqg5moxx7cpWwe2n"
 extern int32_t SAFECOIN_PAX;
 extern uint64_t SAFECOIN_INTERESTSUM,SAFECOIN_WALLETBALANCE;
 int32_t safecoin_is_issuer();
@@ -567,8 +567,8 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
         );
     if (!EnsureWalletIsAvailable(fHelp))
         return 0;
-    if ( ASSETCHAINS_SYMBOL[0] == 0 )
-        return(0);
+    //    if ( ASSETCHAINS_SYMBOL[0] == 0 )
+    //        return(0);
     haveprivkey = 0;
     memset(&sig,0,sizeof(sig));
     memset(&privkey,0,sizeof(privkey));

@@ -591,7 +591,7 @@ int32_t safecoin_voutupdate(int32_t *isratificationp,int32_t notaryid,uint8_t *s
         }
         opoffset = len;
         matched = 0;
-        if ( ASSETCHAINS_SYMBOL[0] == 0 )
+        if ( ASSETCHAINS_SYMBOL[0] == 0 &&  scriptbuf[len] != 'K')
         {
             if ( strcmp("SAFE",(char *)&scriptbuf[len+32 * 2 + 4]) == 0 )
                 matched = 1;
