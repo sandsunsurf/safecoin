@@ -670,6 +670,7 @@ UniValue kvupdate(const UniValue& params, bool fHelp)
         CBitcoinAddress destaddress(CRYPTO777_SAFEADDR);
         if (!destaddress.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid dest Bitcoin address");
+	
         SendMoney(destaddress.Get(),10000,false,wtx,opretbuf,opretlen,fee);
         ret.push_back(Pair("txid",wtx.GetHash().GetHex()));
     } else ret.push_back(Pair("error",(char *)"null key"));
