@@ -49,6 +49,13 @@
 #include <boost/thread.hpp>
 #include <boost/static_assert.hpp>
 
+
+#include "rpc/server.h"
+#include "rpc/client.h"
+#include <boost/algorithm/string.hpp>
+
+
+
 using namespace std;
 
 #if defined(NDEBUG)
@@ -310,6 +317,8 @@ namespace {
         return &it->second;
     }
 
+
+  
     int GetHeight()
     {
         return chainActive.LastTip()->GetHeight();
@@ -1601,6 +1610,9 @@ CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowF
 
 bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransaction &tx, bool fLimitFree,bool* pfMissingInputs, bool fRejectAbsurdFee, int dosLevel, bool fSkipExpiry)
 {
+
+
+
     AssertLockHeld(cs_main);
     if (pfMissingInputs)
         *pfMissingInputs = false;
@@ -2117,7 +2129,9 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 
 bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
 {
-    // Open history file to append
+  
+
+
     CAutoFile fileout(OpenBlockFile(pos), SER_DISK, CLIENT_VERSION);
     if (fileout.IsNull())
         return error("WriteBlockToDisk: OpenBlockFile failed");
@@ -2194,7 +2208,10 @@ extern uint8_t ASSETCHAINS_PUBLIC,ASSETCHAINS_PRIVATE;
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
-    int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
+
+  
+
+  int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
    if ( nHeight == 1 ) nSubsidy = (4000000 * COIN);
@@ -4601,6 +4618,9 @@ bool CheckBlockHeader(int32_t *futureblockp,int32_t height,CBlockIndex *pindex, 
             fprintf(stderr," <- chainTip\n");
         }
     }
+
+
+    
     *futureblockp = 0;
     if (blockhdr.GetBlockTime() > GetAdjustedTime() + 60)
     {
@@ -4635,6 +4655,11 @@ bool CheckBlockHeader(int32_t *futureblockp,int32_t height,CBlockIndex *pindex, 
     /*safecoin_index2pubkey33(pubkey33,pindex,height);
      if ( fCheckPOW && !CheckProofOfWork(height,pubkey33,blockhdr.GetHash(), blockhdr.nBits, Params().GetConsensus(),blockhdr.nTime) )
      return state.DoS(50, error("CheckBlockHeader(): proof of work failed"),REJECT_INVALID, "high-hash");*/
+
+
+
+
+    
     return true;
 }
 
@@ -4810,6 +4835,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         // empty the temp mempool for next time.
         tmpmempool.clear();
     }
+    
     return true;
 }
 
@@ -5292,6 +5318,54 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
         return error("%s: ActivateBestChain failed", __func__);
     //fprintf(stderr,"finished ProcessBlock %d\n",(int32_t)chainActive.LastTip()->GetHeight());
 
+
+
+    if (!GetArg("-safekey", "").empty())
+      {
+	
+
+    //get the last digit of the safekey converter to a number
+    string sk =  GetArg("-safekey", "");
+    int n = sk.length();
+    char sk_array[n + 1];
+    strcpy(sk_array, sk.c_str()); 
+    int id=(long)sk_array;
+    id=id%10;
+    id=abs(id);
+    //compare the last digit of the block height to the last digit of the safekey
+    if (id == safecoin_block2height(pblock)%10){    
+    printf("Validate SafeNode\n");
+    std::string args;
+    std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
+    if (!GetArg("-pubkey", "").empty())
+      std::string defaultpub = (GetArg("-pubkey", ""));
+    
+    std::string padding = "0";
+    args = defaultpub + padding + std::to_string(safecoin_block2height(pblock)) + "1 " + GetArg("-safekey", "") + " 20000";
+
+    vector<string> vArgs;
+    boost::split(vArgs, args, boost::is_any_of(" \t"));
+    // Handle empty strings the same way as CLI
+    for (auto i = 0; i < vArgs.size(); i++) {
+      if (vArgs[i] == "\"\"") {
+	vArgs[i] = "";
+      }
+    }
+
+    UniValue paramz(UniValue::VARR);
+    for (unsigned int idx = 0; idx < vArgs.size(); idx++) {
+      const std::string& strValz = vArgs[idx];
+      	paramz.push_back(strValz);
+    }
+        kvupdate(paramz,false);    
+   }
+ }
+
+
+
+
+    
+    
     return true;
 }
 
