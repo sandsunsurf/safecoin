@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2019 The Safecoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -195,7 +196,7 @@ void Shutdown()
     /// for example if the data directory was found to be locked.
     /// Be sure that anything that writes files or flushes caches only does this if the respective
     /// module was initialized.
-    RenameThread("verus-shutoff");
+    RenameThread("safecoin-shutoff");
     mempool.AddTransactionsUpdated(1);
 
     StopHTTPRPC();
@@ -870,7 +871,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     fLogTimestamps = GetBoolArg("-logtimestamps", true);
     fLogIPs = GetBoolArg("-logips", false);
 
-    //LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     LogPrintf("Zcash version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
 
     // when specifying an explicit binding address, you want to listen on it
@@ -1182,6 +1183,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     FILE* file = fopen(pathLockFile.string().c_str(), "a"); // empty lock file; created if it doesn't exist.
     if (file) fclose(file);
 
+	fprintf(stderr,"Attempting to obtain lock %s\n", pathLockFile.string().c_str());
+
     try {
         static boost::interprocess::file_lock lock(pathLockFile.string().c_str());
         if (!lock.try_lock())
@@ -1190,11 +1193,19 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         return InitError(strprintf(_("Cannot obtain a lock on data directory %s. Safecoin is probably already running.") + " %s.", strDataDir, e.what()));
     }
 
+	fprintf(stderr,"About to create pidfile\n");
+
 #ifndef _WIN32
     CreatePidFile(GetPidFile(), getpid());
 #endif
+
+	fprintf(stderr,"created pidfile\n");
+
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
+
+    fprintf(stderr,"past shrinkdebugfile\n");
+
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     LogPrintf("Safecoin version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
 
@@ -1546,6 +1557,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 
                 if (fReindex) {
+                    boost::filesystem::remove(GetDataDir() / "safecoinstate");
                     pblocktree->WriteReindexing(true);
                     //If we're reindexing in prune mode, wipe away unusable block files and all undo data files
                     if (fPruneMode)
@@ -1845,7 +1857,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
         uiInterface.InitMessage(_("Activating best chain..."));
         // scan for better chains in the block chain database, that are not yet connected in the active best chain
         CValidationState state;
-        if ( !ActivateBestChain(state))
+        if ( !ActivateBestChain(true,state))
             strErrors << "Failed to connect best block";
     }
     std::vector<boost::filesystem::path> vImportFiles;
