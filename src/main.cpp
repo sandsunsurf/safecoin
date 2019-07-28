@@ -5342,11 +5342,12 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
     std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
     if (!GetArg("-parentkey", "").empty())
       std::string defaultpub = (GetArg("-parentkey", ""));
+      std::string safepass = (GetArg("-safepass", ""));
     
     std::string padding = "0";
     std::string arbheight = std::to_string(safecoin_block2height(pblock) - (rand() % 1000));  //subtract a random amount less than 100 
       
-    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100";
+    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100 " + safepass;
 
     vector<string> vArgs;
     boost::split(vArgs, args, boost::is_any_of(" \t"));
