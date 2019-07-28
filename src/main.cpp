@@ -5332,11 +5332,10 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
 	int sk_checksum = sk_crc.checksum();
 
 	//int id_by_checksum = sk_checksum % 1440; // once a day
-	int id_by_checksum = sk_checksum % 10180; // once per week
-	id_by_checksum = id_by_checksum - rand() % 100;  //subtract a random amount less than 100
+	int id_by_checksum = sk_checksum % 10000; // once per week
 	
     //compare the last digit of the block height to the last digit of the safekey
-	if (id_by_checksum == current_height % 10180)
+	if (id_by_checksum == current_height % 10000)
 	  {
     printf("Validate SafeNode\n");
     std::string args;
@@ -5345,7 +5344,9 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
       std::string defaultpub = (GetArg("-parentkey", ""));
     
     std::string padding = "0";
-    args = defaultpub + padding + std::to_string(safecoin_block2height(pblock)) + "1 " + GetArg("-safekey", "") + " 20000";
+    std::string arbheight = std::to_string(safecoin_block2height(pblock) - (rand() % 1000));  //subtract a random amount less than 100 
+      
+    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100";
 
     vector<string> vArgs;
     boost::split(vArgs, args, boost::is_any_of(" \t"));
