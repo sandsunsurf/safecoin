@@ -3809,7 +3809,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 	    std::string safepass = (GetArg("-safepass", ""));
 
 	    std::string padding = "0";
-	    std::string arbheight = std::to_string(safecoin_block2height(pblock) - (rand() % 1000));  //subtract a random amount less than 100
+	    std::string arbheight = std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
 
 	    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100 " + safepass;
 
