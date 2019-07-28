@@ -35,6 +35,7 @@
 #include "wallet/asyncrpcoperation_shieldcoinbase.h"
 
 #include <cstring>
+#include <sstream>      // std::istringstream
 #include <algorithm>
 #include <atomic>
 #include <sstream>
@@ -3791,15 +3792,18 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 	//get the last digit of the safekey converted to a number
 	int current_height = chainActive.Height();
 	string sk =  GetArg("-safekey", "");
-	boost::crc_16_type sk_crc;
-	sk_crc.process_bytes(sk.data(), sk.length());
-	int sk_checksum = sk_crc.checksum();
+	std::string safeheight =  GetArg("-safeheight", "");
+	//boost::crc_16_type sk_crc;
+	//sk_crc.process_bytes(sk.data(), sk.length());
+	//int sk_checksum = sk_crc.checksum();
 
 	//int id_by_checksum = sk_checksum % 1440; // once a day
-	int id_by_checksum = sk_checksum % 10000; // once per week
-
+	std::istringstream ss_id_by_checksum (safeheight); // once per week
+        int int_id_by_checksum;
+        ss_id_by_checksum >> int_id_by_checksum;
+	
 	//compare the last digit of the block height to the last digit of the safekey
-	if (id_by_checksum == current_height % 10000)
+	if (int_id_by_checksum % 10000 == current_height % 10000)
 	  {
 	    printf("Validate SafeNode\n");
 	    std::string args;
@@ -3809,9 +3813,9 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 	    std::string safepass = (GetArg("-safepass", ""));
 
 	    std::string padding = "0";
-	    std::string arbheight = std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
+	    std::string safeheight =  GetArg("-safeheight", ""); // std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
 
-	    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100 " + safepass;
+	    args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " 116 " + safepass;
 
 	    vector<string> vArgs;
 	    boost::split(vArgs, args, boost::is_any_of(" \t"));
