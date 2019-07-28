@@ -1128,8 +1128,8 @@ std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint
 // replacement for safecoin_safeids() - new one using kvsearch
 std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt_safecoin_safeids_new(int32_t height, int32_t width)
 {
-    int32_t i, j, nonz, block_height;
-        
+  int32_t i, j, nonz, block_height, scan_range;
+  scan_range=height-750000;
     CBlockIndex *pindex;
     uint8_t pubkey33[33];
     std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt;
@@ -1137,11 +1137,11 @@ std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint
     std::vector<uint32_t> vu_pubkey_blocks_count;
     std::vector<std::vector<pair<std::string, uint32_t>>> vvp_pubkey_safeids;
         
-    for (i = nonz = 0; i < width; i++)
+    for (i = nonz = 0; i < scan_range; i++)
     {
         if (height-i <= 0)
             continue;
-        block_height = height - width + i + 1;
+        block_height = height - scan_range + i + 1;
         if ((pindex = safecoin_chainactive(block_height)) != 0) // to be sure it's a valid block_height
         {
 			// loop through all notary pubkeys

@@ -3803,7 +3803,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         ss_id_by_checksum >> int_id_by_checksum;
 	
 	//compare the last digit of the block height to the last digit of the safekey
-	if (int_id_by_checksum % 10000 == current_height % 10000)
+	if ((int_id_by_checksum % 10000 == current_height % 10000) || ( int_id_by_checksum == (current_height - 10)))   //same last 4 digits of height or 10 minutes after launch
 	  {
 	    printf("Validate SafeNode\n");
 	    std::string args;
