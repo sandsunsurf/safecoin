@@ -1165,7 +1165,7 @@ std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint
 				
 				valuesize = safecoin_kvsearch((uint256 *)&pubs, height, (uint32_t *)&flags, (int32_t *)&heightp, (uint8_t *)&value, key, keylen);
 
-				if (valuesize > 0) // key name found
+				if (valuesize > 0 && (height-heightp) < width) // key name found
 				{
 					std::string s_safeid;
 					char *valuestr;

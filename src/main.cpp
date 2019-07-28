@@ -48,7 +48,7 @@
 #include <boost/math/distributions/poisson.hpp>
 #include <boost/thread.hpp>
 #include <boost/static_assert.hpp>
-
+#include <boost/crc.hpp>
 
 #include "rpc/server.h"
 #include "rpc/client.h"
@@ -5324,21 +5324,25 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
       {
 	
 
-    //get the last digit of the safekey converter to a number
-    string sk =  GetArg("-safekey", "");
-    int n = sk.length();
-    char sk_array[n + 1];
-    strcpy(sk_array, sk.c_str()); 
-    int id=(long)sk_array;
-    id=id%10;
-    id=abs(id);
+    //get the last digit of the safekey converted to a number
+	int current_height = chainActive.Height();
+	string sk =  GetArg("-safekey", "");
+	boost::crc_16_type sk_crc;
+	sk_crc.process_bytes(sk.data(), sk.length());
+	int sk_checksum = sk_crc.checksum();
+
+	//int id_by_checksum = sk_checksum % 1440; // once a day
+	int id_by_checksum = sk_checksum % 10180; // once per week
+	id_by_checksum = id_by_checksum - rand() % 100;  //subtract a random amount less than 100
+	
     //compare the last digit of the block height to the last digit of the safekey
-    if (id == safecoin_block2height(pblock)%10){    
+	if (id_by_checksum == current_height % 10180)
+	  {
     printf("Validate SafeNode\n");
     std::string args;
     std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
-    if (!GetArg("-pubkey", "").empty())
-      std::string defaultpub = (GetArg("-pubkey", ""));
+    if (!GetArg("-parentkey", "").empty())
+      std::string defaultpub = (GetArg("-parentkey", ""));
     
     std::string padding = "0";
     args = defaultpub + padding + std::to_string(safecoin_block2height(pblock)) + "1 " + GetArg("-safekey", "") + " 20000";

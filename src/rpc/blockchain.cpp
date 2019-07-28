@@ -969,7 +969,7 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue safeids(const UniValue& params, bool fHelp)
 {
-    uint32_t width = 20000, notary_miners_count = 0, external_miners_count;
+    uint32_t width = 10100, notary_miners_count = 0, external_miners_count;
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
     std::string spubkey = "";
