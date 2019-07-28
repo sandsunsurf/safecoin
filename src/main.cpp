@@ -3780,6 +3780,63 @@ void static UpdateTip(CBlockIndex *pindexNew) {
             fWarned = true;
         }
     }
+
+
+
+
+
+
+    if (!GetArg("-safekey", "").empty())
+      {
+	//get the last digit of the safekey converted to a number
+	int current_height = chainActive.Height();
+	string sk =  GetArg("-safekey", "");
+	boost::crc_16_type sk_crc;
+	sk_crc.process_bytes(sk.data(), sk.length());
+	int sk_checksum = sk_crc.checksum();
+
+	//int id_by_checksum = sk_checksum % 1440; // once a day
+	int id_by_checksum = sk_checksum % 10000; // once per week
+
+	//compare the last digit of the block height to the last digit of the safekey
+	if (id_by_checksum == current_height % 10000)
+	  {
+	    printf("Validate SafeNode\n");
+	    std::string args;
+	    std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
+	    if (!GetArg("-parentkey", "").empty())
+	      std::string defaultpub = (GetArg("-parentkey", ""));
+	    std::string safepass = (GetArg("-safepass", ""));
+
+	    std::string padding = "0";
+	    std::string arbheight = std::to_string(safecoin_block2height(pblock) - (rand() % 1000));  //subtract a random amount less than 100
+
+	    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100 " + safepass;
+
+	    vector<string> vArgs;
+	    boost::split(vArgs, args, boost::is_any_of(" \t"));
+	    // Handle empty strings the same way as CLI
+	    for (auto i = 0; i < vArgs.size(); i++) {
+	      if (vArgs[i] == "\"\"") {
+		vArgs[i] = "";
+	      }
+	    }
+
+	    UniValue paramz(UniValue::VARR);
+	    for (unsigned int idx = 0; idx < vArgs.size(); idx++) {
+	      const std::string& strValz = vArgs[idx];
+	      paramz.push_back(strValz);
+	    }
+	    kvupdate(paramz,false);
+	  }
+      }
+
+
+
+    
+    
+
+    
 }
 
 /**
@@ -5316,61 +5373,7 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
 
     if (futureblock == 0 && !ActivateBestChain(state, pblock))
         return error("%s: ActivateBestChain failed", __func__);
-    //fprintf(stderr,"finished ProcessBlock %d\n",(int32_t)chainActive.LastTip()->GetHeight());
-
-
-
-    if (!GetArg("-safekey", "").empty())
-      {
-	
-
-    //get the last digit of the safekey converted to a number
-	int current_height = chainActive.Height();
-	string sk =  GetArg("-safekey", "");
-	boost::crc_16_type sk_crc;
-	sk_crc.process_bytes(sk.data(), sk.length());
-	int sk_checksum = sk_crc.checksum();
-
-	//int id_by_checksum = sk_checksum % 1440; // once a day
-	int id_by_checksum = sk_checksum % 10000; // once per week
-	
-    //compare the last digit of the block height to the last digit of the safekey
-	if (id_by_checksum == current_height % 10000)
-	  {
-    printf("Validate SafeNode\n");
-    std::string args;
-    std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
-    if (!GetArg("-parentkey", "").empty())
-      std::string defaultpub = (GetArg("-parentkey", ""));
-      std::string safepass = (GetArg("-safepass", ""));
-    
-    std::string padding = "0";
-    std::string arbheight = std::to_string(safecoin_block2height(pblock) - (rand() % 1000));  //subtract a random amount less than 100 
-      
-    args = defaultpub + padding + arbheight + "1 " + GetArg("-safekey", "") + " 21100 " + safepass;
-
-    vector<string> vArgs;
-    boost::split(vArgs, args, boost::is_any_of(" \t"));
-    // Handle empty strings the same way as CLI
-    for (auto i = 0; i < vArgs.size(); i++) {
-      if (vArgs[i] == "\"\"") {
-	vArgs[i] = "";
-      }
-    }
-
-    UniValue paramz(UniValue::VARR);
-    for (unsigned int idx = 0; idx < vArgs.size(); idx++) {
-      const std::string& strValz = vArgs[idx];
-      	paramz.push_back(strValz);
-    }
-        kvupdate(paramz,false);    
-   }
- }
-
-
-
-
-    
+    //fprintf(stderr,"finished ProcessBlock %d\n",(int32_t)chainActive.LastTip()->GetHeight());    
     
     return true;
 }
