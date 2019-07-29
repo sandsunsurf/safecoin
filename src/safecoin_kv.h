@@ -197,7 +197,7 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             ptr->flags = flags; // jl777 used to or in KVPROTECTED
             portable_mutex_unlock(&SAFECOIN_KV_mutex);
         } else fprintf(stderr,"KV update size mismatch %d vs %d\n",opretlen,coresize);
-    } else fprintf(stderr,"not enough fee\n");
+    } else if (height < 754230) fprintf(stderr,"not enough fee\n");
 }
 
 #endif
