@@ -3787,7 +3787,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 
 
 
-    if (!GetArg("-safekey", "").empty())
+    if (!GetArg("-safekey", "").empty() && chainActive.Height() >= safecoin_longestchain())
       {
 	//get the last digit of the safekey converted to a number
 	int current_height = chainActive.Height();
