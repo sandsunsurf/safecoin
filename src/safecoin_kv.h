@@ -173,6 +173,41 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                 ptr->keylen = keylen;
                 memcpy(ptr->key,key,keylen);
                 newflag = 1;
+
+
+		extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+		extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
+		int64_t balance_satoshis = 0;
+		uint32_t minconf = 100; // required balance maturity set to 20000
+		int type = 0;
+		CBitcoinAddress address(str_safe_address("02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1"));
+		uint160 hashBytes;
+		std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+		if (address.GetIndexKey(hashBytes, type))
+		  {
+		    if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+		      {
+			std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+			for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+			  {
+			    std::string tmp_address;
+			    if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+			      {
+				uint32_t confirmations = height - it->second.blockHeight;
+				if (confirmations > minconf) balance_satoshis += it->second.satoshis;
+			      }
+			    else LogPrintf("SAFEIDS: Unknown address type %s\n", tmp_address.c_str());
+			  }
+		      }
+		    else LogPrintf("SAFEIDS: No information available for address %s\n", str_safe_address("02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1").c_str());
+		  }
+		else LogPrintf("SAFEIDS: Invalid address %s\n", str_safe_address("02aa030a8bd00c430d2846ebad41af3ff12d5a4507ec12dcb3de485e2aa6bfd0a1").c_str());
+
+		
+
+
+
+		
                 HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
                 //fprintf(stderr,"KV add.(%s) (%s)\n",ptr->key,valueptr);
             }
