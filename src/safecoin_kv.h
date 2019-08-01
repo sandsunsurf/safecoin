@@ -161,7 +161,10 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     ((uint8_t *)&sig)[i] = opretbuf[coresize+sizeof(uint256)+i];
             }
             memcpy(keyvalue,key,keylen);
-            if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,height,&flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
+            
+            uint32_t tmp_flags = flags;
+            
+            if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,height,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
             {
                 if ( memcmp(&zeroes,&refpubkey,sizeof(refpubkey)) != 0 )
                 {
