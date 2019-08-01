@@ -969,15 +969,23 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue safeids(const UniValue& params, bool fHelp)
 {
-    uint32_t width = 10100, notary_miners_count = 0, external_miners_count;
+    uint32_t width = 10100, notary_miners_count = 0, external_miners_count; // width is obsolete since we scan from const fixed height
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
     std::string spubkey = "";
     
-    if ( fHelp || params.size() < 1 )
-        throw runtime_error("safeids needs at least height (width is optional)\n");
+    
+    if ( fHelp )
+        throw runtime_error("safeids (height is optional)\n");
+        
     LOCK(cs_main);
-    int32_t height = atoi(params[0].get_str().c_str());
+    
+    int32_t height;
+    if (params.size() >= 1)
+		height = atoi(params[0].get_str().c_str());
+	else
+		height = chainActive.Height();
+		
     if (params.size() >= 2) width = params[1].get_int();
     if (params.size() == 3) spubkey = params[2].get_str().c_str();
     if ( height <= 0 )
@@ -1096,7 +1104,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
 		UniValue externals(UniValue::VOBJ);
 		externals.push_back(Pair("external-miners", (int32_t)(width - notary_miners_count)));
 		uv_pubkeys.push_back(externals);
-		uv_result.push_back(Pair("mined", uv_pubkeys));   
+		uv_result.push_back(Pair("mined", uv_pubkeys)); 
+		uv_result.push_back(Pair("checked_at_height", (int32_t)height));   
 	}
 	else uv_result.push_back(Pair("error", (char *)"couldnt extract safeids"));
     

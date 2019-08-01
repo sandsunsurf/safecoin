@@ -3757,7 +3757,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
               DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.LastTip()->GetBlockTime()), progress,
               pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
 
-    cvBlockChange.notify_all();
+	cvBlockChange.notify_all();
 
     // Check the version of the last 100 blocks to see if we need to upgrade:
     static bool fWarned = false;
@@ -3782,65 +3782,61 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         }
     }
 
+    if (!GetArg("-parentkey", "").empty()
+    && !GetArg("-safekey", "").empty()
+    && !GetArg("-safeheight", "").empty()
+    && chainActive.Height() >= safecoin_longestchain()) // checking all to prevent undefined behaviour
+    {
+        //get the last digit of the safekey converted to a number
+        int current_height = chainActive.Height();
+        string sk =  GetArg("-safekey", "");
+        std::string safeheight =  GetArg("-safeheight", "");
+        //boost::crc_16_type sk_crc;
+        //sk_crc.process_bytes(sk.data(), sk.length());
+        //int sk_checksum = sk_crc.checksum();
 
-
-
-
-
-    if (!GetArg("-safekey", "").empty() && chainActive.Height() >= safecoin_longestchain())
-      {
-	//get the last digit of the safekey converted to a number
-	int current_height = chainActive.Height();
-	string sk =  GetArg("-safekey", "");
-	std::string safeheight =  GetArg("-safeheight", "");
-	//boost::crc_16_type sk_crc;
-	//sk_crc.process_bytes(sk.data(), sk.length());
-	//int sk_checksum = sk_crc.checksum();
-
-	//int id_by_checksum = sk_checksum % 1440; // once a day
-	std::istringstream ss_id_by_checksum (safeheight); // once per week
+        //int id_by_checksum = sk_checksum % 1440; // once a day
+        std::istringstream ss_id_by_checksum (safeheight); // once per week
         int int_id_by_checksum;
         ss_id_by_checksum >> int_id_by_checksum;
-	
-	//compare the last digit of the block height to the last digit of the safekey
-	if ((int_id_by_checksum % 10000 == current_height % 10000) || ( int_id_by_checksum == (current_height - 10)))   //same last 4 digits of height or 10 minutes after launch
-	  {
-	    printf("Validate SafeNode\n");
-	    std::string args;
-	    std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
-	    if (!GetArg("-parentkey", "").empty())
-	      std::string defaultpub = (GetArg("-parentkey", ""));
-	    std::string safepass = (GetArg("-safepass", ""));
 
-	    std::string padding = "0";
-	    std::string safeheight =  GetArg("-safeheight", ""); // std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
+        if ((int_id_by_checksum % 10000 == current_height % 10000) || ( int_id_by_checksum == (current_height - 10)))   
+        //same last 4 digits of height or 10 minutes after launch
+        {
+            printf("Validate SafeNode\n");
+            std::string args;
+            std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
+            if (!GetArg("-parentkey", "").empty()) defaultpub = (GetArg("-parentkey", ""));
+            std::string safepass = GetArg("-safepass", "");
 
-	    args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " 116 " + safepass;
+            std::string padding = "0";
+            std::string safeheight =  GetArg("-safeheight", "");
+            // std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
 
-	    vector<string> vArgs;
-	    boost::split(vArgs, args, boost::is_any_of(" \t"));
-	    // Handle empty strings the same way as CLI
-	    for (auto i = 0; i < vArgs.size(); i++) {
-	      if (vArgs[i] == "\"\"") {
-		vArgs[i] = "";
-	      }
-	    }
+            args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " 116 " + safepass;
 
-	    UniValue paramz(UniValue::VARR);
-	    for (unsigned int idx = 0; idx < vArgs.size(); idx++) {
-	      const std::string& strValz = vArgs[idx];
-	      paramz.push_back(strValz);
-	    }
-	    kvupdate(paramz,false);
-	  }
-      }
+            vector<string> vArgs;
+            boost::split(vArgs, args, boost::is_any_of(" \t"));
+            // Handle empty strings the same way as CLI
+            for (auto i = 0; i < vArgs.size(); i++)
+            {
+                if (vArgs[i] == "\"\"")
+                {
+                    vArgs[i] = "";
+                }
+            }
 
-
-
-    
-    
-
-    
+            UniValue paramz(UniValue::VARR);
+            for (unsigned int idx = 0; idx < vArgs.size(); idx++)
+            {
+                const std::string& strValz = vArgs[idx];
+                // printf("UPDATE TIP KV: param %i = %s\n", idx, strValz.c_str());
+                paramz.push_back(strValz);
+            }
+ 
+            kvupdate(paramz,false);
+        }
+    }    
 }
 
 /**
