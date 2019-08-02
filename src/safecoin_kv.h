@@ -253,6 +253,24 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                         LogPrintf("KV CACHE: Insufficient collateral for safeid %s\n", str_safe_address(sid).c_str());
                     }
 
+
+
+                    if (is_valid_beacon_kv)
+		      {
+			
+			for (int d=height-20000; d<=height; d++){	  
+			  uint32_t tmp_flags = flags;
+			  safecoin_kvsearch((uint256 *)&refpubkey,d,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen);
+			  if(str_safe_address(std::string((char *)&keyvalue[keylen])) == str_safe_address(sid).c_str()){
+		            is_valid_beacon_kv = false;
+			    LogPrintf("KV CACHE: Duplicate collateral address %s\n", str_safe_address(sid).c_str());
+			    }
+                       }
+			
+		     }
+
+
+		    
                     if (is_valid_beacon_kv) 
                     {
                         HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
