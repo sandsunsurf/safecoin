@@ -179,7 +179,7 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                 }
 
 
-		for (int d=height-20000; d<=height; d++){
+		for (int d=height-900; d<=height; d++){
 		  safecoin_kvsearch((uint256 *)&refpubkey,d,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen);
 		  std::string sid = std::string((char *)&key[keylen]);
 		  if(str_safe_address(std::string((char *)&keyvalue[keylen])) == str_safe_address(sid).c_str()){
