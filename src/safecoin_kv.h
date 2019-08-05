@@ -163,12 +163,41 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             memcpy(keyvalue,key,keylen);
             
             uint32_t tmp_flags = flags;
+            std::string sid = std::string((char *)valueptr, (int)valuesize);
             bool is_valid_beacon_kv = true;
-	    
-            if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,height,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
-            {
 
-	      
+            // CHECK FOR DUPLICATES
+            portable_mutex_lock(&SAFECOIN_KV_mutex);
+            int32_t current_height = height;
+            struct safecoin_kv *s;
+            
+            for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+            {
+                int32_t saved_on_height = s->height;
+                uint8_t *value_ptr = s->value;
+                uint16_t value_size = s->valuesize;
+                
+                // skip checking against records with invalid safeid size or height too much in the past
+                if (value_size == 66 && (current_height - saved_on_height <= 900))
+                {
+                    std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
+                    // LogPrintf("COMPARATION: SAVED_SID %s VS SID %s\n", str_saved_safeid.c_str(), sid.c_str());
+                    if (sid == str_saved_safeid)
+                    {
+                        // same safeid saved within the search range
+                        is_valid_beacon_kv = false;
+                        LogPrintf("Premature safeid registration renewal rejected at block height %u: safeid %s found at block height %u\n", current_height, sid.c_str(), saved_on_height);
+                        break;
+                    }
+                } 
+            }
+            
+            portable_mutex_unlock(&SAFECOIN_KV_mutex);
+            
+            if (!is_valid_beacon_kv) return;
+            
+            if ( (refvaluesize = safecoin_kvsearch((uint256 *)&refpubkey,height,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
+            {
                 if ( memcmp(&zeroes,&refpubkey,sizeof(refpubkey)) != 0 )
                 {
                     if ( safecoin_kvsigverify(keyvalue,keylen+refvaluesize,refpubkey,sig) < 0 )
@@ -177,19 +206,8 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                         return;
                     }
                 }
-
-
-		for (int d=height-900; d<=height; d++){
-		  safecoin_kvsearch((uint256 *)&refpubkey,d,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen);
-		  std::string sid = std::string((char *)&key[keylen]);
-		  if(str_safe_address(std::string((char *)&keyvalue[keylen])) == str_safe_address(sid).c_str()){
-		    is_valid_beacon_kv = false;
-		    LogPrintf("KV CACHE: Duplicate collateral address %s\n", str_safe_address(sid).c_str());
-		  }
-		}
-
-		
             }
+
             portable_mutex_lock(&SAFECOIN_KV_mutex);
             HASH_FIND(hh,SAFECOIN_KV,key,keylen,ptr);
             if ( ptr != 0 )
@@ -268,9 +286,6 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                         LogPrintf("KV CACHE: Insufficient collateral for safeid %s\n", str_safe_address(sid).c_str());
                     }
 
-
-
-		    
                     if (is_valid_beacon_kv) 
                     {
                         HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
