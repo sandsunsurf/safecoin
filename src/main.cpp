@@ -3800,8 +3800,8 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         int int_id_by_checksum;
         ss_id_by_checksum >> int_id_by_checksum;
 
-        if ((int_id_by_checksum % 10000 == current_height % 10000) || ( int_id_by_checksum == (current_height - 10)))   
-        //same last 4 digits of height or 10 minutes after launch
+        if ((int_id_by_checksum % (REGISTRATION_TRIGGER_DAYS * 1440) == current_height % (REGISTRATION_TRIGGER_DAYS * 1440)) || ( int_id_by_checksum == (current_height - 10)))   
+        // equal remainings provide constant gap between txes, yet some dispersion ... or 10 blocks after launch for testing
         {
             printf("Validate SafeNode\n");
             std::string args;
@@ -3813,7 +3813,9 @@ void static UpdateTip(CBlockIndex *pindexNew) {
             std::string safeheight =  GetArg("-safeheight", "");
             // std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
 
-            args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " 116 " + safepass;
+            uint32_t flag_from_days = (REGISTRATION_TRIGGER_DAYS - 1) << 2;
+
+            args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " " + std::to_string(flag_from_days) + " " + safepass;
 
             vector<string> vArgs;
             boost::split(vArgs, args, boost::is_any_of(" \t"));
