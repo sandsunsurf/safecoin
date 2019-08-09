@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2019 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -138,10 +139,27 @@ namespace {
 
     struct CBlockIndexWorkComparator
     {
-        bool operator()(CBlockIndex *pa, CBlockIndex *pb) const {
+        bool operator()(const CBlockIndex *pa, const CBlockIndex *pb) const {
             // First sort by most total work, ...
-            if (pa->chainPower > pb->chainPower) return false;
-            if (pa->chainPower < pb->chainPower) return true;
+
+            if (ASSETCHAINS_LWMAPOS) {
+
+                /*  Decker:
+                    seems we had CChainPower classes compare here from Verus, it's slow, bcz of hard
+                    arith_uint256 math in bool operator<(const CChainPower &p1, const CChainPower &p2),
+                    this slows down setBlockIndexCandidates.insert operations in LoadBlockIndexDB(),
+                    so, for faster block index db loading we will use check from Verus only for LWMAPOS
+                    enabled chains.
+                */
+
+                if (pa->chainPower > pb->chainPower) return false;
+                if (pa->chainPower < pb->chainPower) return true;
+            }
+            else
+            {
+                if (pa->chainPower.chainWork > pb->chainPower.chainWork) return false;
+                if (pa->chainPower.chainWork < pb->chainPower.chainWork) return true;
+            }
 
             // ... then by earliest time received, ...
             if (pa->nSequenceId < pb->nSequenceId) return false;
@@ -2128,7 +2146,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 // CBlock and CBlockIndex
 //
 
-bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
+bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
 {
   
 
@@ -7111,6 +7129,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
     else if (strCommand == "tx")
     {
+        if (IsInitialBlockDownload())
+            return true;
+
         vector<uint256> vWorkQueue;
         vector<uint256> vEraseQueue;
         CTransaction tx;

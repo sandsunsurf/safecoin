@@ -62,7 +62,6 @@ using namespace std;
 
 namespace {
     const int MAX_OUTBOUND_CONNECTIONS = 16;
-    const int MAX_INBOUND_FROMIP = 5;
 
     struct ListenSocket {
         SOCKET socket;
@@ -546,7 +545,7 @@ void CNode::PushVersion()
     else
         LogPrint("net", "send version message: version %d, blocks=%d, us=%s, peer=%d\n", PROTOCOL_VERSION, nBestHeight, addrMe.ToString(), id);
     PushMessage("version", PROTOCOL_VERSION, nLocalServices, nTime, addrYou, addrMe,
-                nLocalHostNonce, strSubVersion, nBestHeight, true);
+                nLocalHostNonce, FormatSubVersion(CLIENT_NAME, CLIENT_VERSION, std::vector<string>()), nBestHeight, true);
 }
 
 
@@ -646,22 +645,24 @@ void CNode::AddWhitelistedRange(const CSubNet &subnet) {
     vWhitelistedRange.push_back(subnet);
 }
 
+#undef X
+#define X(name) stats.name = name
 void CNode::copyStats(CNodeStats &stats)
 {
     stats.nodeid = this->GetId();
-    stats.nServices = nServices;
-    stats.nLastSend = nLastSend;
-    stats.nLastRecv = nLastRecv;
-    stats.nTimeConnected = nTimeConnected;
-    stats.nTimeOffset = nTimeOffset;
-    stats.addrName = addrName;
-    stats.nVersion = nVersion;
-    stats.cleanSubVer = cleanSubVer;
-    stats.fInbound = fInbound;
-    stats.nStartingHeight = nStartingHeight;
-    stats.nSendBytes = nSendBytes;
-    stats.nRecvBytes = nRecvBytes;
-    stats.fWhitelisted = fWhitelisted;
+    X(nServices);
+    X(nLastSend);
+    X(nLastRecv);
+    X(nTimeConnected);
+    X(nTimeOffset);
+    X(addrName);
+    X(nVersion);
+    X(cleanSubVer);
+    X(fInbound);
+    X(nStartingHeight);
+    X(nSendBytes);
+    X(nRecvBytes);
+    X(fWhitelisted);
 
     // It is common for nodes with good ping times to suddenly become lagged,
     // due to a new block arriving or other large transfer.
@@ -687,9 +688,8 @@ void CNode::copyStats(CNodeStats &stats)
         stats.fTLSEstablished = (ssl != NULL) && (SSL_get_state(ssl) == TLS_ST_OK);
         stats.fTLSVerified = (ssl != NULL) && ValidatePeerCertificate(ssl);
     }
-
 }
-
+#undef X
 // requires LOCK(cs_vRecvMsg)
 bool CNode::ReceiveMsgBytes(const char *pch, unsigned int nBytes)
 {
@@ -1075,21 +1075,11 @@ static void AcceptConnection(const ListenSocket& hListenSocket) {
             LogPrintf("Warning: Unknown socket family\n");
 
     bool whitelisted = hListenSocket.whitelisted || CNode::IsWhitelistedRange(addr);
-    int nInboundThisIP = 0;
-
     {
         LOCK(cs_vNodes);
-        struct sockaddr_storage tmpsockaddr;
-        socklen_t tmplen = sizeof(sockaddr);
         BOOST_FOREACH(CNode* pnode, vNodes)
-        {
             if (pnode->fInbound)
-            {
                 nInbound++;
-                if (pnode->addr.GetSockAddr((struct sockaddr*)&tmpsockaddr, &tmplen) && (tmplen == len) && (memcmp(&sockaddr, &tmpsockaddr, tmplen) == 0))
-                    nInboundThisIP++;
-            }
-        }
     }
 
     if (hSocket == INVALID_SOCKET)
@@ -1122,14 +1112,6 @@ static void AcceptConnection(const ListenSocket& hListenSocket) {
             CloseSocket(hSocket);
             return;
         }
-    }
-
-    if (nInboundThisIP >= MAX_INBOUND_FROMIP)
-    {
-        // No connection to evict, disconnect the new connection
-        LogPrint("net", "too many connections from %s, connection refused\n", addr.ToString());
-        CloseSocket(hSocket);
-        return;
     }
 
     // According to the internet TCP_NODELAY is not carried into accepted sockets
@@ -1681,18 +1663,13 @@ void ThreadOpenAddedConnections()
             LOCK(cs_vNodes);
             BOOST_FOREACH(CNode* pnode, vNodes)
                 for (list<vector<CService> >::iterator it = lservAddressesToAdd.begin(); it != lservAddressesToAdd.end(); it++)
-                {
                     BOOST_FOREACH(const CService& addrNode, *(it))
                         if (pnode->addr == addrNode)
                         {
                             it = lservAddressesToAdd.erase(it);
-                            if ( it != lservAddressesToAdd.begin() )
-                                it--;
+                            it--;
                             break;
                         }
-                    if (it == lservAddressesToAdd.end())
-                        break;
-                }
         }
         BOOST_FOREACH(vector<CService>& vserv, lservAddressesToAdd)
         {
