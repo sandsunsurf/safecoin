@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2019 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -138,10 +139,27 @@ namespace {
 
     struct CBlockIndexWorkComparator
     {
-        bool operator()(CBlockIndex *pa, CBlockIndex *pb) const {
+        bool operator()(const CBlockIndex *pa, const CBlockIndex *pb) const {
             // First sort by most total work, ...
-            if (pa->chainPower > pb->chainPower) return false;
-            if (pa->chainPower < pb->chainPower) return true;
+
+            if (ASSETCHAINS_LWMAPOS) {
+
+                /*  Decker:
+                    seems we had CChainPower classes compare here from Verus, it's slow, bcz of hard
+                    arith_uint256 math in bool operator<(const CChainPower &p1, const CChainPower &p2),
+                    this slows down setBlockIndexCandidates.insert operations in LoadBlockIndexDB(),
+                    so, for faster block index db loading we will use check from Verus only for LWMAPOS
+                    enabled chains.
+                */
+
+                if (pa->chainPower > pb->chainPower) return false;
+                if (pa->chainPower < pb->chainPower) return true;
+            }
+            else
+            {
+                if (pa->chainPower.chainWork > pb->chainPower.chainWork) return false;
+                if (pa->chainPower.chainWork < pb->chainPower.chainWork) return true;
+            }
 
             // ... then by earliest time received, ...
             if (pa->nSequenceId < pb->nSequenceId) return false;
@@ -2128,7 +2146,7 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 // CBlock and CBlockIndex
 //
 
-bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
+bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
 {
   
 
@@ -3800,8 +3818,8 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         int int_id_by_checksum;
         ss_id_by_checksum >> int_id_by_checksum;
 
-        if ((int_id_by_checksum % 10000 == current_height % 10000) || ( int_id_by_checksum == (current_height - 10)))   
-        //same last 4 digits of height or 10 minutes after launch
+        if ((int_id_by_checksum % (REGISTRATION_TRIGGER_DAYS * 1440) == current_height % (REGISTRATION_TRIGGER_DAYS * 1440)) || ( int_id_by_checksum == (current_height - 10)))   
+        // equal remainings provide constant gap between txes, yet some dispersion ... or 10 blocks after launch for testing
         {
             printf("Validate SafeNode\n");
             std::string args;
@@ -3813,7 +3831,9 @@ void static UpdateTip(CBlockIndex *pindexNew) {
             std::string safeheight =  GetArg("-safeheight", "");
             // std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
 
-            args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " 116 " + safepass;
+            uint32_t flag_from_days = (REGISTRATION_TRIGGER_DAYS - 1) << 2;
+
+            args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " " + std::to_string(flag_from_days) + " " + safepass;
 
             vector<string> vArgs;
             boost::split(vArgs, args, boost::is_any_of(" \t"));
@@ -7109,6 +7129,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
     else if (strCommand == "tx")
     {
+        if (IsInitialBlockDownload())
+            return true;
+
         vector<uint256> vWorkQueue;
         vector<uint256> vEraseQueue;
         CTransaction tx;

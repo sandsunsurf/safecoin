@@ -969,7 +969,7 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue safeids(const UniValue& params, bool fHelp)
 {
-    uint32_t width = 10100, notary_miners_count = 0, external_miners_count; // width is obsolete since we scan from const fixed height
+    uint32_t width = REGISTRATION_TRIGGER_DAYS * 1440 + 100, notary_miners_count = 0, external_miners_count;
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
     std::string spubkey = "";
@@ -1022,7 +1022,7 @@ UniValue safeids(const UniValue& params, bool fHelp)
 				safeid_item.push_back(Pair("SAFE-address", str_si_address.c_str()));
 				safeid_item.push_back(Pair("blocks", (int32_t)si_count.second));
 				int64_t balance_satoshis = 0;
-				uint32_t minconf = width; // required balance maturity set to 20000 
+				uint32_t minconf = COLLATERAL_MATURITY; // required balance maturity set to 20000 
 				int type = 0;
 				CBitcoinAddress address(str_si_address);
 				uint160 hashBytes;
@@ -1054,12 +1054,6 @@ UniValue safeids(const UniValue& params, bool fHelp)
 			UniValue pubkey_item(UniValue::VOBJ);
 			pubkey_item.push_back(Pair("pubkey", s_pubkey.c_str()));
 			pubkey_item.push_back(Pair("SAFE-address", str_safe_address(s_pubkey).c_str()));
-
-
-
-
-
-
 
 			int64_t balance_satoshis = 0;
 			uint32_t minconf = 100; // required balance maturity set to 20000

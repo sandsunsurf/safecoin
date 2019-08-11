@@ -178,7 +178,7 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                 uint16_t value_size = s->valuesize;
                 
                 // skip checking against records with invalid safeid size or height too much in the past
-                if (value_size == 66 && (current_height - saved_on_height <= 900))
+                if (value_size == 66 && (current_height - saved_on_height <= REGISTRATION_GAP))
                 {
                     std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
                     // LogPrintf("COMPARATION: SAVED_SID %s VS SID %s\n", str_saved_safeid.c_str(), sid.c_str());
@@ -186,7 +186,10 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     {
                         // same safeid saved within the search range
                         is_valid_beacon_kv = false;
-                        LogPrintf("Premature safeid registration renewal rejected at block height %u: safeid %s found at block height %u\n", current_height, sid.c_str(), saved_on_height);
+                        if (LogAcceptCategory("safenodes"))
+                        {
+                            LogPrint("safenodes", "SAFENODES: Premature safeid registration renewal rejected at block height %u: safeid %s found at block height %u\n", current_height, sid.c_str(), saved_on_height);
+                        }
                         break;
                     }
                 } 
@@ -227,8 +230,9 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             }
             else if ( ptr == 0 )
             {
-                std::string sid = std::string((char *)valueptr);
+                std::string sid = std::string((char *)valueptr, (int)valuesize);
                 std::string safeid_address = str_safe_address(sid);
+                
                 if (safeid_address != "invalid") // proceed with checking only if safeid address is valid
                 {
                     ptr = (struct safecoin_kv *)calloc(1,sizeof(*ptr));
@@ -237,53 +241,70 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     memcpy(ptr->key,key,keylen);
                     newflag = 1;
 
-		    //   bool is_valid_beacon_kv = true; // we expect beacon kv data valid
-                    extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
-                    extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
-                    int64_t balance_satoshis = 0;
-                    uint32_t minconf = 100; // required balance maturity set to 20000
-                    int type = 0;
-                    
-                    CBitcoinAddress address(safeid_address);
-
-                    uint160 hashBytes;
-                    std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
-                    if (address.GetIndexKey(hashBytes, type))
+                    // Check if address index is enabled
+                    bool address_index_enabled = false;
+                    pblocktree->ReadFlag("addressindex", address_index_enabled);
+                    if (address_index_enabled) // check collateral
                     {
-                        if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+                        extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+                        extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
+                        int64_t balance_satoshis = 0;
+                        uint32_t minconf = COLLATERAL_MATURITY; 
+                        int type = 0;
+                        
+                        CBitcoinAddress address(safeid_address);
+
+                        uint160 hashBytes;
+                        std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+                        if (address.GetIndexKey(hashBytes, type))
                         {
-                            std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
-                            for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+                            if (GetAddressUnspent(hashBytes, type, unspentOutputs))
                             {
-                                std::string tmp_address;
-                                if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+                                std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+                                for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
                                 {
-                                    uint32_t confirmations = height - it->second.blockHeight;
-                                    if (confirmations > minconf) balance_satoshis += it->second.satoshis;
+                                    std::string tmp_address;
+                                    if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+                                    {
+                                        uint32_t confirmations = height - it->second.blockHeight;
+                                        if (confirmations > minconf) balance_satoshis += it->second.satoshis;
+                                    }
+                                    else
+                                    {
+                                        is_valid_beacon_kv = false;
+                                        if (LogAcceptCategory("safenodes"))
+                                        {
+                                            LogPrint("safenodes", "SAFENODES: Unknown address type %s\n", tmp_address.c_str());
+                                        }
+                                    } 
                                 }
-                                else
-                                {
-                                    is_valid_beacon_kv = false;
-                                    LogPrintf("KV CACHE: Unknown address type %s\n", tmp_address.c_str());	
-                                } 
                             }
+                            else
+                            {
+                                is_valid_beacon_kv = false;
+                                if (LogAcceptCategory("safenodes"))
+                                {
+                                    LogPrint("safenodes", "SAFENODES: No information available for address %s\n", str_safe_address(sid).c_str());
+                                }
+                            } 
                         }
                         else
                         {
                             is_valid_beacon_kv = false;
-                            LogPrintf("KV CACHE: No information available for address %s\n", str_safe_address(sid).c_str());
+                            if (LogAcceptCategory("safenodes"))
+                            {
+                               LogPrint("safenodes", "SAFENODES: Invalid address \"%s\"\n", str_safe_address(sid).c_str()); 
+                            }
                         } 
-                    }
-                    else
-                    {
-                        is_valid_beacon_kv = false;
-                        LogPrintf("KV_CACHE: Invalid address \"%s\"\n", str_safe_address(sid).c_str());
-                    } 
 
-                    if (is_valid_beacon_kv && balance_satoshis < 1000000000000)
-                    {
-                        is_valid_beacon_kv = false;
-                        LogPrintf("KV CACHE: Insufficient collateral for safeid %s\n", str_safe_address(sid).c_str());
+                        if (is_valid_beacon_kv && balance_satoshis < 1000000000000)
+                        {
+                            is_valid_beacon_kv = false;
+                            if (LogAcceptCategory("safenodes"))
+                            {
+                                LogPrint("safenodes", "SAFENODES: Insufficient collateral for safeid %s\n", str_safe_address(sid).c_str());
+                            }                  
+                        }
                     }
 
                     if (is_valid_beacon_kv) 
@@ -310,7 +331,6 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                         memcpy(&ptr->pubkey,&pubkey,sizeof(ptr->pubkey));
                         ptr->height = height;
                         ptr->flags = flags; // jl777 used to or in KVPROTECTED
-                         
                     }
                 }
             }
