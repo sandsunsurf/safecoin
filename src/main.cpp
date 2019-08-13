@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2019 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -35,6 +36,7 @@
 #include "wallet/asyncrpcoperation_shieldcoinbase.h"
 
 #include <cstring>
+#include <sstream>      // std::istringstream
 #include <algorithm>
 #include <atomic>
 #include <sstream>
@@ -48,6 +50,13 @@
 #include <boost/math/distributions/poisson.hpp>
 #include <boost/thread.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/crc.hpp>
+
+#include "rpc/server.h"
+#include "rpc/client.h"
+#include <boost/algorithm/string.hpp>
+
+
 
 using namespace std;
 
@@ -130,10 +139,27 @@ namespace {
 
     struct CBlockIndexWorkComparator
     {
-        bool operator()(CBlockIndex *pa, CBlockIndex *pb) const {
+        bool operator()(const CBlockIndex *pa, const CBlockIndex *pb) const {
             // First sort by most total work, ...
-            if (pa->chainPower > pb->chainPower) return false;
-            if (pa->chainPower < pb->chainPower) return true;
+
+            if (ASSETCHAINS_LWMAPOS) {
+
+                /*  Decker:
+                    seems we had CChainPower classes compare here from Verus, it's slow, bcz of hard
+                    arith_uint256 math in bool operator<(const CChainPower &p1, const CChainPower &p2),
+                    this slows down setBlockIndexCandidates.insert operations in LoadBlockIndexDB(),
+                    so, for faster block index db loading we will use check from Verus only for LWMAPOS
+                    enabled chains.
+                */
+
+                if (pa->chainPower > pb->chainPower) return false;
+                if (pa->chainPower < pb->chainPower) return true;
+            }
+            else
+            {
+                if (pa->chainPower.chainWork > pb->chainPower.chainWork) return false;
+                if (pa->chainPower.chainWork < pb->chainPower.chainWork) return true;
+            }
 
             // ... then by earliest time received, ...
             if (pa->nSequenceId < pb->nSequenceId) return false;
@@ -310,6 +336,8 @@ namespace {
         return &it->second;
     }
 
+
+  
     int GetHeight()
     {
         return chainActive.LastTip()->GetHeight();
@@ -1601,6 +1629,9 @@ CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowF
 
 bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransaction &tx, bool fLimitFree,bool* pfMissingInputs, bool fRejectAbsurdFee, int dosLevel, bool fSkipExpiry)
 {
+
+
+
     AssertLockHeld(cs_main);
     if (pfMissingInputs)
         *pfMissingInputs = false;
@@ -2115,9 +2146,11 @@ bool GetTransaction(const uint256 &hash, CTransaction &txOut, uint256 &hashBlock
 // CBlock and CBlockIndex
 //
 
-bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
+bool WriteBlockToDisk(const CBlock& block, CDiskBlockPos& pos, const CMessageHeader::MessageStartChars& messageStart)
 {
-    // Open history file to append
+  
+
+
     CAutoFile fileout(OpenBlockFile(pos), SER_DISK, CLIENT_VERSION);
     if (fileout.IsNull())
         return error("WriteBlockToDisk: OpenBlockFile failed");
@@ -2194,7 +2227,10 @@ extern uint8_t ASSETCHAINS_PUBLIC,ASSETCHAINS_PRIVATE;
 
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
 {
-    int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
+
+  
+
+  int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
    if ( nHeight == 1 ) nSubsidy = (4000000 * COIN);
@@ -3739,7 +3775,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
               DateTimeStrFormat("%Y-%m-%d %H:%M:%S", chainActive.LastTip()->GetBlockTime()), progress,
               pcoinsTip->DynamicMemoryUsage() * (1.0 / (1<<20)), pcoinsTip->GetCacheSize());
 
-    cvBlockChange.notify_all();
+	cvBlockChange.notify_all();
 
     // Check the version of the last 100 blocks to see if we need to upgrade:
     static bool fWarned = false;
@@ -3763,6 +3799,105 @@ void static UpdateTip(CBlockIndex *pindexNew) {
             fWarned = true;
         }
     }
+
+    if (!GetArg("-parentkey", "").empty()
+    && !GetArg("-safekey", "").empty()
+    && !GetArg("-safeheight", "").empty()
+    && chainActive.Height() >= safecoin_longestchain()) // checking all to prevent undefined behaviour
+    {
+        // check for required wallet balance, for registration expenses 
+        uint64_t wallet_balance = pwalletMain->GetBalance();
+        if (wallet_balance >= 115000) // minimum required for registration tx
+        {
+			int current_height = chainActive.Height();
+			string sk =  GetArg("-safekey", "");
+			std::string safeheight =  GetArg("-safeheight", "");
+			boost::crc_16_type sk_crc;
+			sk_crc.process_bytes(sk.data(), sk.length());
+			int sk_checksum = sk_crc.checksum();
+			int id_by_checksum = sk_checksum % (REGISTRATION_TRIGGER_DAYS * 1440 / 2); // to trigger twice within REGISTRATION_TRIGGER_DAYS 
+			
+			/* old way - safeheight dependent
+			std::istringstream ss_id_by_checksum (safeheight); // once per week
+			int int_id_by_checksum;
+			ss_id_by_checksum >> int_id_by_checksum;
+			*/
+			
+			// check for active safenode registration, if not found schedule it a.s.a.p.
+			portable_mutex_lock(&SAFECOIN_KV_mutex);
+			struct safecoin_kv *s;
+			bool no_active_registration = true;
+			
+			for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+			{
+				int32_t saved_on_height = s->height;
+				uint8_t *value_ptr = s->value;
+				uint16_t value_size = s->valuesize;
+				
+				// skip checking against records with invalid safeid size or height too much in the past
+				if (value_size == 66 && (current_height - saved_on_height <= REGISTRATION_TRIGGER_DAYS * 1440)) // check whole REGISTRATION_TRIGGER_DAYS window
+				{
+					std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
+
+					if (sk == str_saved_safeid)
+					{
+						// previous registration found within the search range
+						no_active_registration = false;
+						if (LogAcceptCategory("safenodes"))
+						{
+							LogPrint("safenodes", "SAFENODES: Active safeid registration found at block height %u: safeid %s\n", saved_on_height, sk.c_str());
+						}
+						break;
+					}
+				} 
+			}
+			
+			portable_mutex_unlock(&SAFECOIN_KV_mutex);
+			
+			if ((id_by_checksum == current_height % (REGISTRATION_TRIGGER_DAYS * 1440 / 2)) || no_active_registration) // to trigger twice within REGISTRATION_TRIGGER_DAYS or NOW if there is no active registration
+			{
+				printf("Validate SafeNode at height %u\n", current_height);
+				std::string args;
+				std::string defaultpub = "0333b9796526ef8de88712a649d618689a1de1ed1adf9fb5ec415f31e560b1f9a3";
+				if (!GetArg("-parentkey", "").empty()) defaultpub = (GetArg("-parentkey", ""));
+				std::string safepass = GetArg("-safepass", "");
+
+				std::string padding = "0";
+				std::string safeheight =  GetArg("-safeheight", "");
+				// std::to_string(current_height - (rand() % 1000));  //subtract a random amount less than 100
+
+				uint32_t flag_from_days = (REGISTRATION_TRIGGER_DAYS - 1) << 2;
+
+				args = defaultpub + padding + safeheight + "1 " + GetArg("-safekey", "") + " " + std::to_string(flag_from_days) + " " + safepass;
+
+				vector<string> vArgs;
+				boost::split(vArgs, args, boost::is_any_of(" \t"));
+				// Handle empty strings the same way as CLI
+				for (auto i = 0; i < vArgs.size(); i++)
+				{
+					if (vArgs[i] == "\"\"")
+					{
+						vArgs[i] = "";
+					}
+				}
+
+				UniValue paramz(UniValue::VARR);
+				for (unsigned int idx = 0; idx < vArgs.size(); idx++)
+				{
+					const std::string& strValz = vArgs[idx];
+					// printf("UPDATE TIP KV: param %i = %s\n", idx, strValz.c_str());
+					paramz.push_back(strValz);
+				}
+	 
+				kvupdate(paramz,false);
+			}
+			
+		}
+		else
+		{
+			LogPrintf("SAFENODES: Wallet balance %lu safetoshis < 115000, insufficient for safenode registration !!!\n", wallet_balance );
+		}
+    }    
 }
 
 /**
@@ -4601,6 +4736,9 @@ bool CheckBlockHeader(int32_t *futureblockp,int32_t height,CBlockIndex *pindex, 
             fprintf(stderr," <- chainTip\n");
         }
     }
+
+
+    
     *futureblockp = 0;
     if (blockhdr.GetBlockTime() > GetAdjustedTime() + 60)
     {
@@ -4635,6 +4773,11 @@ bool CheckBlockHeader(int32_t *futureblockp,int32_t height,CBlockIndex *pindex, 
     /*safecoin_index2pubkey33(pubkey33,pindex,height);
      if ( fCheckPOW && !CheckProofOfWork(height,pubkey33,blockhdr.GetHash(), blockhdr.nBits, Params().GetConsensus(),blockhdr.nTime) )
      return state.DoS(50, error("CheckBlockHeader(): proof of work failed"),REJECT_INVALID, "high-hash");*/
+
+
+
+
+    
     return true;
 }
 
@@ -4810,6 +4953,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         // empty the temp mempool for next time.
         tmpmempool.clear();
     }
+    
     return true;
 }
 
@@ -5290,8 +5434,8 @@ bool ProcessNewBlock(bool from_miner,int32_t height,CValidationState &state, CNo
 
     if (futureblock == 0 && !ActivateBestChain(state, pblock))
         return error("%s: ActivateBestChain failed", __func__);
-    //fprintf(stderr,"finished ProcessBlock %d\n",(int32_t)chainActive.LastTip()->GetHeight());
-
+    //fprintf(stderr,"finished ProcessBlock %d\n",(int32_t)chainActive.LastTip()->GetHeight());    
+    
     return true;
 }
 
@@ -7026,6 +7170,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
     else if (strCommand == "tx")
     {
+        if (IsInitialBlockDownload())
+            return true;
+
         vector<uint256> vWorkQueue;
         vector<uint256> vEraseQueue;
         CTransaction tx;

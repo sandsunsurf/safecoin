@@ -849,6 +849,8 @@ int32_t safecoin_safeids(uint8_t *safeids, int32_t height, int32_t width);
 
 std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt_safecoin_safeids(int32_t height, int32_t width);
 
+std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt_safecoin_safeids_new(int32_t height, int32_t width);
+
 int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 
 UniValue kvsearch(const UniValue& params, bool fHelp)
@@ -967,15 +969,23 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue safeids(const UniValue& params, bool fHelp)
 {
-    uint32_t width = 20000, notary_miners_count = 0, external_miners_count;
+    uint32_t width = REGISTRATION_TRIGGER_DAYS * 1440 + 100, notary_miners_count = 0, external_miners_count;
     uint32_t timestamp = 0;
     UniValue uv_result(UniValue::VOBJ);
     std::string spubkey = "";
     
-    if ( fHelp || params.size() < 1 )
-        throw runtime_error("safeids needs at least height (width is optional)\n");
+    
+    if ( fHelp )
+        throw runtime_error("safeids (height is optional)\n");
+        
     LOCK(cs_main);
-    int32_t height = atoi(params[0].get_str().c_str());
+    
+    int32_t height;
+    if (params.size() >= 1)
+		height = atoi(params[0].get_str().c_str());
+	else
+		height = chainActive.Height();
+		
     if (params.size() >= 2) width = params[1].get_int();
     if (params.size() == 3) spubkey = params[2].get_str().c_str();
     if ( height <= 0 )
@@ -988,7 +998,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
     }
     
 	UniValue uv_pubkeys(UniValue::VARR);
-	std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt = vt_safecoin_safeids(height, width);
+	//std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt = vt_safecoin_safeids(height, width);
+	std::vector<std::tuple<std::string, uint32_t, std::vector<pair<std::string, uint32_t>>>> vt = vt_safecoin_safeids_new(height, width);
 	
 	if (vt.size() > 0)
 	{
@@ -996,8 +1007,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
 		  { 
 			std::string s_pubkey = std::get<0>(vt.at(k));
 			if (spubkey == "" || spubkey.compare(s_pubkey.c_str()) == 0){
-		      printf("spubkey.%s\n",spubkey.c_str());
-		      printf("s_pubkey.%s\n",s_pubkey.c_str());
+			  //		      printf("spubkey.%s\n",spubkey.c_str());
+			  //		      printf("s_pubkey.%s\n",s_pubkey.c_str());
 			uint32_t u_block_count = std::get<1>(vt.at(k));
 			if (s_pubkey != "invalid") notary_miners_count += u_block_count;
 			std::vector<pair<std::string, uint32_t>> v_safeids = std::get<2>(vt.at(k));
@@ -1011,7 +1022,7 @@ UniValue safeids(const UniValue& params, bool fHelp)
 				safeid_item.push_back(Pair("SAFE-address", str_si_address.c_str()));
 				safeid_item.push_back(Pair("blocks", (int32_t)si_count.second));
 				int64_t balance_satoshis = 0;
-				uint32_t minconf = width; // required balance maturity set to 20000 
+				uint32_t minconf = COLLATERAL_MATURITY; // required balance maturity set to 20000 
 				int type = 0;
 				CBitcoinAddress address(str_si_address);
 				uint160 hashBytes;
@@ -1043,12 +1054,6 @@ UniValue safeids(const UniValue& params, bool fHelp)
 			UniValue pubkey_item(UniValue::VOBJ);
 			pubkey_item.push_back(Pair("pubkey", s_pubkey.c_str()));
 			pubkey_item.push_back(Pair("SAFE-address", str_safe_address(s_pubkey).c_str()));
-
-
-
-
-
-
 
 			int64_t balance_satoshis = 0;
 			uint32_t minconf = 100; // required balance maturity set to 20000
@@ -1093,7 +1098,8 @@ UniValue safeids(const UniValue& params, bool fHelp)
 		UniValue externals(UniValue::VOBJ);
 		externals.push_back(Pair("external-miners", (int32_t)(width - notary_miners_count)));
 		uv_pubkeys.push_back(externals);
-		uv_result.push_back(Pair("mined", uv_pubkeys));   
+		uv_result.push_back(Pair("mined", uv_pubkeys)); 
+		uv_result.push_back(Pair("checked_at_height", (int32_t)height));   
 	}
 	else uv_result.push_back(Pair("error", (char *)"couldnt extract safeids"));
     
