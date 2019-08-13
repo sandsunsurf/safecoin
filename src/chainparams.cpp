@@ -352,7 +352,7 @@ void *chainparams_commandline(void *ptr)
 				(int64_t)1276889,		// * total number of transactions between genesis and last checkpoint
 								//   (the tx=... number in the SetBestChain debug.log lines)
 				(double)2372			// * estimated number of transactions per day after checkpoint
-								//   total number of tx / (checkpoint block height / (24 * 24))
+								//   total number of tx / (checkpoint block height / (24 * 60))
 		};
     }
 
