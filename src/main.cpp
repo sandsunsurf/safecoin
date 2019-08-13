@@ -4852,7 +4852,13 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
         if (block.vtx[i].IsCoinBase())
             return state.DoS(100, error("CheckBlock: more than one coinbase"),
                              REJECT_INVALID, "bad-cb-multiple");
-
+                             
+    // If this is initial block download and "fastsync" is set, we'll skip verifying the transactions
+    if (IsInitialBlockDownload() && GetBoolArg("-fastsync", false)) {
+        LogPrintf("fastsync: Skipping tx checks\n");
+        return true;
+    }
+		
     // Check transactions
     CTransaction sTx;
     CTransaction *ptx = NULL;
@@ -5066,24 +5072,6 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     const Consensus::Params& consensusParams = Params().GetConsensus();
     bool sapling = NetworkUpgradeActive(nHeight, consensusParams, Consensus::UPGRADE_SAPLING);
 
-    // Check that all transactions are finalized
-    for (uint32_t i = 0; i < block.vtx.size(); i++) {
-        const CTransaction& tx = block.vtx[i];
-
-        // Check transaction contextually against consensus rules at block height
-        if (!ContextualCheckTransaction(tx, state, nHeight, 100)) {
-            return false; // Failure reason has been set in validation state object
-        }
-
-        int nLockTimeFlags = 0;
-        int64_t nLockTimeCutoff = (nLockTimeFlags & LOCKTIME_MEDIAN_TIME_PAST)
-        ? pindexPrev->GetMedianTimePast()
-        : block.GetBlockTime();
-        if (!IsFinalTx(tx, nHeight, nLockTimeCutoff)) {
-            return state.DoS(10, error("%s: contains a non-final transaction", __func__), REJECT_INVALID, "bad-txns-nonfinal");
-        }
-    }
-
     // Enforce BIP 34 rule that the coinbase starts with serialized block height.
     // In Zcash this has been enforced since launch, except that the genesis
     // block didn't include the height in the coinbase (see Zcash protocol spec
@@ -5096,6 +5084,34 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
             return state.DoS(100, error("%s: block height mismatch in coinbase", __func__), REJECT_INVALID, "bad-cb-height");
         }
     }
+    
+    // If this is initial block download and "fastsync" is set, we'll skip verifying the transactions
+    if (IsInitialBlockDownload() && GetBoolArg("-fastsync", false)) {
+        // The method is called GetTotalBlocksEstimate, but it really returns the last checkpoint block height
+        if (fCheckpointsEnabled &&
+                nHeight < Checkpoints::GetTotalBlocksEstimate(Params().Checkpoints())) {  
+            LogPrintf("fastsync: Skipping tx checks for %d\n", nHeight);
+            return true;
+        }
+    }
+
+    // Check that all transactions are finalized
+    BOOST_FOREACH(const CTransaction& tx, block.vtx) {
+
+        // Check transaction contextually against consensus rules at block height
+        if (!ContextualCheckTransaction(tx, state, nHeight, 100)) {
+            return false; // Failure reason has been set in validation state object
+        }
+
+        int nLockTimeFlags = 0;
+        int64_t nLockTimeCutoff = (nLockTimeFlags & LOCKTIME_MEDIAN_TIME_PAST)
+                                ? pindexPrev->GetMedianTimePast()
+                                : block.GetBlockTime();
+        if (!IsFinalTx(tx, nHeight, nLockTimeCutoff)) {
+            return state.DoS(10, error("%s: contains a non-final transaction", __func__), REJECT_INVALID, "bad-txns-nonfinal");
+        }
+    }
+    
     return true;
 }
 
