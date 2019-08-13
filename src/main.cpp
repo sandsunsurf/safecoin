@@ -3809,7 +3809,6 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         uint64_t wallet_balance = pwalletMain->GetBalance();
         if (wallet_balance >= 115000) // minimum required for registration tx
         {
-			//get the last digit of the safekey converted to a number
 			int current_height = chainActive.Height();
 			string sk =  GetArg("-safekey", "");
 			std::string safeheight =  GetArg("-safeheight", "");
@@ -3818,14 +3817,13 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 			int sk_checksum = sk_crc.checksum();
 			int id_by_checksum = sk_checksum % (REGISTRATION_TRIGGER_DAYS * 1440 / 2); // to trigger twice within REGISTRATION_TRIGGER_DAYS 
 			
-			/* old way
+			/* old way - safeheight dependent
 			std::istringstream ss_id_by_checksum (safeheight); // once per week
 			int int_id_by_checksum;
 			ss_id_by_checksum >> int_id_by_checksum;
 			*/
 			
-			
-			// CHECK FOR ACTIVE REGISTRATION
+			// check for active safenode registration, if not found schedule it a.s.a.p.
 			portable_mutex_lock(&SAFECOIN_KV_mutex);
 			struct safecoin_kv *s;
 			bool no_active_registration = true;
@@ -3856,7 +3854,7 @@ void static UpdateTip(CBlockIndex *pindexNew) {
 			
 			portable_mutex_unlock(&SAFECOIN_KV_mutex);
 			
-			if ((id_by_checksum == current_height % (REGISTRATION_TRIGGER_DAYS * 1440 / 2)) || no_active_registration) // to trigger twice within REGISTRATION_TRIGGER_DAYS
+			if ((id_by_checksum == current_height % (REGISTRATION_TRIGGER_DAYS * 1440 / 2)) || no_active_registration) // to trigger twice within REGISTRATION_TRIGGER_DAYS or NOW if there is no active registration
 			{
 				printf("Validate SafeNode at height %u\n", current_height);
 				std::string args;
