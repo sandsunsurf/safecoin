@@ -22,8 +22,8 @@ brew tap discoteq/discoteq; brew install flock autoconf autogen automake gcc@6 b
 Get all that installed, then run:
 
 ```shell
-git clone https://github.com/VerusCoin/VerusCoin.git
-cd VerusCoin
+git clone https://github.com/Fair-Exchange/safecoin.git
+cd safecoin
 ./zcutil/build-mac.sh
 ./zcutil/fetch-params.sh
 ```
@@ -44,13 +44,12 @@ Add the following lines to the Safecoin.conf file:
 rpcuser=dontuseweakusernameoryougetrobbed
 rpcpassword=dontuseweakpasswordoryougetrobbed
 txindex=1
-addnode=5.9.102.210
-addnode=78.47.196.146
-addnode=178.63.69.164
-addnode=88.198.65.74
-addnode=5.9.122.241
-addnode=144.76.94.38
-addnode=89.248.166.91
+addnode=dnsseed.ipv6admin.com
+addnode=dnsseed.fair.exchange
+addnode=explorer.safecoin.org
+addnode=45.63.13.60
+addnode=176.107.179.32
+addnode=node.safc.cc
 ```
 
 Happy Building

@@ -2,7 +2,7 @@
 ![Safecoin Logo](https://raw.githubusercontent.com/Fair-Exchange/safecoinwiki/master/Logos/SafeCoin/SafeCoin-Logo-with-text.png "Safecoin Logo")
 
 
-## Safecoin v2.0.2
+## Safecoin v2.0.3
 ==============
 
 This is the official Safecoin sourcecode repository based on https://github.com/fair-exchange/safecoin. 
@@ -37,7 +37,7 @@ This is the official Safecoin sourcecode repository based on https://github.com/
 - Mining Algorithm: Equihash 192_7
 
 ## About this Project
-Safecoin is a fork of the Komodo and Zcash projects, although we have incorporated significant changes including TLS 1.3 Encryption from Horizen and Equihash 144_5, in collaboration with BTCZ.  Safecoin was launched as a pure Proof of Work coin, and has never had any ICO or Sale of any kind.   We are an Open Source, Peer to Peer project and we support and contribute to likewise initiatives.
+Safecoin is a fork of the Komodo and Zcash projects, although we have incorporated significant changes including TLS 1.3 Encryption from Horizen and Equihash 192_7, in collaboration with BTCZ.  Safecoin was launched as a pure Proof of Work coin, and has never had any ICO or Sale of any kind.   We are an Open Source, Peer to Peer project and we support and contribute to likewise initiatives.
 Same Zcash is based on Bitcoin's code, with difference Zcash intends to offer a far higher standard of privacy through a sophisticated zero-knowledge proving scheme that preserves confidentiality of transaction metadata. Technical details are available in our [Protocol Specification](https://github.com/zcash/zips/raw/master/protocol/protocol.pdf).
 
 ## Getting started
@@ -105,7 +105,7 @@ git clone https://github.com/fair-exchange/safecoin --branch master --single-bra
 cd safecoin
 ./zcutil/fetch-params.sh
 # -j8 = using 8 threads for the compilation - replace 8 with number of threads you want to use
-./zcutil/build-win.sh -j8 --disable-mining
+./zcutil/build-win.sh --disable-mining -j8
 #This can take some time.
 ```
 The "disable-mining" binaries are compiled with **--disable-mining** in an attempt to reduce Antivirus false positives, use them if you're packaging GUI wallets.

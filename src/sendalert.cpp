@@ -77,6 +77,7 @@ void ThreadSendAlert()
 
     // These versions are protocol versions
     // 170002 : 1.0.0
+    // 170021 : 2.0.3
     alert.nMinVer       = 170002;
     alert.nMaxVer       = 170020;
 

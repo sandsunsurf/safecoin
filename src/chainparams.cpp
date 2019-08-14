@@ -346,12 +346,13 @@ void *chainparams_commandline(void *ptr)
 				(360000, uint256S("0x00000260ec5c16afbc1d4e70f9616e60bbc3222ad3604c0d2acdf716da7f8b9c"))
 				(420000, uint256S("0x000002f4a612958896c215e9541a3036fd0401377c03e00d5a5e9fb3dbd379a4"))       //add TLS
 				(469630, uint256S("0x000001712c534cca9aca4fac0cf565557ddd8a60ae60b1b8a66f16a0072d608a"))
-				(512429, uint256S("0x000004710d95421263db721829985e2a43c903718444443c1824b954df523fc1")),       			
-				(int64_t)1549807875,	// * UNIX timestamp of last checkpoint block
-				(int64_t)877839,		// * total number of transactions between genesis and last checkpoint
-										//   (the tx=... number in the SetBestChain debug.log lines)
-				(double)2163			// * estimated number of transactions per day after checkpoint
-										//   total number of tx / (checkpoint block height / (24 * 24))
+				(512429, uint256S("0x000004710d95421263db721829985e2a43c903718444443c1824b954df523fc1"))
+				(775000, uint256S("0x000006368451c8cba607886ee56b0da1559db1e2da7e011f6d297ee44015d7ef")),
+				(int64_t)1565658850,		// * UNIX timestamp of last checkpoint block
+				(int64_t)1276889,		// * total number of transactions between genesis and last checkpoint
+								//   (the tx=... number in the SetBestChain debug.log lines)
+				(double)2372			// * estimated number of transactions per day after checkpoint
+								//   total number of tx / (checkpoint block height / (24 * 60))
 		};
     }
 
