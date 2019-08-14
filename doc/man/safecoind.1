@@ -140,6 +140,10 @@ unless \fB\-connect\fR)
 .IP
 Specify your own public address
 .HP
+\fB\-fastsync\fR
+.IP
+Do a faster, PoW-only verification of blocks during initial block download (default: 0)
+.HP
 \fB\-forcednsseed\fR
 .IP
 Always query for peer addresses via DNS lookup (default: 0)
@@ -368,6 +372,10 @@ Send trace/debug info to console instead of debug.log file
 \fB\-shrinkdebugfile\fR
 .IP
 Shrink debug.log file on client startup (default: 1 when no \fB\-debug\fR)
+.HP
+\fB\-limitdebuglogsize\fR
+.IP
+Limit the debug.log file size to 10Mb (default: 1 when no \fB\-debug\fR)
 .HP
 \fB\-testnet\fR
 .IP
