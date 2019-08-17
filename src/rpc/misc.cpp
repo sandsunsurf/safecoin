@@ -65,6 +65,8 @@ extern uint64_t ASSETCHAINS_COMMISSION,ASSETCHAINS_STAKED,ASSETCHAINS_SUPPLY,ASS
 extern int32_t ASSETCHAINS_LWMAPOS,ASSETCHAINS_SAPLING;
 extern uint64_t ASSETCHAINS_ENDSUBSIDY[],ASSETCHAINS_REWARD[],ASSETCHAINS_HALVING[],ASSETCHAINS_DECAY[];
 extern std::string NOTARY_PUBKEY; extern uint8_t NOTARY_PUBKEY33[];
+extern std::vector<std::string> vs_safecoin_notaries(int32_t height, uint32_t timestamp);
+extern std::string str_safe_address(std::string pubkey);
 
 UniValue getinfo(const UniValue& params, bool fHelp)
 {
@@ -1575,10 +1577,100 @@ UniValue txnotarizedconfirmed(const UniValue& params, bool fHelp)
     return result;
 }
 
+UniValue getnodeinfo(const UniValue& params, bool fHelp)
+{
+    uint256 notarized_hash,notarized_desttxid; int32_t prevMoMheight,notarized_height,longestchain,safenotarized_height,txid_height;
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getnodeinfo\n"
+            "Returns an object containing various SafeNode info.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"executable_version\": (string) executable version with last commit number\n"
+            "  \"protocolversion\":    (numeric) the protocol version\n"
+            "  \"SAFE_version\":       (string) Safecoin daemon version\n"
+            "  \"parentkey\":          (numeric) notary SafeNode pubkey\n"
+            "  \"safekey\":            (numeric) SafeNode pubkey\n"
+            "  \"SAFE_address\":       (string) SAFE address derived from safekey as a pubkey\n"
+			"  \"safeheight\":         (string) safeheight\n"
+			"  \"is_valid\":           (bool) safenode params validity\n"
+            "  \"errors\":             (array) all error messages\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getnodeinfo", "")
+            + HelpExampleRpc("getnodeinfo", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+	
+	bool safenode_valid = true; // presumption of innocence 
+	
+	std::string parentkey = GetArg("-parentkey", "");
+	std::string safekey = GetArg("-safekey", "");
+	std::string safeheight = GetArg("-safeheight", "");
+	
+	uint32_t timestamp = 0;
+	int32_t height = chainActive.LastTip()->GetHeight();
+	CBlockIndex *pblockindex = chainActive[height];
+    if ( pblockindex != 0 ) timestamp = pblockindex->GetBlockTime();
+	
+    // checking parentkey
+    std::vector<std::string> notaries = vs_safecoin_notaries(height, timestamp);
+    std::vector<std::string>::iterator it = std::find(notaries.begin(), notaries.end(), parentkey);
+    if (it == notaries.end())
+    {
+		errors.push_back("Invalid parentkey, should be a valid notary pubkey !");
+		safenode_valid = false;
+	}
+	
+	// checking safekey
+	std::string safe_address = str_safe_address(safekey);
+    if (safe_address == "invalid")
+    {
+		errors.push_back("Invalid safekey, should be a valid safenode pubkey !");
+		safenode_valid = false;
+	}
+	
+	// checking safeheight
+	int32_t i_safeheight = 0; // presumption of guilt
+	try 
+	{
+		i_safeheight = std::stoi(safeheight);
+		if (i_safeheight < 750000) throw i_safeheight;
+		if (i_safeheight > height) throw i_safeheight;
+	}
+	catch (...)
+	{
+		errors.push_back("Invalid safeheight, should be a number >= 750000 and <= current height !");
+		safenode_valid = false;
+	}
+	
+	
+	
+	
+    obj.push_back(Pair("executable_version", FormatFullVersion()));
+    obj.push_back(Pair("protocolversion", PROTOCOL_VERSION));
+    obj.push_back(Pair("SAFE_version", SAFECOIN_VERSION));
+    obj.push_back(Pair("parentkey", parentkey));
+    obj.push_back(Pair("safekey", safekey));
+    obj.push_back(Pair("SAFE_address", safe_address));
+    obj.push_back(Pair("safeheight", safeheight));
+    obj.push_back(Pair("is_valid", safenode_valid));
+    
+    obj.push_back(Pair("errors", errors));
+   
+    
+    return obj;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
     { "control",            "getinfo",                &getinfo,                true  }, /* uses wallet if enabled */
+    { "control",            "getnodeinfo",            &getnodeinfo,            true  }, 
     { "util",               "validateaddress",        &validateaddress,        true  }, /* uses wallet if enabled */
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },
