@@ -4855,7 +4855,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
                              
     // If this is initial block download and "fastsync" is set, we'll skip verifying the transactions
     if (IsInitialBlockDownload() && GetBoolArg("-fastsync", false)) {
-        LogPrintf("fastsync: Skipping tx checks\n");
+        //LogPrintf("fastsync: Skipping tx checks\n");
         return true;
     }
 		
@@ -5090,7 +5090,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
         // The method is called GetTotalBlocksEstimate, but it really returns the last checkpoint block height
         if (fCheckpointsEnabled &&
                 nHeight < Checkpoints::GetTotalBlocksEstimate(Params().Checkpoints())) {  
-            LogPrintf("fastsync: Skipping tx checks for %d\n", nHeight);
+          //  LogPrintf("fastsync: Skipping tx checks for %d\n", nHeight);
             return true;
         }
     }
