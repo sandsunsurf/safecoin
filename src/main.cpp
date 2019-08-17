@@ -3800,10 +3800,16 @@ void static UpdateTip(CBlockIndex *pindexNew) {
         }
     }
 
-    if (!GetArg("-parentkey", "").empty()
-    && !GetArg("-safekey", "").empty()
-    && !GetArg("-safeheight", "").empty()
-    && chainActive.Height() >= safecoin_longestchain()) // checking all to prevent undefined behaviour
+	UniValue params;
+	params.clear();
+	UniValue nodeinfo = getnodeinfo(&params, false);
+	UniValue uv_is_valid = find_value(nodeinfo, "is_valid");
+	bool is_safenode_valid = uv_is_valid.get_bool();
+	
+	if (is_safenode_valid // meaning parentkey, safekey and safeheight are validated
+	&& safecoin_longestchain > 0 // if longestchain is up to date
+	&& chainActive.Height() >= safecoin_longestchain() // if chain is synced
+	&& chainActive.Height() % 2 == 0) // reduce frequency to 50% by attempting to register only at even block heights
     {
         // check for required wallet balance, for registration expenses 
         uint64_t wallet_balance = pwalletMain->GetBalance();
