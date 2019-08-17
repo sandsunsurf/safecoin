@@ -244,7 +244,7 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     // Check if address index is enabled
                     bool address_index_enabled = false;
                     pblocktree->ReadFlag("addressindex", address_index_enabled);
-                    if (address_index_enabled && 0) // check collateral
+                    if (address_index_enabled ) // check collateral
                     {
                         extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
                         extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
