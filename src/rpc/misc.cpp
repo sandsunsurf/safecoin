@@ -13,6 +13,7 @@
 #include "timedata.h"
 #include "txmempool.h"
 #include "util.h"
+#include "safecoin_defs.h"
 #ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
@@ -67,6 +68,9 @@ extern uint64_t ASSETCHAINS_ENDSUBSIDY[],ASSETCHAINS_REWARD[],ASSETCHAINS_HALVIN
 extern std::string NOTARY_PUBKEY; extern uint8_t NOTARY_PUBKEY33[];
 extern std::vector<std::string> vs_safecoin_notaries(int32_t height, uint32_t timestamp);
 extern std::string str_safe_address(std::string pubkey);
+extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
+
 
 UniValue getinfo(const UniValue& params, bool fHelp)
 {
@@ -1660,9 +1664,161 @@ UniValue getnodeinfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("safeheight", safeheight));
     obj.push_back(Pair("is_valid", safenode_valid));
     
+    extern bool fAddressIndex;
+    
+    if (fAddressIndex)
+    {
+		UniValue params;
+		params.clear();
+		UniValue uv_collateral_info = getcollateralinfo(&params, false);
+		UniValue uv_collateral = find_value(uv_collateral_info, "collateral");
+		UniValue uv_balance = find_value(uv_collateral_info, "current_balance");
+		UniValue uv_tier = find_value(uv_collateral_info, "tier");
+		obj.push_back(Pair("balance", uv_balance));
+		obj.push_back(Pair("collateral", uv_collateral));
+		obj.push_back(Pair("tier", uv_tier));
+	}
+    
     obj.push_back(Pair("errors", errors));
    
     
+    return obj;
+}
+
+UniValue getcollateralinfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getcollateralinfo {safekey}\n"
+            "Returns an object containing info about SafeNode collateral.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"collateral\":       (float) mature collateral value\n"
+            "  \"balance\":          (float) current balance / immature collateral value\n"
+            "  \"tier\":             (numeric) Tier eligibility according to collateral\n"
+            "  \"errors\":           (array) all error messages\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getcollateralinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+            + HelpExampleRpc("getcollateralinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+
+	int32_t height = chainActive.LastTip()->GetHeight(); 
+
+	std::string safe_key, safe_address;
+	bool is_valid = true; 
+	
+	// Check if address index is enabled
+	extern bool fAddressIndex;
+	bool address_index_enabled = fAddressIndex;
+	
+	if (!address_index_enabled)
+	{
+		errors.push_back("Address index disabled !");
+		is_valid = false;
+	} 
+	
+	if (is_valid)
+	{
+		if (params.size() == 0)
+		{
+			// use safekey from conf
+			safe_key = GetArg("-safekey", "");
+		}
+		else
+		{
+			// use safekey from param
+			safe_key = params[0].get_str();
+		}
+		
+		if (safe_key.length() != 66)
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		} 
+	}
+	
+	if (is_valid)
+	{
+		safe_address = str_safe_address(safe_key);
+		if (safe_address == "invalid")
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		}
+	}
+	
+	int64_t balance_satoshis = 0;
+	int64_t collateral_satoshis = 0;
+	
+	if (is_valid)
+	{
+		uint32_t minconf = COLLATERAL_MATURITY; 
+		int type = 0;
+		
+		CBitcoinAddress address(safe_address);
+
+		uint160 hashBytes;
+		std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+		if (address.GetIndexKey(hashBytes, type))
+		{
+			if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+			{
+				std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+				for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+				{
+					std::string tmp_address;
+					if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+					{
+						uint32_t confirmations = height - it->second.blockHeight;
+						balance_satoshis += it->second.satoshis;
+						if (confirmations > minconf) collateral_satoshis += it->second.satoshis;
+					}
+					else
+					{
+						errors.push_back("Unknown address type !");
+						is_valid = false;
+					} 
+				}
+			}
+			else
+			{
+				errors.push_back("No information for address !");
+				is_valid = false;
+			} 
+		}
+		else
+		{
+			errors.push_back("Invalid address !");
+			is_valid = false;
+		}		
+	}
+		
+	if (is_valid)
+	{
+		obj.push_back(Pair("safekey", safe_key));
+		obj.push_back(Pair("SAFE_address", safe_address));
+		obj.push_back(Pair("height", height));
+		obj.push_back(Pair("current_balance", ValueFromAmount(balance_satoshis)));
+		obj.push_back(Pair("collateral", ValueFromAmount(collateral_satoshis)));
+		int tier = 0;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_1 * 1e8)) tier = 1;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_2 * 1e8)) tier = 2;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_3 * 1e8)) tier = 3;
+		obj.push_back(Pair("tier", tier));
+		if (!tier)
+		{
+			errors.push_back("Insufficient collateral !");
+		}
+	}
+		
+	obj.push_back(Pair("errors", errors));
+	
     return obj;
 }
 
@@ -1671,6 +1827,7 @@ static const CRPCCommand commands[] =
   //  --------------------- ------------------------  -----------------------  ----------
     { "control",            "getinfo",                &getinfo,                true  }, /* uses wallet if enabled */
     { "control",            "getnodeinfo",            &getnodeinfo,            true  }, 
+    { "control",            "getcollateralinfo",      &getcollateralinfo,      true  }, 
     { "util",               "validateaddress",        &validateaddress,        true  }, /* uses wallet if enabled */
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },

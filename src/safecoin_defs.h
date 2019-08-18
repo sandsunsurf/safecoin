@@ -16,7 +16,9 @@
 #define COLLATERAL_MATURITY 10080 // 100 blocks during testing phase, in production should be at least one week => 10080
 #define REGISTRATION_GAP 900 // min number of blocks allowed since last safenode registration
 #define REGISTRATION_TRIGGER_DAYS 7 // number of days between two automatic safenode registrations
- 
+#define COLLATERAL_MIN_TIER_1 10000
+#define COLLATERAL_MIN_TIER_2 50000
+#define COLLATERAL_MIN_TIER_3 100000 
 extern uint8_t ASSETCHAINS_TXPOW,ASSETCHAINS_PUBLIC;
 int32_t MAX_BLOCK_SIZE(int32_t height);
 
