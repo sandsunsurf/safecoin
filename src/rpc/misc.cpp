@@ -1716,8 +1716,8 @@ UniValue getcollateralinfo(const UniValue& params, bool fHelp)
             "  \"errors\":           (array) all error messages\n"
             "}\n"
             "\nExamples:\n"
-            + HelpExampleCli("getcollateralinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
-            + HelpExampleRpc("getcollateralinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+            + HelpExampleCli("getcollateralinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+            + HelpExampleRpc("getcollateralinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
         );
 
     LOCK(cs_main);
@@ -1845,16 +1845,9 @@ UniValue getregistrationinfo(const UniValue& params, bool fHelp)
         throw runtime_error(
             "getregistrationinfo {safekey}\n"
             "Returns an object containing info about SafeNode registration.\n"
-            "\nResult:\n"
-            "{\n"
-            "  \"collateral\":       (float) mature collateral value\n"
-            "  \"balance\":          (float) current balance / immature collateral value\n"
-            "  \"tier\":             (numeric) Tier eligibility according to collateral\n"
-            "  \"errors\":           (array) all error messages\n"
-            "}\n"
             "\nExamples:\n"
-            + HelpExampleCli("getregistrationinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
-            + HelpExampleRpc("getregistrationinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+            + HelpExampleCli("getregistrationinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+            + HelpExampleRpc("getregistrationinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
         );
 
     LOCK(cs_main);
