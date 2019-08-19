@@ -351,6 +351,7 @@ extern UniValue getdeprecationinfo(const UniValue& params, bool fHelp);
 extern UniValue setmocktime(const UniValue& params, bool fHelp);
 extern UniValue getnodeinfo(const UniValue& params, bool fHelp);
 extern UniValue getcollateralinfo(const UniValue& params, bool fHelp);
+extern UniValue getregistrationinfo(const UniValue& params, bool fHelp);
 extern UniValue resendwallettransactions(const UniValue& params, bool fHelp);
 extern UniValue zc_benchmark(const UniValue& params, bool fHelp);
 extern UniValue zc_raw_keygen(const UniValue& params, bool fHelp);

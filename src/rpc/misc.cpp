@@ -14,6 +14,7 @@
 #include "txmempool.h"
 #include "util.h"
 #include "safecoin_defs.h"
+#include "safecoin_structs.h"
 #ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
@@ -1663,6 +1664,23 @@ UniValue getnodeinfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("SAFE_address", safe_address));
     obj.push_back(Pair("safeheight", safeheight));
     obj.push_back(Pair("is_valid", safenode_valid));
+   
+    UniValue gri_params;
+	gri_params.clear();
+	UniValue uv_registration_info = getregistrationinfo(&gri_params, false);
+	UniValue uv_last_reg_height = find_value(uv_registration_info, "last_reg_height");
+	UniValue uv_valid_thru_height = find_value(uv_registration_info, "valid_thru_height");
+	UniValue uv_reg_errors = find_value(uv_registration_info, "errors");
+	
+	if (uv_last_reg_height.isNull())
+	{
+		for (int i=0; i< uv_reg_errors.size(); i++)	errors.push_back(uv_reg_errors[i]);
+	}
+	else
+	{
+		obj.push_back(Pair("last_reg_height", uv_last_reg_height));
+		obj.push_back(Pair("valid_thru_height", uv_valid_thru_height));
+	}
     
     extern bool fAddressIndex;
     
@@ -1680,7 +1698,6 @@ UniValue getnodeinfo(const UniValue& params, bool fHelp)
 	}
     
     obj.push_back(Pair("errors", errors));
-   
     
     return obj;
 }
@@ -1822,12 +1839,120 @@ UniValue getcollateralinfo(const UniValue& params, bool fHelp)
     return obj;
 }
 
+UniValue getregistrationinfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getregistrationinfo {safekey}\n"
+            "Returns an object containing info about SafeNode registration.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"collateral\":       (float) mature collateral value\n"
+            "  \"balance\":          (float) current balance / immature collateral value\n"
+            "  \"tier\":             (numeric) Tier eligibility according to collateral\n"
+            "  \"errors\":           (array) all error messages\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getregistrationinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+            + HelpExampleRpc("getregistrationinfo 03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+
+	int32_t current_height = chainActive.LastTip()->GetHeight(); 
+
+	std::string safe_key, safe_address;
+	bool is_valid = true; 
+	
+	if (params.size() == 0)
+	{
+		// use safekey from conf
+		safe_key = GetArg("-safekey", "");
+	}
+	else
+	{
+		// use safekey from param
+		safe_key = params[0].get_str();
+	}
+	
+	if (safe_key.length() != 66)
+	{
+		errors.push_back("Invalid safekey !");
+		is_valid = false;
+	} 
+	
+	if (is_valid)
+	{
+		safe_address = str_safe_address(safe_key);
+		if (safe_address == "invalid")
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		}
+	}
+	
+	int32_t last_reg_height = 0;
+	int32_t last_reg_duration = 0;
+	
+	if (is_valid)
+	{
+        obj.push_back(Pair("safekey", safe_key));
+		obj.push_back(Pair("SAFE_address", safe_address));
+        
+		struct safecoin_kv *s;
+		extern struct safecoin_kv *SAFECOIN_KV;
+		extern pthread_mutex_t SAFECOIN_KV_mutex;
+		
+		pthread_mutex_lock(&SAFECOIN_KV_mutex);
+		
+		for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+		{
+			uint8_t *value_ptr = s->value;
+			uint16_t value_size = s->valuesize;
+			
+			// skip checking against records with invalid safeid size
+			if (value_size == 66)
+			{
+				std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
+				if (s->height > last_reg_height && str_saved_safeid == safe_key)
+				{
+					last_reg_height = s->height;
+					last_reg_duration = ((s->flags >> 2) + 1) * SAFECOIN_KVDURATION;
+				}
+			} 
+		}
+		
+		pthread_mutex_unlock(&SAFECOIN_KV_mutex);
+
+		if (last_reg_height > 0)
+		{
+			obj.push_back(Pair("current_height", current_height));
+			obj.push_back(Pair("last_reg_height", last_reg_height));
+			obj.push_back(Pair("valid_thru_height", last_reg_height + last_reg_duration));
+		}
+		else
+		{
+			errors.push_back("No registration found !");
+			is_valid = false;
+		}
+		
+	}
+			
+	obj.push_back(Pair("errors", errors));
+	
+    return obj;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
     { "control",            "getinfo",                &getinfo,                true  }, /* uses wallet if enabled */
     { "control",            "getnodeinfo",            &getnodeinfo,            true  }, 
-    { "control",            "getcollateralinfo",      &getcollateralinfo,      true  }, 
+    { "control",            "getcollateralinfo",      &getcollateralinfo,      true  },
+    { "control",            "getregistrationinfo",    &getregistrationinfo,    true  }, 
     { "util",               "validateaddress",        &validateaddress,        true  }, /* uses wallet if enabled */
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },
