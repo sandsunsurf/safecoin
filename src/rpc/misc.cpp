@@ -1667,7 +1667,7 @@ UniValue getnodeinfo(const UniValue& params, bool fHelp)
    
     UniValue gri_params;
 	gri_params.clear();
-	UniValue uv_registration_info = getregistrationinfo(&gri_params, false);
+	UniValue uv_registration_info = getregistrationinfo(gri_params, false);
 	UniValue uv_last_reg_height = find_value(uv_registration_info, "last_reg_height");
 	UniValue uv_valid_thru_height = find_value(uv_registration_info, "valid_thru_height");
 	UniValue uv_reg_errors = find_value(uv_registration_info, "errors");
@@ -1688,7 +1688,7 @@ UniValue getnodeinfo(const UniValue& params, bool fHelp)
     {
 		UniValue params;
 		params.clear();
-		UniValue uv_collateral_info = getcollateralinfo(&params, false);
+		UniValue uv_collateral_info = getcollateralinfo(params, false);
 		UniValue uv_collateral = find_value(uv_collateral_info, "collateral");
 		UniValue uv_balance = find_value(uv_collateral_info, "current_balance");
 		UniValue uv_tier = find_value(uv_collateral_info, "tier");
@@ -1939,6 +1939,101 @@ UniValue getregistrationinfo(const UniValue& params, bool fHelp)
     return obj;
 }
 
+UniValue getactivenodes(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getactivenodes\n"
+            "Returns an object containing list of all active SafeNodes.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getactivenodes", "")
+            + HelpExampleRpc("getactivenodes", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue uv_safenodes(UniValue::VARR);
+
+	int32_t current_height = chainActive.LastTip()->GetHeight(); 
+
+	std::vector<std::string> vs_safekeys;
+	std::vector<std::string>::iterator it;
+	
+	struct safecoin_kv *s;
+	extern struct safecoin_kv *SAFECOIN_KV;
+	extern pthread_mutex_t SAFECOIN_KV_mutex;
+	
+	pthread_mutex_lock(&SAFECOIN_KV_mutex);
+	
+	for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+	{
+		uint8_t *value_ptr = s->value;
+		uint16_t value_size = s->valuesize;
+		
+		// skip checking against records with invalid safeid size
+		if (value_size == 66)
+		{
+			std::string str_saved_safeid = std::string((char*)value_ptr, 66);
+			it = std::find(vs_safekeys.begin(), vs_safekeys.end(), str_saved_safeid);
+			if (it == vs_safekeys.end())
+			{
+				vs_safekeys.push_back(str_saved_safeid);
+			}
+		} 
+	}
+	
+	pthread_mutex_unlock(&SAFECOIN_KV_mutex);
+	
+	int node_count = 0;
+	int tier_0_count = 0;
+	int tier_1_count = 0;
+	int tier_2_count = 0;
+	int tier_3_count = 0;
+	extern bool fAddressIndex;
+	
+	for (int i = 0; i < vs_safekeys.size(); i++)
+	{
+		UniValue uv_one_node(UniValue::VOBJ), params(UniValue::VARR);
+		params.push_back(vs_safekeys.at(i));
+		UniValue uv_registration_info = getregistrationinfo(params, false);
+		UniValue uv_safe_address = find_value(uv_registration_info, "SAFE_address");
+		UniValue uv_last_reg_height = find_value(uv_registration_info, "last_reg_height");
+		UniValue uv_valid_thru_height = find_value(uv_registration_info, "valid_thru_height");
+		
+		if (!uv_last_reg_height.isNull() && uv_valid_thru_height.get_int() >= current_height)
+		{
+			uv_one_node.push_back(Pair("safekey", vs_safekeys.at(i)));
+			uv_one_node.push_back(Pair("SAFE_address", uv_safe_address));
+			node_count++;
+			if (fAddressIndex)
+			{
+				UniValue uv_collateral_info = getcollateralinfo(params, false);
+				UniValue uv_collateral = find_value(uv_collateral_info, "collateral");
+				UniValue uv_balance = find_value(uv_collateral_info, "current_balance");
+				UniValue uv_tier = find_value(uv_collateral_info, "tier");
+				uv_one_node.push_back(Pair("balance", uv_balance));
+				uv_one_node.push_back(Pair("collateral", uv_collateral));
+				uv_one_node.push_back(Pair("tier", uv_tier));
+				if (uv_tier.get_int() == 0) tier_0_count++;
+				if (uv_tier.get_int() == 1) tier_1_count++;
+				if (uv_tier.get_int() == 2) tier_2_count++;
+				if (uv_tier.get_int() == 3) tier_3_count++;
+			}	
+			uv_safenodes.push_back(uv_one_node);
+		}
+	}
+	
+	obj.push_back(Pair("SafeNodes", uv_safenodes));
+	obj.push_back(Pair("node_count", node_count));
+	obj.push_back(Pair("tier_0_count", tier_0_count));
+	obj.push_back(Pair("tier_1_count", tier_1_count));
+	obj.push_back(Pair("tier_2_count", tier_2_count));
+	obj.push_back(Pair("tier_3_count", tier_3_count));
+	
+    return obj;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
@@ -1946,6 +2041,7 @@ static const CRPCCommand commands[] =
     { "control",            "getnodeinfo",            &getnodeinfo,            true  }, 
     { "control",            "getcollateralinfo",      &getcollateralinfo,      true  },
     { "control",            "getregistrationinfo",    &getregistrationinfo,    true  }, 
+    { "control",            "getactivenodes",         &getactivenodes,         true  }, 
     { "util",               "validateaddress",        &validateaddress,        true  }, /* uses wallet if enabled */
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },
