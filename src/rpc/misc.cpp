@@ -1990,6 +1990,7 @@ UniValue getactivenodes(const UniValue& params, bool fHelp)
 	int tier_1_count = 0;
 	int tier_2_count = 0;
 	int tier_3_count = 0;
+	double collateral_total = 0;
 	extern bool fAddressIndex;
 	
 	for (int i = 0; i < vs_safekeys.size(); i++)
@@ -2014,6 +2015,7 @@ UniValue getactivenodes(const UniValue& params, bool fHelp)
 				UniValue uv_tier = find_value(uv_collateral_info, "tier");
 				uv_one_node.push_back(Pair("balance", uv_balance));
 				uv_one_node.push_back(Pair("collateral", uv_collateral));
+				collateral_total += uv_collateral.get_real();
 				uv_one_node.push_back(Pair("tier", uv_tier));
 				if (uv_tier.get_int() == 0) tier_0_count++;
 				if (uv_tier.get_int() == 1) tier_1_count++;
@@ -2030,6 +2032,7 @@ UniValue getactivenodes(const UniValue& params, bool fHelp)
 	obj.push_back(Pair("tier_1_count", tier_1_count));
 	obj.push_back(Pair("tier_2_count", tier_2_count));
 	obj.push_back(Pair("tier_3_count", tier_3_count));
+	obj.push_back(Pair("collateral_total", collateral_total));
 	
     return obj;
 }
