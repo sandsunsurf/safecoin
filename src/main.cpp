@@ -4322,8 +4322,8 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
         nHeight = nTargetHeight;
 
         // Connect new blocks.
-        BOOST_REVERSE_FOREACH(CBlockIndex *pindexConnect, vpindexToConnect) {
-            if (!ConnectTip(state, pindexConnect, pindexConnect == pindexMostWork ? pblock : NULL)) {
+        for (auto it = vpindexToConnect.rbegin(); it != vpindexToConnect.rend(); it++) {
+            if (!ConnectTip(state, *it, *it == pindexMostWork ? pblock : NULL)) {
                 if (state.IsInvalid()) {
                     // The block violates a consensus rule.
                     if (!state.CorruptionPossible())

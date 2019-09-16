@@ -42,14 +42,14 @@ class prevector_tester {
         for (const T& v : pre_vector) {
              BOOST_CHECK(v == real_vector[pos++]);
         }
-        BOOST_REVERSE_FOREACH(const T& v, pre_vector) {
-             BOOST_CHECK(v == real_vector[--pos]);
+        for (auto it = pre_vector.rbegin(); it != pre_vector.rend(), it++) {
+             BOOST_CHECK(*it == real_vector[--pos]);
         }
         for (const T& v : const_pre_vector) {
              BOOST_CHECK(v == real_vector[pos++]);
         }
-        BOOST_REVERSE_FOREACH(const T& v, const_pre_vector) {
-             BOOST_CHECK(v == real_vector[--pos]);
+        for (auto it = const_pre_vector.rbegin(); it != const_pre_vector.rend(), it++) {
+             BOOST_CHECK(*it == real_vector[--pos]);
         }
         CDataStream ss1(SER_DISK, 0);
         CDataStream ss2(SER_DISK, 0);
