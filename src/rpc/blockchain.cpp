@@ -282,7 +282,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("segid", (int64_t)blockindex->segid));
     result.push_back(Pair("finalsaplingroot", block.hashFinalSaplingRoot.GetHex()));
     UniValue txs(UniValue::VARR);
-    BOOST_FOREACH(const CTransaction&tx, block.vtx)
+    for (const CTransaction&tx : block.vtx)
     {
         if(txDetails)
         {
@@ -371,11 +371,11 @@ bool myIsutxo_spentinmempool(uint256 txid,int32_t vout)
 {
     //char *uint256_str(char *str,uint256); char str[65];
     //LOCK(mempool.cs);
-    BOOST_FOREACH(const CTxMemPoolEntry &e,mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &tx = e.GetTx();
         const uint256 &hash = tx.GetHash();
-        BOOST_FOREACH(const CTxIn &txin,tx.vin)
+        for (const CTxIn &txin : tx.vin)
         {
             //fprintf(stderr,"%s/v%d ",uint256_str(str,txin.prevout.hash),txin.prevout.n);
             if ( txin.prevout.n == vout && txin.prevout.hash == txid )
@@ -388,7 +388,7 @@ bool myIsutxo_spentinmempool(uint256 txid,int32_t vout)
 
 bool mytxid_inmempool(uint256 txid)
 {
-    BOOST_FOREACH(const CTxMemPoolEntry &e,mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &tx = e.GetTx();
         const uint256 &hash = tx.GetHash();
@@ -404,7 +404,7 @@ UniValue mempoolToJSON(bool fVerbose = false)
     {
         LOCK(mempool.cs);
         UniValue o(UniValue::VOBJ);
-        BOOST_FOREACH(const CTxMemPoolEntry& e, mempool.mapTx)
+        for (const CTxMemPoolEntry& e : mempool.mapTx)
         {
             const uint256& hash = e.GetTx().GetHash();
             UniValue info(UniValue::VOBJ);
@@ -416,14 +416,14 @@ UniValue mempoolToJSON(bool fVerbose = false)
             info.push_back(Pair("currentpriority", e.GetPriority(chainActive.Height())));
             const CTransaction& tx = e.GetTx();
             set<string> setDepends;
-            BOOST_FOREACH(const CTxIn& txin, tx.vin)
+            for (const CTxIn& txin : tx.vin)
             {
                 if (mempool.exists(txin.prevout.hash))
                     setDepends.insert(txin.prevout.hash.ToString());
             }
 
             UniValue depends(UniValue::VARR);
-            BOOST_FOREACH(const string& dep, setDepends)
+            for (const string& dep : setDepends)
             {
                 depends.push_back(dep);
             }
@@ -439,7 +439,7 @@ UniValue mempoolToJSON(bool fVerbose = false)
         mempool.queryHashes(vtxid);
 
         UniValue a(UniValue::VARR);
-        BOOST_FOREACH(const uint256& hash, vtxid)
+        for (const uint256& hash : vtxid)
             a.push_back(hash.ToString());
 
         return a;
@@ -1622,14 +1622,14 @@ UniValue getchaintips(const UniValue& params, bool fHelp)
     pthread_mutex_lock(&mutex);*/
     std::set<const CBlockIndex*, CompareBlocksByHeight> setTips;
     int32_t n = 0;
-    BOOST_FOREACH(const PAIRTYPE(const uint256, CBlockIndex*)& item, mapBlockIndex)
+    for (const std::pair<const uint256, CBlockIndex*>& item : mapBlockIndex)
     {
         n++;
         setTips.insert(item.second);
     }
     fprintf(stderr,"iterations getchaintips %d\n",n);
     n = 0;
-    BOOST_FOREACH(const PAIRTYPE(const uint256, CBlockIndex*)& item, mapBlockIndex)
+    for (const std::pair<const uint256, CBlockIndex*>& item : mapBlockIndex)
     {
         const CBlockIndex* pprev=0;
         n++;
@@ -1646,8 +1646,8 @@ UniValue getchaintips(const UniValue& params, bool fHelp)
 
     /* Construct the output array.  */
     UniValue res(UniValue::VARR); const CBlockIndex *forked;
-    BOOST_FOREACH(const CBlockIndex* block, setTips)
-    BOOST_FOREACH(const CBlockIndex* block, setTips)
+    for (const CBlockIndex* block : setTips)
+    for (const CBlockIndex* block : setTips)
         {
             UniValue obj(UniValue::VOBJ);
             obj.push_back(Pair("height", block->GetHeight()));

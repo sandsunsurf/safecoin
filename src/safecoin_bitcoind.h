@@ -2033,7 +2033,7 @@ int64_t safecoin_newcoins(int64_t *zfundsp,int64_t *sproutfundsp,int32_t nHeight
                     voutsum += tx.vout[j].nValue;
             }
         }
-        BOOST_FOREACH(const JSDescription& joinsplit, tx.vjoinsplit)
+        for (const JSDescription& joinsplit : tx.vjoinsplit)
         {
             zfunds -= joinsplit.vpub_new;
             zfunds += joinsplit.vpub_old;

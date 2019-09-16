@@ -243,7 +243,7 @@ int64_t OracleDatafee(CScript &scriptPubKey,uint256 oracletxid,CPubKey publisher
 
 static uint256 myIs_baton_spentinmempool(uint256 batontxid,int32_t batonvout)
 {
-    BOOST_FOREACH(const CTxMemPoolEntry &e,mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &tx = e.GetTx();
         if ( tx.vout.size() > 0 && tx.vin.size() > 1 && batontxid == tx.vin[1].prevout.hash && batonvout == tx.vin[1].prevout.n )

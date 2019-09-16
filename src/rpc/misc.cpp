@@ -718,7 +718,7 @@ UniValue setmocktime(const UniValue& params, bool fHelp)
     SetMockTime(params[0].get_int64());
 
     uint64_t t = GetTime();
-    BOOST_FOREACH(CNode* pnode, vNodes) {
+    for (CNode* pnode : vNodes) {
         pnode->nLastSend = pnode->nLastRecv = t;
     }
 
@@ -1452,7 +1452,7 @@ UniValue listfromto(const UniValue& params, bool fHelp)
 
 				// we want all inputs to be from src address
 				bool flag_good_src = true;
-				BOOST_FOREACH(const CTxIn& txin, tx.vin)
+				for (const CTxIn& txin : tx.vin)
 				{
 					uint256 prevout_hash;
 					CTransaction prevout_tx;
@@ -1478,7 +1478,7 @@ UniValue listfromto(const UniValue& params, bool fHelp)
 					// we want at least one output to be dst address
 					int good_vout_count = 0;
 					CAmount received_satoshis = 0;
-					BOOST_FOREACH(const CTxOut& txout, tx.vout)
+					for (const CTxOut& txout : tx.vout)
 					{
 						CTxDestination out_address;
 						if (ExtractDestination(txout.scriptPubKey, out_address))

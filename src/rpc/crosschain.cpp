@@ -268,7 +268,7 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
     NotarisationsInBlock nibs;
     GetBlockNotarisations(blockHash, nibs);
     UniValue out(UniValue::VARR);
-    BOOST_FOREACH(const Notarisation& n, nibs)
+    for (const Notarisation& n : nibs)
     {
         UniValue item(UniValue::VARR);
         item.push_back(n.first.GetHex());

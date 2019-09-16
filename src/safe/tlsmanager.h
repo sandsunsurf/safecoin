@@ -15,7 +15,6 @@
 #include "../net.h"
 #include "sync.h"
 #include <boost/filesystem/path.hpp>
-#include <boost/foreach.hpp>
 #include <boost/signals2/signal.hpp>
 #ifdef WIN32
 #include <string.h>

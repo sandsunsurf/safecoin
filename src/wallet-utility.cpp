@@ -6,7 +6,6 @@
 #include "util.h"
 #include "base58.h"
 #include "wallet/crypter.h"
-#include <boost/foreach.hpp>
 
 #include "safecoin_defs.h"
 char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
@@ -113,7 +112,7 @@ bool WalletUtilityDB::DecryptSecret(const std::vector<unsigned char>& vchCiphert
     std::vector<unsigned char> chIV(WALLET_CRYPTO_KEY_SIZE);
     memcpy(&chIV[0], &nIV, WALLET_CRYPTO_KEY_SIZE);
 
-    BOOST_FOREACH(const CKeyingMaterial vMKey, vMKeys)
+    for (const CKeyingMaterial &vMKey : vMKeys)
     {
         if(!cKeyCrypter.SetKey(vMKey, chIV))
             continue;
@@ -129,7 +128,7 @@ bool WalletUtilityDB::Unlock()
     CCrypter crypter;
     CKeyingMaterial vMasterKey;
 
-    BOOST_FOREACH(const MasterKeyMap::value_type& pMasterKey, mapMasterKeys)
+    for (const MasterKeyMap::value_type& pMasterKey : mapMasterKeys)
     {
         if(!crypter.SetKeyFromPassphrase(mPass, pMasterKey.second.vchSalt, pMasterKey.second.nDeriveIterations, pMasterKey.second.nDerivationMethod))
             return false;
