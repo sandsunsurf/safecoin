@@ -269,7 +269,7 @@ CBlockTemplate* CreateNewBlock(const CScript& _scriptPubKeyIn, int32_t gpucount,
                 nTotalIn += nValueIn;
                 dPriority += (double)nValueIn * 1000;  // flat multiplier
             } else {
-                BOOST_FOREACH(const CTxIn& txin, tx.vin)
+                for (const CTxIn& txin : tx.vin)
                 {
                     // Read prev transaction
                     if (!view.HaveCoins(txin.prevout.hash))
@@ -412,7 +412,7 @@ CBlockTemplate* CreateNewBlock(const CScript& _scriptPubKeyIn, int32_t gpucount,
             }
             UpdateCoins(tx, view, nHeight);
 
-            BOOST_FOREACH(const OutputDescription &outDescription, tx.vShieldedOutput) {
+            for (const OutputDescription &outDescription : tx.vShieldedOutput) {
                 sapling_tree.append(outDescription.cm);
             }
 
@@ -433,7 +433,7 @@ CBlockTemplate* CreateNewBlock(const CScript& _scriptPubKeyIn, int32_t gpucount,
             // Add transactions that depend on this one to the priority queue
             if (mapDependers.count(hash))
             {
-                BOOST_FOREACH(COrphan* porphan, mapDependers[hash])
+                for (COrphan* porphan : mapDependers[hash])
                 {
                     if (!porphan->setDependsOn.empty())
                     {
@@ -761,7 +761,7 @@ void safecoin_broadcast(CBlock *pblock,int32_t limit)
     //fprintf(stderr,"broadcast new block t.%u\n",(uint32_t)time(NULL));
     {
         LOCK(cs_vNodes);
-        BOOST_FOREACH(CNode* pnode, vNodes)
+        for (CNode* pnode : vNodes)
         {
             if ( pnode->hSocket == INVALID_SOCKET )
                 continue;

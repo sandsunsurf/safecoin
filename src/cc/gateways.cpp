@@ -364,7 +364,7 @@ bool GatewaysExactAmounts(struct CCcontract_info *cp,Eval* eval,const CTransacti
 static int32_t myIs_coinaddr_inmempoolvout(char *coinaddr)
 {
     int32_t i,n; char destaddr[64];
-    BOOST_FOREACH(const CTxMemPoolEntry &e,mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &tx = e.GetTx();
         if ( (n= tx.vout.size()) > 0 )
@@ -1216,7 +1216,7 @@ UniValue GatewaysMultisig(char *cctxidaddr)
         }
     }
     
-    BOOST_FOREACH(const CTxMemPoolEntry &e, mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &txmempool = e.GetTx();
         const uint256 &hash = txmempool.GetHash();

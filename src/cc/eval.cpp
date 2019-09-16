@@ -148,7 +148,7 @@ bool Eval::CheckNotaryInputs(const CTransaction &tx, uint32_t height, uint32_t t
     uint8_t notaries[64][33];
     int nNotaries = GetNotaries(notaries, height, timestamp);
 
-    BOOST_FOREACH(const CTxIn &txIn, tx.vin)
+    for (const CTxIn &txIn : tx.vin)
     {
         // Get notary pubkey
         CTransaction tx;

@@ -304,7 +304,7 @@ static uint64_t myIs_unlockedtx_inmempool(uint256 &txid,int32_t &vout,uint64_t r
     memset(&txid,0,sizeof(txid));
     vout = -1;
     nValue = 0;
-    BOOST_FOREACH(const CTxMemPoolEntry &e,mempool.mapTx)
+    for (const CTxMemPoolEntry &e : mempool.mapTx)
     {
         const CTransaction &tx = e.GetTx();
         if ( tx.vout.size() > 0 && tx.vout[0].nValue >= needed )

@@ -61,7 +61,7 @@ uint256 CalculateProofRoot(const char* symbol, uint32_t targetCCid, int safeHeig
             continue;
 
         // See if we have an own notarisation in this block
-        BOOST_FOREACH(Notarisation& nota, notarisations) {
+        for (Notarisation& nota : notarisations) {
             if (strcmp(nota.second.symbol, symbol) == 0)
             {
                 seenOwnNotarisations++;
@@ -74,7 +74,7 @@ uint256 CalculateProofRoot(const char* symbol, uint32_t targetCCid, int safeHeig
         }
 
         if (seenOwnNotarisations == 1) {
-            BOOST_FOREACH(Notarisation& nota, notarisations) {
+            for (Notarisation& nota : notarisations) {
                 if (IsTXSCL(nota.second.symbol) == txscl)
                     if (nota.second.ccId == targetCCid)
                         moms.push_back(nota.second.MoM);
@@ -104,7 +104,7 @@ int ScanNotarisationsFromHeight(int nHeight, const IsTarget f, Notarisation &fou
         if (!GetBlockNotarisations(*chainActive[h]->phashBlock, notarisations))
             continue;
 
-        BOOST_FOREACH(found, notarisations) {
+        for (auto found : notarisations) {
             if (f(found)) {
                 return h;
             }

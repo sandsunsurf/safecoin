@@ -4,8 +4,6 @@
 #include "cc/eval.h"
 #include "main.h"
 
-#include <boost/foreach.hpp>
-
 
 NotarisationDB *pnotarisations;
 
@@ -70,7 +68,7 @@ bool GetBackNotarisation(uint256 notarisationHash, Notarisation &n)
 void WriteBackNotarisations(const NotarisationsInBlock notarisations, CDBBatch &batch)
 {
     int wrote = 0;
-    BOOST_FOREACH(const Notarisation &n, notarisations)
+    for (const Notarisation &n : notarisations)
     {
         if (!n.second.txHash.IsNull()) {
             batch.Write(n.second.txHash, n);
@@ -82,7 +80,7 @@ void WriteBackNotarisations(const NotarisationsInBlock notarisations, CDBBatch &
 
 void EraseBackNotarisations(const NotarisationsInBlock notarisations, CDBBatch &batch)
 {
-    BOOST_FOREACH(const Notarisation &n, notarisations)
+    for (const Notarisation &n : notarisations)
     {
         if (!n.second.txHash.IsNull())
             batch.Erase(n.second.txHash);
@@ -105,7 +103,7 @@ int ScanNotarisationsDB(int height, std::string symbol, int scanLimitBlocks, Not
         if (!GetBlockNotarisations(blockHash, notarisations))
             continue;
 
-        BOOST_FOREACH(Notarisation& nota, notarisations) {
+        for (Notarisation& nota : notarisations) {
             if (strcmp(nota.second.symbol, symbol.data()) == 0) {
                 out = nota;
                 return height-i;

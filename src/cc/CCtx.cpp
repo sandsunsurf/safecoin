@@ -359,7 +359,7 @@ int64_t AddNormalinputs(CMutableTransaction &mtx,CPubKey mypk,int64_t total,int3
     if ( maxinputs > maxutxos )
         maxutxos = maxinputs;
     sum = 0;
-    BOOST_FOREACH(const COutput& out, vecOutputs)
+    for (const COutput& out : vecOutputs)
     {
         if ( out.fSpendable != 0 && out.tx->vout[out.i].nValue >= threshold )
         {

@@ -401,7 +401,7 @@ int64_t AddChannelsInputs(struct CCcontract_info *cp,CMutableTransaction &mtx, C
     {
         txid=zeroid;
         int32_t mindepth=CHANNELS_MAXPAYMENTS;
-        BOOST_FOREACH(const CTxMemPoolEntry &e, mempool.mapTx)
+        for (const CTxMemPoolEntry &e : mempool.mapTx)
         {
             const CTransaction &txmempool = e.GetTx();
             const uint256 &hash = txmempool.GetHash();

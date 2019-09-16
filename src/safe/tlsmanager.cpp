@@ -307,14 +307,14 @@ void TLSManager::cleanNonTLSPool(std::vector<NODE_ADDR>& vPool, CCriticalSection
 
     vector<NODE_ADDR> vDeleted;
 
-    BOOST_FOREACH (NODE_ADDR nodeAddr, vPool) {
+    for (const NODE_ADDR &nodeAddr : vPool) {
         if ((GetTimeMillis() - nodeAddr.time) >= 900000) {
             vDeleted.push_back(nodeAddr);
             LogPrint("net", "TLS: Node %s is deleted from the non-TLS pool\n", nodeAddr.ipAddr);
         }
     }
 
-    BOOST_FOREACH (NODE_ADDR nodeAddrDeleted, vDeleted) {
+    for (const NODE_ADDR &nodeAddrDeleted : vDeleted) {
         vPool.erase(
             remove(
                 vPool.begin(),
