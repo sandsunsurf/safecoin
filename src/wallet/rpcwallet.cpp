@@ -119,7 +119,7 @@ void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry)
     entry.push_back(Pair("walletconflicts", conflicts));
     entry.push_back(Pair("time", wtx.GetTxTime()));
     entry.push_back(Pair("timereceived", (int64_t)wtx.nTimeReceived));
-    for (const PAIRTYPE(string,string)& item : wtx.mapValue)
+    for (const pair<string,string>& item : wtx.mapValue)
         entry.push_back(Pair(item.first, item.second));
 
     entry.push_back(Pair("vjoinsplit", TxJoinSplitToJSON(wtx)));
@@ -1892,7 +1892,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
             includeWatchonly = includeWatchonly | ISMINE_WATCH_ONLY;
 
     map<string, CAmount> mapAccountBalances;
-    for (const PAIRTYPE(CTxDestination, CAddressBookData)& entry : pwalletMain->mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData>& entry : pwalletMain->mapAddressBook) {
         if (IsMine(*pwalletMain, entry.first) & includeWatchonly) // This address belongs to me
             mapAccountBalances[entry.second.name] = 0;
     }
@@ -1927,7 +1927,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
         mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
 
     UniValue ret(UniValue::VOBJ);
-    for (const PAIRTYPE(string, CAmount)& accountBalance : mapAccountBalances) {
+    for (const pair<string, CAmount>& accountBalance : mapAccountBalances) {
         ret.push_back(Pair(accountBalance.first, ValueFromAmount(accountBalance.second)));
     }
     return ret;

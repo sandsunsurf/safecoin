@@ -1622,14 +1622,14 @@ UniValue getchaintips(const UniValue& params, bool fHelp)
     pthread_mutex_lock(&mutex);*/
     std::set<const CBlockIndex*, CompareBlocksByHeight> setTips;
     int32_t n = 0;
-    for (const PAIRTYPE(const uint256, CBlockIndex*)& item : mapBlockIndex)
+    for (const std::pair<const uint256, CBlockIndex*>& item : mapBlockIndex)
     {
         n++;
         setTips.insert(item.second);
     }
     fprintf(stderr,"iterations getchaintips %d\n",n);
     n = 0;
-    for (const PAIRTYPE(const uint256, CBlockIndex*)& item : mapBlockIndex)
+    for (const std::pair<const uint256, CBlockIndex*>& item : mapBlockIndex)
     {
         const CBlockIndex* pprev=0;
         n++;
