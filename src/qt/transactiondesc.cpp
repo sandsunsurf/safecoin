@@ -245,14 +245,14 @@ QString TransactionDesc::toHTML(CWallet *wallet, CWalletTx &wtx, TransactionReco
     strHTML += "<b>" + tr("Transaction ID") + ":</b> " + TransactionRecord::formatSubTxId(wtx.GetHash(), rec->idx) + "<br>";
 
     // Message from normal bitcoin:URI (bitcoin:123...?message=example)
-    Q_FOREACH (const pair<string, string>& r, wtx.vOrderForm)
+    for (const pair<string, string>& r : wtx.vOrderForm)
         if (r.first == "Message")
             strHTML += "<br><b>" + tr("Message") + ":</b><br>" + GUIUtil::HtmlEscape(r.second, true) + "<br>";
 
     //
     // PaymentRequest info:
     //
-    Q_FOREACH (const std::pair<string, string>& r, wtx.vOrderForm)
+    for (const std::pair<string, string>& r : wtx.vOrderForm)
     {
         if (r.first == "PaymentRequest")
         {
