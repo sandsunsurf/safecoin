@@ -4955,7 +4955,7 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     if ( ASSETCHAINS_CC != 0 )
     {
         // here we add back all txs from the temp mempool to the main mempool.
-        fro (const CTxMemPoolEntry& e : tmpmempool.mapTx)
+        for (const CTxMemPoolEntry& e : tmpmempool.mapTx)
         {
             const CTransaction &tx = e.GetTx();
             const uint256 &hash = tx.GetHash();
