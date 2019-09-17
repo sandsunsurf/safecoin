@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #include "rpc/client.h"
 #include "rpc/protocol.h"
 #include "util.h"
@@ -36,6 +51,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "sendtoaddress", 1 },
     { "sendtoaddress", 4 },
     { "settxfee", 0 },
+    { "getnotarysendmany", 0 },
+    { "getnotarysendmany", 1 },
     { "getreceivedbyaddress", 1 },
     { "getreceivedbyaccount", 1 },
     { "listreceivedbyaddress", 0 },
@@ -67,16 +84,16 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "addmultisigaddress", 1 },
     { "createmultisig", 0 },
     { "createmultisig", 1 },
-    { "listfromto", 2 },
     { "listunspent", 0 },
     { "listunspent", 1 },
     { "listunspent", 2 },
-    { "listutxos", 1 },
-    { "listutxos", 2 },
     { "getblock", 1 },
     { "getblockheader", 1 },
+    { "getchaintxstats", 0  },
+    { "getlastsegidstakes", 0 },
     { "gettransaction", 1 },
     { "getrawtransaction", 1 },
+    { "getlastsegidstakes", 0 },
     { "createrawtransaction", 0 },
     { "createrawtransaction", 1 },
     { "createrawtransaction", 2 },
@@ -91,6 +108,8 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "lockunspent", 0 },
     { "lockunspent", 1 },
     { "importprivkey", 2 },
+    { "importprivkey", 3 },
+    { "importprivkey", 4 },
     { "importaddress", 2 },
     { "verifychain", 0 },
     { "verifychain", 1 },
@@ -144,9 +163,6 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "paxpending", 0 },
     { "notaries", 2 },
     { "minerids", 1 },
-    { "safeids", 1 },
-    { "safeids", 2 },
-    { "safeids", 3 },
     { "kvsearch", 1 },
     { "kvupdate", 4 },
     { "z_importkey", 2 },
@@ -157,8 +173,10 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "assetchainproof", 1},
     { "crosschainproof", 1},
     { "getproofroot", 2},
+    { "getNotarisationsForBlock", 0},
     { "height_MoM", 1},
     { "calc_MoM", 2},
+    { "migrate_completeimporttransaction", 1},
 };
 
 class CRPCConvertTable

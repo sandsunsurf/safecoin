@@ -1,8 +1,22 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
-// Copyright (c) 2019 The Safecoin Core developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
 
 #if defined(HAVE_CONFIG_H)
 #include "config/bitcoin-config.h"
@@ -21,6 +35,7 @@
 #include "httprpc.h"
 #include "key.h"
 #include "notarisationdb.h"
+
 #ifdef ENABLE_MINING
 #include "key_io.h"
 #endif
@@ -41,6 +56,7 @@
 #ifdef ENABLE_WALLET
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"
+
 #endif
 #include <stdint.h>
 #include <stdio.h>
@@ -75,8 +91,12 @@
 using namespace std;
 
 extern void ThreadSendAlert();
-extern int32_t SAFECOIN_LOADINGBLOCKS;
+extern bool komodo_dailysnapshot(int32_t height);
+extern int32_t KOMODO_LOADINGBLOCKS;
 extern bool VERUS_MINTBLOCKS;
+extern char ASSETCHAINS_SYMBOL[];
+extern int32_t KOMODO_SNAPSHOT_INTERVAL;
+extern void komodo_init(int32_t height);
 
 ZCJoinSplit* pzcashParams = NULL;
 
@@ -196,7 +216,10 @@ void Shutdown()
     /// for example if the data directory was found to be locked.
     /// Be sure that anything that writes files or flushes caches only does this if the respective
     /// module was initialized.
-    RenameThread("safecoin-shutoff");
+    static char shutoffstr[128];
+    sprintf(shutoffstr,"%s-shutoff",ASSETCHAINS_SYMBOL);
+    //RenameThread("verus-shutoff");
+    RenameThread(shutoffstr);
     mempool.AddTransactionsUpdated(1);
 
     StopHTTPRPC();
@@ -349,7 +372,8 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-blocknotify=<cmd>", _("Execute command when the best block changes (%s in cmd is replaced by block hash)"));
     strUsage += HelpMessageOpt("-checkblocks=<n>", strprintf(_("How many blocks to check at startup (default: %u, 0 = all)"), 288));
     strUsage += HelpMessageOpt("-checklevel=<n>", strprintf(_("How thorough the block verification of -checkblocks is (0-4, default: %u)"), 3));
-    strUsage += HelpMessageOpt("-conf=<file>", strprintf(_("Specify configuration file (default: %s)"), "safecoin.conf"));
+    strUsage += HelpMessageOpt("-clientname=<SomeName>", _("Full node client name, default 'MagicBean'"));
+    strUsage += HelpMessageOpt("-conf=<file>", strprintf(_("Specify configuration file (default: %s)"), "komodo.conf"));
     if (mode == HMM_BITCOIND)
     {
 #if !defined(WIN32)
@@ -365,7 +389,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-par=<n>", strprintf(_("Set the number of script verification threads (%u to %d, 0 = auto, <0 = leave that many cores free, default: %d)"),
         -(int)boost::thread::hardware_concurrency(), MAX_SCRIPTCHECK_THREADS, DEFAULT_SCRIPTCHECK_THREADS));
 #ifndef _WIN32
-    strUsage += HelpMessageOpt("-pid=<file>", strprintf(_("Specify pid file (default: %s)"), "safecoind.pid"));
+    strUsage += HelpMessageOpt("-pid=<file>", strprintf(_("Specify pid file (default: %s)"), "komodod.pid"));
 #endif
     strUsage += HelpMessageOpt("-prune=<n>", strprintf(_("Reduce storage requirements by pruning (deleting) old blocks. This mode disables wallet support and is incompatible with -txindex. "
             "Warning: Reverting this setting requires re-downloading the entire blockchain. "
@@ -375,7 +399,6 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-sysperms", _("Create new files with system default permissions, instead of umask 077 (only effective with disabled wallet functionality)"));
 #endif
     strUsage += HelpMessageOpt("-txindex", strprintf(_("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)"), 0));
-    strUsage += HelpMessageOpt("-fastsync", _("Do a faster, PoW-only verification of blocks during initial block download"));
     strUsage += HelpMessageOpt("-addressindex", strprintf(_("Maintain a full address index, used to query for the balance, txids and unspent outputs for addresses (default: %u)"), DEFAULT_ADDRESSINDEX));
     strUsage += HelpMessageOpt("-timestampindex", strprintf(_("Maintain a timestamp index for block hashes, used to query blocks hashes by a range of timestamps (default: %u)"), DEFAULT_TIMESTAMPINDEX));
     strUsage += HelpMessageOpt("-spentindex", strprintf(_("Maintain a full spent index, used to query the spending txid and input index for an outpoint (default: %u)"), DEFAULT_SPENTINDEX));
@@ -401,20 +424,13 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-peerbloomfilters", strprintf(_("Support filtering of blocks and transaction with Bloom filters (default: %u)"), 1));
     if (showDebug)
         strUsage += HelpMessageOpt("-enforcenodebloom", strprintf("Enforce minimum protocol version to limit use of Bloom filters (default: %u)", 0));
-    strUsage += HelpMessageOpt("-port=<port>", strprintf(_("Listen for connections on <port> (default: %u or testnet: %u)"), 8770, 17770));
+    strUsage += HelpMessageOpt("-port=<port>", strprintf(_("Listen for connections on <port> (default: %u or testnet: %u)"), 7770, 17770));
     strUsage += HelpMessageOpt("-proxy=<ip:port>", _("Connect through SOCKS5 proxy"));
     strUsage += HelpMessageOpt("-proxyrandomize", strprintf(_("Randomize credentials for every proxy connection. This enables Tor stream isolation (default: %u)"), 1));
-    strUsage += HelpMessageOpt("-safekey", _("Specify your unique Safenodes Safekey"));
     strUsage += HelpMessageOpt("-seednode=<ip>", _("Connect to a node to retrieve peer addresses, and disconnect"));
     strUsage += HelpMessageOpt("-timeout=<n>", strprintf(_("Specify connection timeout in milliseconds (minimum: 1, default: %d)"), DEFAULT_CONNECT_TIMEOUT));
     strUsage += HelpMessageOpt("-torcontrol=<ip>:<port>", strprintf(_("Tor control port to use if onion listening enabled (default: %s)"), DEFAULT_TOR_CONTROL));
     strUsage += HelpMessageOpt("-torpassword=<pass>", _("Tor control port password (default: empty)"));
-    strUsage += HelpMessageOpt("-tlsforce=<0 or 1>", _("Only connect to peers who are also using TLS (default: 0)"));
-    strUsage += HelpMessageOpt("-tlsvalidate=<0 or 1>", _("Connect to peers only with valid certificates (default: 0)"));
-    strUsage += HelpMessageOpt("-tlskeypath=<path>", _("Full path to a private key"));
-    strUsage += HelpMessageOpt("-tlskeypwd=<password>", _("Password for a private key encryption (default: not set, i.e. private key will be stored unencrypted)"));
-    strUsage += HelpMessageOpt("-tlscertpath=<path>", _("Full path to a certificate"));
-    strUsage += HelpMessageOpt("-tlstrustdir=<path>", _("Full path to a trusted certificates directory"));
     strUsage += HelpMessageOpt("-whitebind=<addr>", _("Bind to given address and whitelist peers connecting to it. Use [host]:port notation for IPv6"));
     strUsage += HelpMessageOpt("-whitelist=<netmask>", _("Whitelist peers connecting from the given netmask or IP address. Can be specified multiple times.") +
         " " + _("Whitelisted peers cannot be DoS banned and their transactions are always relayed, even if they are already in the mempool, useful e.g. for a gateway"));
@@ -440,6 +456,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-wallet=<file>", _("Specify wallet file (within data directory)") + " " + strprintf(_("(default: %s)"), "wallet.dat"));
     strUsage += HelpMessageOpt("-walletbroadcast", _("Make the wallet broadcast transactions") + " " + strprintf(_("(default: %u)"), true));
     strUsage += HelpMessageOpt("-walletnotify=<cmd>", _("Execute command when a wallet transaction changes (%s in cmd is replaced by TxID)"));
+    strUsage += HelpMessageOpt("-whitelistaddress=<Raddress>", _("Enable the wallet filter for notary nodes and add one Raddress to the whitelist of the wallet filter. If -whitelistaddress= is used, then the wallet filter is automatically activated. Several Raddresses can be defined using several -whitelistaddress= (similar to -addnode). The wallet filter will filter the utxo to only ones coming from my own Raddress (derived from pubkey) and each Raddress defined using -whitelistaddress= this option is mostly for Notary Nodes)."));
     strUsage += HelpMessageOpt("-zapwallettxes=<mode>", _("Delete all wallet transactions and only recover those parts of the blockchain through -rescan on startup") +
         " " + _("(1 = keep tx meta data e.g. account owner and payment request information, 2 = drop tx meta data)"));
 #endif
@@ -499,7 +516,6 @@ std::string HelpMessage(HelpMessageMode mode)
             "This is intended for regression testing tools and app development.");
     }
     strUsage += HelpMessageOpt("-shrinkdebugfile", _("Shrink debug.log file on client startup (default: 1 when no -debug)"));
-    strUsage += HelpMessageOpt("-limitdebuglogsize", _("Limit the debug.log file size to 10Mb (default: 1 when no -debug)"));
     strUsage += HelpMessageOpt("-testnet", _("Use the test network"));
 
     strUsage += HelpMessageGroup(_("Node relay options:"));
@@ -536,7 +552,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-rpcbind=<addr>", _("Bind to given address to listen for JSON-RPC connections. Use [host]:port notation for IPv6. This option can be specified multiple times (default: bind to all interfaces)"));
     strUsage += HelpMessageOpt("-rpcuser=<user>", _("Username for JSON-RPC connections"));
     strUsage += HelpMessageOpt("-rpcpassword=<pw>", _("Password for JSON-RPC connections"));
-    strUsage += HelpMessageOpt("-rpcport=<port>", strprintf(_("Listen for JSON-RPC connections on <port> (default: %u or testnet: %u)"), 8771, 18771));
+    strUsage += HelpMessageOpt("-rpcport=<port>", strprintf(_("Listen for JSON-RPC connections on <port> (default: %u or testnet: %u)"), 7771, 17771));
     strUsage += HelpMessageOpt("-rpcallowip=<ip>", _("Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24). This option can be specified multiple times"));
     strUsage += HelpMessageOpt("-rpcthreads=<n>", strprintf(_("Set the number of threads to service RPC calls (default: %d)"), DEFAULT_HTTP_THREADS));
     if (showDebug) {
@@ -553,6 +569,36 @@ std::string HelpMessage(HelpMessageMode mode)
         strUsage += HelpMessageOpt("-metricsui", _("Set to 1 for a persistent metrics screen, 0 for sequential metrics output (default: 1 if running in a console, 0 otherwise)"));
         strUsage += HelpMessageOpt("-metricsrefreshtime", strprintf(_("Number of seconds between metrics refreshes (default: %u if running in a console, %u otherwise)"), 1, 600));
     }
+    strUsage += HelpMessageGroup(_("Komodo Asset Chain options:"));
+    strUsage += HelpMessageOpt("-ac_algo", _("Choose PoW mining algorithm, default is Equihash"));
+    strUsage += HelpMessageOpt("-ac_blocktime", _("Block time in seconds, default is 60"));
+    strUsage += HelpMessageOpt("-ac_cc", _("Cryptoconditions, default 0"));
+    strUsage += HelpMessageOpt("-ac_beam", _("BEAM integration"));
+    strUsage += HelpMessageOpt("-ac_coda", _("CODA integration"));
+    strUsage += HelpMessageOpt("-ac_cclib", _("Cryptoconditions dynamicly loadable library"));
+    strUsage += HelpMessageOpt("-ac_ccenable", _("Cryptoconditions to enable"));
+    strUsage += HelpMessageOpt("-ac_ccactivate", _("Block height to enable Cryptoconditions"));
+    strUsage += HelpMessageOpt("-ac_decay", _("Percentage of block reward decrease at each halving"));
+    strUsage += HelpMessageOpt("-ac_end", _("Block height at which block rewards will end"));
+    strUsage += HelpMessageOpt("-ac_eras", _("Block reward eras"));
+    strUsage += HelpMessageOpt("-ac_founders", _("Number of blocks between founders reward payouts"));
+    strUsage += HelpMessageOpt("-ac_halving", _("Number of blocks between each block reward halving"));
+    strUsage += HelpMessageOpt("-ac_name", _("Name of asset chain"));
+    strUsage += HelpMessageOpt("-ac_notarypay", _("Pay notaries, default 0"));
+    strUsage += HelpMessageOpt("-ac_perc", _("Percentage of block rewards paid to the founder"));
+    strUsage += HelpMessageOpt("-ac_private", _("Shielded transactions only (except coinbase + notaries), default is 0"));
+    strUsage += HelpMessageOpt("-ac_pubkey", _("Public key for receiving payments on the network"));
+    strUsage += HelpMessageOpt("-ac_public", _("Transparent transactions only, default 0"));
+    strUsage += HelpMessageOpt("-ac_reward", _("Block reward in satoshis, default is 0"));
+    strUsage += HelpMessageOpt("-ac_sapling", _("Sapling activation block height"));
+    strUsage += HelpMessageOpt("-ac_script", _("P2SH/multisig address to receive founders rewards"));
+    strUsage += HelpMessageOpt("-ac_staked", _("Percentage of blocks that are Proof-Of-Stake, default 0"));
+    strUsage += HelpMessageOpt("-ac_supply", _("Starting supply, default is 0"));
+    strUsage += HelpMessageOpt("-ac_timelockfrom", _("Timelocked coinbase start height"));
+    strUsage += HelpMessageOpt("-ac_timelockgte",  _("Timelocked coinbase minimum amount to be locked"));
+    strUsage += HelpMessageOpt("-ac_timelockto",   _("Timelocked coinbase stop height"));
+    strUsage += HelpMessageOpt("-ac_txpow", _("Enforce transaction-rate limit, default 0"));
+    strUsage += HelpMessageOpt("-ac_veruspos", _("Use Verus Proof-Of-Stake (-ac_veruspos=50) default 0"));
 
     return strUsage;
 }
@@ -606,8 +652,8 @@ void CleanupBlockRevFiles()
                 remove(it->path());
         }
     }
-    path safecoinstate = GetDataDir() / "safecoinstate";
-    remove(safecoinstate);
+    path komodostate = GetDataDir() / "komodostate";
+    remove(komodostate);
     path minerids = GetDataDir() / "minerids";
     remove(minerids);
     // Remove all block files that aren't part of a contiguous set starting at
@@ -626,7 +672,7 @@ void CleanupBlockRevFiles()
 
 void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
 {
-    RenameThread("safecoin-loadblk");
+    RenameThread("zcash-loadblk");
     // -reindex
     if (fReindex) {
         CImportingNow imp;
@@ -647,7 +693,7 @@ void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
         LogPrintf("Reindexing finished\n");
         // To avoid ending up in a situation without genesis block, re-try initializing (no-op if reindexing worked):
         InitBlockIndex();
-        SAFECOIN_LOADINGBLOCKS = 0;
+        KOMODO_LOADINGBLOCKS = 0;
     }
 
     // hardcoded $DATADIR/bootstrap.dat
@@ -788,7 +834,7 @@ bool AppInitServers(boost::thread_group& threadGroup)
 /** Initialize bitcoin.
  *  @pre Parameters should be parsed and config file should be read.
  */
-extern int32_t SAFECOIN_REWIND;
+extern int32_t KOMODO_REWIND;
 
 bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 {
@@ -1168,11 +1214,24 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     globalVerifyHandle.reset(new ECCVerifyHandle());
 
     // set the hash algorithm to use for this chain
-    extern uint32_t ASSETCHAINS_ALGO;
+    // Again likely better solution here, than using long IF ELSE. 
+    extern uint32_t ASSETCHAINS_ALGO, ASSETCHAINS_VERUSHASH, ASSETCHAINS_VERUSHASHV1_1;
+    CVerusHash::init();
+    CVerusHashV2::init();
+    if (ASSETCHAINS_ALGO == ASSETCHAINS_VERUSHASH)
+    {
+        // initialize VerusHash
+        CBlockHeader::SetVerusHash();
+    }
+    else if (ASSETCHAINS_ALGO == ASSETCHAINS_VERUSHASHV1_1)
+    {
+        // initialize VerusHashV2
+        CBlockHeader::SetVerusHashV2();
+    }
 
     // Sanity check
     if (!InitSanityCheck())
-        return InitError(_("Initialization sanity check failed. Safecoin is shutting down."));
+        return InitError(_("Initialization sanity check failed. Komodo is shutting down."));
 
     std::string strDataDir = GetDataDir().string();
 #ifdef ENABLE_WALLET
@@ -1185,33 +1244,21 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     FILE* file = fopen(pathLockFile.string().c_str(), "a"); // empty lock file; created if it doesn't exist.
     if (file) fclose(file);
 
-	fprintf(stderr,"Attempting to obtain lock %s\n", pathLockFile.string().c_str());
-
     try {
         static boost::interprocess::file_lock lock(pathLockFile.string().c_str());
         if (!lock.try_lock())
-            return InitError(strprintf(_("Cannot obtain a lock on data directory %s. Safecoin is probably already running."), strDataDir));
+            return InitError(strprintf(_("Cannot obtain a lock on data directory %s. Komodo is probably already running."), strDataDir));
     } catch(const boost::interprocess::interprocess_exception& e) {
-        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. Safecoin is probably already running.") + " %s.", strDataDir, e.what()));
+        return InitError(strprintf(_("Cannot obtain a lock on data directory %s. Komodo is probably already running.") + " %s.", strDataDir, e.what()));
     }
-
-	fprintf(stderr,"About to create pidfile\n");
 
 #ifndef _WIN32
     CreatePidFile(GetPidFile(), getpid());
 #endif
-
-    fLimitDebugLogSize = GetBoolArg("-limitdebuglogsize", !fDebug);
-
-	fprintf(stderr,"created pidfile\n");
-
     if (GetBoolArg("-shrinkdebugfile", !fDebug))
         ShrinkDebugFile();
-
-    fprintf(stderr,"past shrinkdebugfile\n");
-
     LogPrintf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    LogPrintf("Safecoin version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
+    LogPrintf("Komodo version %s (%s)\n", FormatFullVersion(), CLIENT_DATE);
 
     if (fPrintToDebugLog)
         OpenDebugLog();
@@ -1409,23 +1456,6 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
     BOOST_FOREACH(const std::string& strDest, mapMultiArgs["-seednode"])
         AddOneShot(strDest);
 
-    if (mapArgs.count("-tlskeypath")) {
-        boost::filesystem::path pathTLSKey(GetArg("-tlskeypath", ""));
-    if (!boost::filesystem::exists(pathTLSKey))
-         return InitError(strprintf(_("Cannot find TLS key file: '%s'"), pathTLSKey.string()));
-    }
-     if (mapArgs.count("-tlscertpath")) {
-        boost::filesystem::path pathTLSCert(GetArg("-tlscertpath", ""));
-    if (!boost::filesystem::exists(pathTLSCert))
-        return InitError(strprintf(_("Cannot find TLS cert file: '%s'"), pathTLSCert.string()));
-    }
-    
-    if (mapArgs.count("-tlstrustdir")) {
-        boost::filesystem::path pathTLSTrustredDir(GetArg("-tlstrustdir", ""));
-        if (!boost::filesystem::exists(pathTLSTrustredDir))
-            return InitError(strprintf(_("Cannot find trusted certificates directory: '%s'"), pathTLSTrustredDir.string()));
-    }
-
 #if ENABLE_ZMQ
     pzmqNotificationInterface = CZMQNotificationInterface::CreateWithArguments(mapArgs);
 
@@ -1561,7 +1591,8 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 
                 if (fReindex) {
-                    boost::filesystem::remove(GetDataDir() / "safecoinstate");
+                    boost::filesystem::remove(GetDataDir() / "komodostate");
+                    boost::filesystem::remove(GetDataDir() / "signedmasks");
                     pblocktree->WriteReindexing(true);
                     //If we're reindexing in prune mode, wipe away unusable block files and all undo data files
                     if (fPruneMode)
@@ -1577,13 +1608,14 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 // (we're likely using a testnet datadir, or the other way around).
                 if (!mapBlockIndex.empty() && mapBlockIndex.count(chainparams.GetConsensus().hashGenesisBlock) == 0)
                     return InitError(_("Incorrect or no genesis block found. Wrong datadir for network?"));
-
+                
+                komodo_init(1);
                 // Initialize the block index (no-op if non-empty database was already loaded)
                 if (!InitBlockIndex()) {
                     strLoadError = _("Error initializing block database");
                     break;
                 }
-                SAFECOIN_LOADINGBLOCKS = 0;
+                KOMODO_LOADINGBLOCKS = 0;
                 // Check for changed -txindex state
                 if (fTxIndex != GetBoolArg("-txindex", true)) {
                     strLoadError = _("You need to rebuild the database using -reindex to change -txindex");
@@ -1595,6 +1627,15 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (fHavePruned && !fPruneMode) {
                     strLoadError = _("You need to rebuild the database using -reindex to go back to unpruned mode.  This will redownload the entire blockchain");
                     break;
+                }
+                
+                if ( ASSETCHAINS_CC != 0 && KOMODO_SNAPSHOT_INTERVAL != 0 && chainActive.Height() >= KOMODO_SNAPSHOT_INTERVAL )
+                {
+                    if ( !komodo_dailysnapshot(chainActive.Height()) )
+                    {
+                        strLoadError = _("daily snapshot failed, please reindex your chain.");
+                        break;
+                    }
                 }
 
                 if (!fReindex) {
@@ -1610,7 +1651,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                     LogPrintf("Prune: pruned datadir may not have more than %d blocks; -checkblocks=%d may fail\n",
                         MIN_BLOCKS_TO_KEEP, GetArg("-checkblocks", 288));
                 }
-                if ( SAFECOIN_REWIND == 0 )
+                if ( KOMODO_REWIND == 0 )
                 {
                     if (!CVerifyDB().VerifyDB(pcoinsdbview, GetArg("-checklevel", 3),
                                               GetArg("-checkblocks", 288))) {
@@ -1645,7 +1686,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             }
         }
     }
-    SAFECOIN_LOADINGBLOCKS = 0;
+    KOMODO_LOADINGBLOCKS = 0;
 
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.
@@ -1706,10 +1747,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 InitWarning(msg);
             }
             else if (nLoadWalletRet == DB_TOO_NEW)
-                strErrors << _("Error loading wallet.dat: Wallet requires newer version of Safecoin") << "\n";
+                strErrors << _("Error loading wallet.dat: Wallet requires newer version of Komodo") << "\n";
             else if (nLoadWalletRet == DB_NEED_REWRITE)
             {
-                strErrors << _("Wallet needed to be rewritten: restart Safecoin to complete") << "\n";
+                strErrors << _("Wallet needed to be rewritten: restart Zcash to complete") << "\n";
                 LogPrintf("%s", strErrors.str());
                 return InitError(strErrors.str());
             }
@@ -1816,10 +1857,10 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 #ifdef ENABLE_MINING
  #ifndef ENABLE_WALLET
     if (GetBoolArg("-minetolocalwallet", false)) {
-        return InitError(_("Safecoin was not built with wallet support. Set -minetolocalwallet=0 to use -mineraddress, or rebuild Safecoin with wallet support."));
+        return InitError(_("Zcash was not built with wallet support. Set -minetolocalwallet=0 to use -mineraddress, or rebuild Zcash with wallet support."));
     }
     if (GetArg("-mineraddress", "").empty() && GetBoolArg("-gen", false)) {
-        return InitError(_("Safecoin was not built with wallet support. Set -mineraddress, or rebuild Safecoin with wallet support."));
+        return InitError(_("Zcash was not built with wallet support. Set -mineraddress, or rebuild Zcash with wallet support."));
     }
  #endif // !ENABLE_WALLET
 
@@ -1856,12 +1897,12 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     if (mapArgs.count("-blocknotify"))
         uiInterface.NotifyBlockTip.connect(BlockNotifyCallback);
-    if ( SAFECOIN_REWIND >= 0 )
+    if ( KOMODO_REWIND >= 0 )
     {
         uiInterface.InitMessage(_("Activating best chain..."));
         // scan for better chains in the block chain database, that are not yet connected in the active best chain
         CValidationState state;
-        if ( !ActivateBestChain(state))
+        if ( !ActivateBestChain(true,state))
             strErrors << "Failed to connect best block";
     }
     std::vector<boost::filesystem::path> vImportFiles;

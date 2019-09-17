@@ -25,7 +25,13 @@
 #include <assert.h>
 
 typedef uint16_t u16;
+#ifdef _WIN32
+typedef unsigned long long u64;
+#elif __linux__
 typedef uint64_t u64;
+#else
+typedef unsigned long u64;
+#endif
 
 #ifdef EQUIHASH_TROMP_ATOMIC
 #include <atomic>
@@ -35,7 +41,7 @@ typedef u32 au32;
 #endif
 
 #ifndef RESTBITS
-#define RESTBITS	4
+#define RESTBITS	8
 #endif
 
 // 2_log of number of buckets
@@ -345,8 +351,6 @@ struct equi {
       return (pslot->hash->bytes[prevbo] & 0x1f) << 4 | pslot->hash->bytes[prevbo+1] >> 4;
 #elif WN == 144 && RESTBITS == 4
       return pslot->hash->bytes[prevbo] & 0xf;
-#elif WN == 192 && RESTBITS == 4
-      return pslot->hash->bytes[prevbo] & 0xf;
 #else
 #error non implemented
 #endif
@@ -359,8 +363,6 @@ struct equi {
 #elif WN == 200 && RESTBITS == 9
       return (pslot->hash->bytes[prevbo]&1) << 8 | pslot->hash->bytes[prevbo+1];
 #elif WN == 144 && RESTBITS == 4
-      return pslot->hash->bytes[prevbo] & 0xf;
-#elif WN == 192 && RESTBITS == 4
       return pslot->hash->bytes[prevbo] & 0xf;
 #else
 #error non implemented
@@ -456,8 +458,6 @@ struct equi {
 #elif BUCKBITS == 12 && RESTBITS == 4
         const u32 bucketid = ((u32)ph[0] << 4) | ph[1] >> 4;
         const u32 xhash = ph[1] & 0xf;
-#elif BUCKBITS == 20 && RESTBITS == 4
-        const u32 bucketid = ((((u32)ph[0] << 8) | ph[1]) << 4) | ph[2] >> 4;
 #else
 #error not implemented
 #endif
@@ -508,10 +508,6 @@ struct equi {
 #elif WN == 96 && BUCKBITS == 12 && RESTBITS == 4
           xorbucketid = ((u32)(bytes0[htl.prevbo+1] ^ bytes1[htl.prevbo+1]) << 4)
                             | (bytes0[htl.prevbo+2] ^ bytes1[htl.prevbo+2]) >> 4;
-#elif WN == 192 && BUCKBITS == 20 && RESTBITS == 4
-          xorbucketid = ((((u32)(bytes0[htl.prevbo+1] ^ bytes1[htl.prevbo+1]) << 8)
-                              | (bytes0[htl.prevbo+2] ^ bytes1[htl.prevbo+2])) << 4)
-                              | (bytes0[htl.prevbo+3] ^ bytes1[htl.prevbo+3]) >> 4;
 #else
 #error not implemented
 #endif
@@ -564,10 +560,6 @@ struct equi {
 #elif WN == 96 && BUCKBITS == 12 && RESTBITS == 4
           xorbucketid = ((u32)(bytes0[htl.prevbo+1] ^ bytes1[htl.prevbo+1]) << 4)
                             | (bytes0[htl.prevbo+2] ^ bytes1[htl.prevbo+2]) >> 4;
-#elif WN == 192 && BUCKBITS == 20 && RESTBITS == 4
-          xorbucketid = ((((u32)(bytes0[htl.prevbo+1] ^ bytes1[htl.prevbo+1]) << 8)
-                              | (bytes0[htl.prevbo+2] ^ bytes1[htl.prevbo+2])) << 4)
-                              | (bytes0[htl.prevbo+3] ^ bytes1[htl.prevbo+3]) >> 4;
 #else
 #error not implemented
 #endif

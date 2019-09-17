@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #include "amount.h"
 #include "chainparams.h"
 #include "consensus/consensus.h"
@@ -33,18 +48,20 @@
 
 using namespace std;
 
-extern int32_t ASSETCHAINS_ALGO, ASSETCHAINS_EQUIHASH, ASSETCHAINS_LWMAPOS;
-extern uint64_t ASSETCHAINS_STAKED;
-extern int32_t SAFECOIN_MININGTHREADS;
-extern bool VERUS_MINTBLOCKS;
-arith_uint256 safecoin_PoWtarget(int32_t *percPoSp,arith_uint256 target,int32_t height,int32_t goalperc);
+#include "komodo_defs.h"
+
+extern int32_t ASSETCHAINS_FOUNDERS;
+uint64_t komodo_commission(const CBlock *pblock,int32_t height);
+int32_t komodo_blockload(CBlock& block,CBlockIndex *pindex);
+arith_uint256 komodo_PoWtarget(int32_t *percPoSp,arith_uint256 target,int32_t height,int32_t goalperc);
 
 /**
  * Return average network hashes per second based on the last 'lookup' blocks,
  * or over the difficulty averaging window if 'lookup' is nonpositive.
  * If 'height' is nonnegative, compute the estimate at the time when a given block was found.
  */
-int64_t GetNetworkHashPS(int lookup, int height) {
+int64_t GetNetworkHashPS(int lookup, int height) 
+{
     CBlockIndex *pb = chainActive.LastTip();
 
     if (height >= 0 && height < chainActive.Height())
@@ -152,7 +169,7 @@ UniValue getgenerate(const UniValue& params, bool fHelp)
         throw runtime_error(
             "getgenerate\n"
             "\nReturn if the server is set to mine and/or mint coins or not. The default is false.\n"
-            "It is set with the command line argument -gen (or safecoin.conf setting gen) and -mint\n"
+            "It is set with the command line argument -gen (or komodo.conf setting gen) and -mint\n"
             "It can also be set with the setgenerate call.\n"
             "\nResult\n"
             "{\n"
@@ -167,9 +184,12 @@ UniValue getgenerate(const UniValue& params, bool fHelp)
 
     LOCK(cs_main);
     UniValue obj(UniValue::VOBJ);
-    obj.push_back(Pair("staking",          VERUS_MINTBLOCKS));
-    obj.push_back(Pair("generate",         GetBoolArg("-gen", false)));
-    obj.push_back(Pair("numthreads",       (int64_t)SAFECOIN_MININGTHREADS));
+    bool staking = VERUS_MINTBLOCKS;
+    if ( ASSETCHAINS_STAKED != 0 && GetBoolArg("-gen", false) && GetBoolArg("-genproclimit", -1) == 0 )
+        staking = true;
+    obj.push_back(Pair("staking",          staking));
+    obj.push_back(Pair("generate",         GetBoolArg("-gen", false) && GetBoolArg("-genproclimit", -1) != 0 ));
+    obj.push_back(Pair("numthreads",       (int64_t)KOMODO_MININGTHREADS));
     return obj;
 }
 
@@ -198,11 +218,22 @@ UniValue generate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
 #endif
     }
     if (!Params().MineBlocksOnDemand())
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "This method can only be used on regtest");
+    {
+        if ( params[0].get_int() == 1 )
+        {
+            mapArgs["disablemining"] = "1";
+            throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Mining Disabled");
+        }
+        else 
+        {
+            mapArgs["disablemining"] = "0";
+            throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Mining Enabled");
+        }
+    }
 
     int nHeightStart = 0;
     int nHeightEnd = 0;
@@ -220,20 +251,17 @@ UniValue generate(const UniValue& params, bool fHelp)
     }
     unsigned int nExtraNonce = 0;
     UniValue blockHashes(UniValue::VARR);
-    EHparameters ehparams[MAX_EH_PARAM_LIST_LEN]; //allocate on-stack space for parameters list
-    const CChainParams& chainparams = Params();
+    unsigned int n = Params().EquihashN();
+    unsigned int k = Params().EquihashK();
     uint64_t lastTime = 0;
     while (nHeight < nHeightEnd)
     {
-      validEHparameterList(ehparams,nHeight+1,chainparams);
-      unsigned int n = ehparams[0].n;
-      unsigned int k = ehparams[0].k;
         // Validation may fail if block generation is too fast
         if (GetTime() == lastTime) MilliSleep(1001);
         lastTime = GetTime();
 
 #ifdef ENABLE_WALLET
-        std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey,nHeight,SAFECOIN_MAXGPUCOUNT));
+        std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey(reservekey,nHeight,KOMODO_MAXGPUCOUNT));
 #else
         std::unique_ptr<CBlockTemplate> pblocktemplate(CreateNewBlockWithKey());
 #endif
@@ -325,7 +353,7 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
 #endif
     }
     if (Params().MineBlocksOnDemand())
@@ -335,32 +363,35 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
     if (params.size() > 0)
         fGenerate = params[0].get_bool();
 
-    int nGenProcLimit = GetArg("-genproclimit", -1);;
+    int nGenProcLimit = GetArg("-genproclimit", 0);;
     if (params.size() > 1)
     {
         nGenProcLimit = params[1].get_int();
         //if (nGenProcLimit == 0)
         //    fGenerate = false;
     }
-
-    if (fGenerate && !nGenProcLimit)
+    if ( ASSETCHAINS_LWMAPOS != 0 )
     {
-        VERUS_MINTBLOCKS = 1;
-        fGenerate = GetBoolArg("-gen", false);
-        if ( ASSETCHAINS_STAKED == 0 )
-            nGenProcLimit = SAFECOIN_MININGTHREADS;
-        else
-            SAFECOIN_MININGTHREADS = nGenProcLimit;
+        if (fGenerate && !nGenProcLimit)
+        {
+            VERUS_MINTBLOCKS = 1;
+            fGenerate = GetBoolArg("-gen", false);
+            KOMODO_MININGTHREADS = nGenProcLimit;
+        }
+        else if (!fGenerate)
+        {
+            VERUS_MINTBLOCKS = 0;
+            KOMODO_MININGTHREADS = 0;
+        }
+        else KOMODO_MININGTHREADS = (int32_t)nGenProcLimit;
     }
-    else if (!fGenerate)
+    else
     {
-        VERUS_MINTBLOCKS = 0;
-        SAFECOIN_MININGTHREADS = 0;
+        KOMODO_MININGTHREADS = (int32_t)nGenProcLimit;
     }
-    else SAFECOIN_MININGTHREADS = (int32_t)nGenProcLimit;
 
     mapArgs["-gen"] = (fGenerate ? "1" : "0");
-    mapArgs ["-genproclimit"] = itostr(SAFECOIN_MININGTHREADS);
+    mapArgs ["-genproclimit"] = itostr(KOMODO_MININGTHREADS);
 
 #ifdef ENABLE_WALLET
     GenerateBitcoins(fGenerate, pwalletMain, nGenProcLimit);
@@ -423,9 +454,12 @@ UniValue getmininginfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("testnet",          Params().TestnetToBeDeprecatedFieldRPC()));
     obj.push_back(Pair("chain",            Params().NetworkIDString()));
 #ifdef ENABLE_MINING
-    obj.push_back(Pair("staking",          VERUS_MINTBLOCKS));
-    obj.push_back(Pair("generate",         GetBoolArg("-gen", false)));
-    obj.push_back(Pair("numthreads",       (int64_t)SAFECOIN_MININGTHREADS));
+    bool staking = VERUS_MINTBLOCKS;
+    if ( ASSETCHAINS_STAKED != 0 && GetBoolArg("-gen", false) && GetBoolArg("-genproclimit", -1) == 0 )
+        staking = true;
+    obj.push_back(Pair("staking",          staking));
+    obj.push_back(Pair("generate",         GetBoolArg("-gen", false) && GetBoolArg("-genproclimit", -1) != 0 ));
+    obj.push_back(Pair("numthreads",       (int64_t)KOMODO_MININGTHREADS));
 #endif
     return obj;
 }
@@ -554,9 +588,12 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
             throw JSONRPCError(RPC_METHOD_NOT_FOUND, "Wallet disabled and -mineraddress not set");
         }
 #else
-        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "safecoind compiled without wallet and -mineraddress not set");
+        throw JSONRPCError(RPC_METHOD_NOT_FOUND, "komodod compiled without wallet and -mineraddress not set");
 #endif
     }
+    
+    if ( GetArg("disablemining",false) )
+        throw JSONRPCError(RPC_TYPE_ERROR, "Mining is Disabled");
 
     UniValue lpval = NullUniValue;
     // TODO: Re-enable coinbasevalue once a specification has been written
@@ -701,12 +738,15 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
         }
 #ifdef ENABLE_WALLET
         CReserveKey reservekey(pwalletMain);
-        pblocktemplate = CreateNewBlockWithKey(reservekey,chainActive.LastTip()->GetHeight()+1,SAFECOIN_MAXGPUCOUNT);
+        LEAVE_CRITICAL_SECTION(cs_main);
+        pblocktemplate = CreateNewBlockWithKey(reservekey,pindexPrevNew->GetHeight()+1,KOMODO_MAXGPUCOUNT,false);
 #else
         pblocktemplate = CreateNewBlockWithKey();
 #endif
+        ENTER_CRITICAL_SECTION(cs_main);
         if (!pblocktemplate)
-            throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory or no available utxo for staking");
+            throw std::runtime_error("CreateNewBlock(): create block failed");
+            //throw JSONRPCError(RPC_OUT_OF_MEMORY, "Out of memory or no available utxo for staking");
 
         // Need to update only after we know CreateNewBlockWithKey succeeded
         pindexPrev = pindexPrevNew;
@@ -750,10 +790,10 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
 
         if (tx.IsCoinBase() && coinbasetxn == true ) {
             // Show founders' reward if it is required
-            //if (pblock->vtx[0].vout.size() > 1) {
+            if (ASSETCHAINS_FOUNDERS && pblock->vtx[0].vout.size() > 1) {
                 // Correct this if GetBlockTemplate changes the order
-            //    entry.push_back(Pair("foundersreward", (int64_t)tx.vout[1].nValue));
-            //}
+                entry.push_back(Pair("foundersreward", (int64_t)tx.vout[1].nValue));
+            }
             CAmount nReward = GetBlockSubsidy(chainActive.LastTip()->GetHeight()+1, Params().GetConsensus());
             entry.push_back(Pair("coinbasevalue", nReward));
             entry.push_back(Pair("required", true));
@@ -792,7 +832,7 @@ UniValue getblocktemplate(const UniValue& params, bool fHelp)
     if ( ASSETCHAINS_STAKED != 0 )
     {
         arith_uint256 POWtarget; int32_t PoSperc;
-        POWtarget = safecoin_PoWtarget(&PoSperc,hashTarget,(int32_t)(pindexPrev->GetHeight()+1),ASSETCHAINS_STAKED);
+        POWtarget = komodo_PoWtarget(&PoSperc,hashTarget,(int32_t)(pindexPrev->GetHeight()+1),ASSETCHAINS_STAKED);
         result.push_back(Pair("target", POWtarget.GetHex()));
         result.push_back(Pair("PoSperc", (int64_t)PoSperc));
         result.push_back(Pair("ac_staked", (int64_t)ASSETCHAINS_STAKED));
@@ -972,7 +1012,8 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
             "1. height         (numeric, optional) The block height.  If not provided, defaults to the current height of the chain.\n"
             "\nResult:\n"
             "{\n"
-            "  \"miner\" : x.xxx           (numeric) The mining reward amount in SAFE.\n"
+            "  \"miner\" : x.xxx           (numeric) The mining reward amount in KMD.\n"
+            "  \"ac_pubkey\" : x.xxx       (numeric) The mining reward amount in KMD.\n"
             "}\n"
             "\nExamples:\n"
             + HelpExampleCli("getblocksubsidy", "1000")
@@ -983,13 +1024,35 @@ UniValue getblocksubsidy(const UniValue& params, bool fHelp)
     int nHeight = (params.size()==1) ? params[0].get_int() : chainActive.Height();
     if (nHeight < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Block height out of range");
-
-    CAmount nReward = GetBlockSubsidy(nHeight+1, Params().GetConsensus());
+    
+    CAmount nFoundersReward = 0;
+    CAmount nReward = GetBlockSubsidy(nHeight, Params().GetConsensus());
     UniValue result(UniValue::VOBJ);
     result.push_back(Pair("miner", ValueFromAmount(nReward)));
-    //result.push_back(Pair("founders", ValueFromAmount(nFoundersReward)));
+    
+    if ( strlen(ASSETCHAINS_OVERRIDE_PUBKEY.c_str()) == 66 || ASSETCHAINS_SCRIPTPUB.size() > 1 )
+    {
+        if ( ASSETCHAINS_FOUNDERS == 0 && ASSETCHAINS_COMMISSION != 0 )
+        {
+            // ac comission chains need the block to exist to calulate the reward.
+            if ( nHeight <= chainActive.Height() )
+            {
+                CBlockIndex* pblockIndex = chainActive[nHeight];
+                CBlock block;
+                if ( komodo_blockload(block, pblockIndex) == 0 )
+                    nFoundersReward = komodo_commission(&block, nHeight);
+            }
+        }
+        else if ( ASSETCHAINS_FOUNDERS != 0 )
+        {
+            // Assetchains founders chains have a fixed reward so can be calculated at any given height.
+            nFoundersReward = komodo_commission(0, nHeight);
+        }
+        result.push_back(Pair("ac_pubkey", ValueFromAmount(nFoundersReward)));
+    }
     return result;
 }
+
 
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode

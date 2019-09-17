@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 /**
  * Server/client environment: argument handling, config file parsing,
  * logging, thread wrappers
@@ -29,6 +44,8 @@
 #include <boost/signals2/signal.hpp>
 #include <boost/thread/exceptions.hpp>
 
+#define _MAX_BLOCK_SIZE (4096 * 1024) // changing just _MAX_BLOCK_SIZE will hardfork to that size
+
 static const bool DEFAULT_LOGTIMEMICROS = false;
 static const bool DEFAULT_LOGIPS        = false;
 static const bool DEFAULT_LOGTIMESTAMPS = true;
@@ -46,7 +63,6 @@ extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
 extern bool fDebug;
 extern bool fPrintToConsole;
 extern bool fPrintToDebugLog;
-extern bool fLimitDebugLogSize;
 extern bool fServer;
 extern std::string strMiscWarning;
 extern bool fLogTimestamps;
@@ -133,7 +149,7 @@ void CreatePidFile(const boost::filesystem::path &path, pid_t pid);
 #endif
 class missing_zcash_conf : public std::runtime_error {
 public:
-    missing_zcash_conf() : std::runtime_error("Missing safecoin.conf") { }
+    missing_zcash_conf() : std::runtime_error("Missing komodo.conf") { }
 };
 void ReadConfigFile(std::map<std::string, std::string>& mapSettingsRet, std::map<std::string, std::vector<std::string> >& mapMultiSettingsRet);
 #ifdef _WIN32
@@ -169,7 +185,7 @@ inline bool IsSwitchChar(char c)
  *      else if the string has fewer than _MAX_ERAS entries, then the last 
  *      entry fills remaining entries
  */
-void Split(const std::string& strVal, uint64_t *outVals, uint64_t nDefault);
+void Split(const std::string& strVal, int32_t outsize, uint64_t *outVals, uint64_t nDefault);
 
 /**
  * Return string argument or default value
@@ -248,7 +264,7 @@ void RenameThread(const char* name);
  */
 template <typename Callable> void TraceThread(const char* name,  Callable func)
 {
-    std::string s = strprintf("safecoin-%s", name);
+    std::string s = strprintf("zcash-%s", name);
     RenameThread(s.c_str());
     try
     {
@@ -271,7 +287,10 @@ template <typename Callable> void TraceThread(const char* name,  Callable func)
     }
 }
 
-#define SAFECOIN_ASSETCHAIN_MAXLEN 65
+// split string using by space or comma as a delimiter char
+void SplitStr(const std::string& strVal, std::vector<std::string> &outVals);
+
+#define KOMODO_ASSETCHAIN_MAXLEN 65
 
 
 #endif // BITCOIN_UTIL_H

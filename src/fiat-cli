@@ -4,5 +4,5 @@ args="$@"
 
 ./listassetchains | while read chain; do
   echo $chain
-  ./safecoin-cli --ac_name=$chain $args
+  ./komodo-cli --ac_name=$chain $args
 done

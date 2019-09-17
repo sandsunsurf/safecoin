@@ -63,8 +63,8 @@ void post_wallet_load(){
 #ifdef ENABLE_MINING
     // Generate coins in the background
     if (pwalletMain || !GetArg("-mineraddress", "").empty())
-        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 0));
-#endif    
+        GenerateBitcoins(GetBoolArg("-gen", false), pwalletMain, GetArg("-genproclimit", 1));
+#endif
 }
 
 
@@ -172,9 +172,8 @@ double benchmark_solve_equihash()
     CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
     ss << I;
 
-
-    unsigned int n = 200;
-    unsigned int k = 9;
+    unsigned int n = Params(CBaseChainParams::MAIN).EquihashN();
+    unsigned int k = Params(CBaseChainParams::MAIN).EquihashK();
     crypto_generichash_blake2b_state eh_state;
     EhInitialiseState(n, k, eh_state);
     crypto_generichash_blake2b_update(&eh_state, (unsigned char*)&ss[0], ss.size());

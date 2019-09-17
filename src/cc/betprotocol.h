@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright © 2014-2018 The SuperNET Developers.                             *
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -59,7 +59,7 @@ public:
     CMutableTransaction MakePostEvidenceTx(uint256 signedSessionTxHash,
             int playerIndex, std::vector<unsigned char> state);
 
-    // on SAFE
+    // on KMD
     CC* MakePayoutCond(uint256 signedSessionTxHash);
     CMutableTransaction MakeStakeTx(CAmount totalPayout, uint256 signedSessionTx);
     CMutableTransaction MakeAgreePayoutTx(std::vector<CTxOut> payouts, uint256 signedStakeTxHash);

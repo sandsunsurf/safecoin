@@ -7,10 +7,9 @@
 #include "zcash/JoinSplit.hpp"
 
 #include "libsnark/common/profiling.hpp"
-#include "safecoin_defs.h"
-char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
-int64_t MAX_MONEY = 36200000 * 100000000LL;
-uint16_t BITCOIND_RPCPORT = 8771;
+#include "komodo_defs.h"
+char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+uint16_t BITCOIND_RPCPORT = 7771;
 uint32_t ASSETCHAINS_CC = 0;
 
 using namespace libzcash;

@@ -2,6 +2,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #include "rpc/server.h"
 
 #include "clientversion.h"
@@ -13,7 +28,6 @@
 #include "timedata.h"
 #include "util.h"
 #include "version.h"
-#include "safe/utiltls.h"
 #include "deprecation.h"
 
 #include <boost/foreach.hpp>
@@ -21,10 +35,6 @@
 #include <univalue.h>
 
 using namespace std;
-
-// SAFECOIN_MOD_START
-using namespace safe;
-// SAFECOIN_MOD_END
 
 UniValue getconnectioncount(const UniValue& params, bool fHelp)
 {
@@ -93,8 +103,6 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
             "    \"addr\":\"host:port\",      (string) The ip address and port of the peer\n"
             "    \"addrlocal\":\"ip:port\",   (string) local address\n"
             "    \"services\":\"xxxxxxxxxxxxxxxx\",   (string) The services offered\n"
-            "    \"tls_established\": true:false,     (boolean) Status of TLS connection\n"
-            "    \"tls_verified\": true:false,        (boolean) Status of peer certificate. Will be true if a peer certificate can be verified with some trusted root certs \n"
             "    \"lastsend\": ttt,           (numeric) The time in seconds since epoch (Jan 1 1970 GMT) of the last send\n"
             "    \"lastrecv\": ttt,           (numeric) The time in seconds since epoch (Jan 1 1970 GMT) of the last receive\n"
             "    \"bytessent\": n,            (numeric) The total bytes sent\n"
@@ -103,7 +111,7 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
             "    \"timeoffset\": ttt,         (numeric) The time offset in seconds\n"
             "    \"pingtime\": n,             (numeric) ping time\n"
             "    \"pingwait\": n,             (numeric) ping wait\n"
-            "    \"version\": v,              (numeric) The peer version, such as 170021\n"
+            "    \"version\": v,              (numeric) The peer version, such as 170002\n"
             "    \"subver\": \"/MagicBean:x.y.z[-v]/\",  (string) The string version\n"
             "    \"inbound\": true|false,     (boolean) Inbound (true) or Outbound (false)\n"
             "    \"startingheight\": n,       (numeric) The starting height (block) of the peer\n"
@@ -138,8 +146,6 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
         if (!(stats.addrLocal.empty()))
             obj.push_back(Pair("addrlocal", stats.addrLocal));
         obj.push_back(Pair("services", strprintf("%016x", stats.nServices)));
-        obj.push_back(Pair("tls_established", stats.fTLSEstablished));
-        obj.push_back(Pair("tls_verified", stats.fTLSVerified));
         obj.push_back(Pair("lastsend", stats.nLastSend));
         obj.push_back(Pair("lastrecv", stats.nLastRecv));
         obj.push_back(Pair("bytessent", stats.nSendBytes));
@@ -174,8 +180,8 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
     return ret;
 }
 
-int32_t SAFECOIN_LONGESTCHAIN;
-int32_t safecoin_longestchain()
+int32_t KOMODO_LONGESTCHAIN;
+int32_t komodo_longestchain()
 {
     static int32_t depth;
     int32_t ht,n=0,num=0,maxheight=0,height = 0;
@@ -191,7 +197,7 @@ int32_t safecoin_longestchain()
         }
         BOOST_FOREACH(const CNodeStats& stats, vstats)
         {
-            //fprintf(stderr,"safecoin_longestchain iter.%d\n",n);
+            //fprintf(stderr,"komodo_longestchain iter.%d\n",n);
             CNodeStateStats statestats;
             bool fStateStats = GetNodeStateStats(stats.nodeid,statestats);
             if ( statestats.nSyncHeight < 0 )
@@ -213,15 +219,14 @@ int32_t safecoin_longestchain()
         depth--;
         if ( num > (n >> 1) )
         {
-            extern char ASSETCHAINS_SYMBOL[];
-            if ( 0 && height != SAFECOIN_LONGESTCHAIN )
-                fprintf(stderr,"set %s SAFECOIN_LONGESTCHAIN <- %d\n",ASSETCHAINS_SYMBOL,height);
-            SAFECOIN_LONGESTCHAIN = height;
+            if ( 0 && height != KOMODO_LONGESTCHAIN )
+                fprintf(stderr,"set %s KOMODO_LONGESTCHAIN <- %d\n",ASSETCHAINS_SYMBOL,height);
+            KOMODO_LONGESTCHAIN = height;
             return(height);
         }
-        SAFECOIN_LONGESTCHAIN = 0;
+        KOMODO_LONGESTCHAIN = 0;
     }
-    return(SAFECOIN_LONGESTCHAIN);
+    return(KOMODO_LONGESTCHAIN);
 }
 
 UniValue addnode(const UniValue& params, bool fHelp)
@@ -315,7 +320,7 @@ UniValue getaddednodeinfo(const UniValue& params, bool fHelp)
             "    \"connected\" : true|false,          (boolean) If connected\n"
             "    \"addresses\" : [\n"
             "       {\n"
-            "         \"address\" : \"192.168.0.201:8770\",  (string) The Safecoin server host and port\n"
+            "         \"address\" : \"192.168.0.201:8233\",  (string) The Komodo server host and port\n"
             "         \"connected\" : \"outbound\"           (string) connection, inbound or outbound\n"
             "       }\n"
             "       ,...\n"
@@ -499,8 +504,6 @@ UniValue getnetworkinfo(const UniValue& params, bool fHelp)
             "  \"localservices\": \"xxxxxxxxxxxxxxxx\", (string) the services we offer to the network\n"
             "  \"timeoffset\": xxxxx,                   (numeric) the time offset\n"
             "  \"connections\": xxxxx,                  (numeric) the number of connections\n"
-            "  \"tls_connections\": xxxxx,              (numeric) the number of TLS connections\n"
-            "  \"tls_cert_verified\": true|flase,       (boolean) true if the certificate of the current node is verified\n"
             "  \"networks\": [                          (array) information per network\n"
             "  {\n"
             "    \"name\": \"xxx\",                     (string) network (ipv4, ipv6 or onion)\n"
@@ -535,8 +538,6 @@ UniValue getnetworkinfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("localservices",       strprintf("%016x", nLocalServices)));
     obj.push_back(Pair("timeoffset",    GetTimeOffset()));
     obj.push_back(Pair("connections",   (int)vNodes.size()));
-    obj.push_back(Pair("tls_connections", (int)std::count_if(vNodes.begin(), vNodes.end(), [](CNode* n) {return n->ssl != NULL;})));
-    obj.push_back(Pair("tls_cert_verified", ValidateCertificate(tls_ctx_server)));
     obj.push_back(Pair("networks",      GetNetworksInfo()));
     obj.push_back(Pair("relayfee",      ValueFromAmount(::minRelayTxFee.GetFeePerK())));
     UniValue localAddresses(UniValue::VARR);

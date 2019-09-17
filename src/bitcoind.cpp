@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #include "clientversion.h"
 #include "rpc/server.h"
 #include "init.h"
@@ -41,30 +56,49 @@
  */
 
 static bool fDaemon;
-#include "safecoin_defs.h"
-#define SAFECOIN_ASSETCHAIN_MAXLEN 65
-extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
-void safecoin_passport_iteration();
-uint64_t safecoin_interestsum();
-int32_t safecoin_longestchain();
+#include "komodo_defs.h"
+#define KOMODO_ASSETCHAIN_MAXLEN 65
+extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern int32_t ASSETCHAINS_BLOCKTIME;
+extern uint64_t ASSETCHAINS_CBOPRET;
+void komodo_passport_iteration();
+uint64_t komodo_interestsum();
+int32_t komodo_longestchain();
+void komodo_cbopretupdate(int32_t forceflag);
 
 void WaitForShutdown(boost::thread_group* threadGroup)
 {
-    bool fShutdown = ShutdownRequested();
+    int32_t i; bool fShutdown = ShutdownRequested();
     // Tell the main threads to shutdown.
+    if ( ASSETCHAINS_CBOPRET != 0 )
+        komodo_pricesinit();
     while (!fShutdown)
     {
         //fprintf(stderr,"call passport iteration\n");
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
-            safecoin_passport_iteration();
-            MilliSleep(10000);
+            komodo_passport_iteration();
+            for (i=0; i<10; i++)
+            {
+                fShutdown = ShutdownRequested();
+                if ( fShutdown != 0 )
+                    break;
+                MilliSleep(1000);
+            }
         }
         else
         {
-            //safecoin_interestsum();
-            //safecoin_longestchain();
-            MilliSleep(20000);
+            //komodo_interestsum();
+            //komodo_longestchain();
+            if ( ASSETCHAINS_CBOPRET != 0 )
+                komodo_cbopretupdate(0);
+            for (i=0; i<=ASSETCHAINS_BLOCKTIME/5; i++)
+            {
+                fShutdown = ShutdownRequested();
+                if ( fShutdown != 0 )
+                    break;
+                MilliSleep(1000);
+            }
         }
         fShutdown = ShutdownRequested();
     }
@@ -79,10 +113,11 @@ void WaitForShutdown(boost::thread_group* threadGroup)
 //
 // Start
 //
-extern int32_t IS_SAFECOIN_NOTARY,USE_EXTERNAL_PUBKEY,ASSETCHAIN_INIT;
+extern int32_t IS_KOMODO_NOTARY,USE_EXTERNAL_PUBKEY;
+extern uint32_t ASSETCHAIN_INIT;
 extern std::string NOTARY_PUBKEY;
-int32_t safecoin_is_issuer();
-void safecoin_passport_iteration();
+int32_t komodo_is_issuer();
+void komodo_passport_iteration();
 
 bool AppInit(int argc, char* argv[])
 {
@@ -94,13 +129,13 @@ bool AppInit(int argc, char* argv[])
     //
     // Parameters
     //
-    // If Qt is used, parameters/safecoin.conf are parsed in qt/bitcoin.cpp's main()
+    // If Qt is used, parameters/komodo.conf are parsed in qt/bitcoin.cpp's main()
     ParseParameters(argc, argv);
 
     // Process help and version before taking care about datadir
     if (mapArgs.count("-?") || mapArgs.count("-h") ||  mapArgs.count("-help") || mapArgs.count("-version"))
     {
-        std::string strUsage = _("Safecoin Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
+        std::string strUsage = _("Komodo Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
 
         if (mapArgs.count("-version"))
         {
@@ -109,7 +144,7 @@ bool AppInit(int argc, char* argv[])
         else
         {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  safecoind [options]                     " + _("Start Safecoin Daemon") + "\n";
+                  "  komodod [options]                     " + _("Start Komodo Daemon") + "\n";
 
             strUsage += "\n" + HelpMessage(HMM_BITCOIND);
         }
@@ -120,13 +155,13 @@ bool AppInit(int argc, char* argv[])
 
     try
     {
-        void safecoin_args(char *argv0);
-        safecoin_args(argv[0]);
-        fprintf(stderr,"call safecoin_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
+        void komodo_args(char *argv0);
+        komodo_args(argv[0]);
+        fprintf(stderr,"call komodo_args.(%s) NOTARY_PUBKEY.(%s)\n",argv[0],NOTARY_PUBKEY.c_str());
         while ( ASSETCHAIN_INIT == 0 )
         {
-            //if ( safecoin_is_issuer() != 0 )
-            //    safecoin_passport_iteration();
+            //if ( komodo_is_issuer() != 0 )
+            //    komodo_passport_iteration();
             #ifdef _WIN32
             boost::this_thread::sleep_for(boost::chrono::seconds(1));
             #else
@@ -144,21 +179,21 @@ bool AppInit(int argc, char* argv[])
             ReadConfigFile(mapArgs, mapMultiArgs);
         } catch (const missing_zcash_conf& e) {
             fprintf(stderr,
-                (_("Before starting safecoind, you need to create a configuration file:\n"
+                (_("Before starting komodod, you need to create a configuration file:\n"
                    "%s\n"
                    "It can be completely empty! That indicates you are happy with the default\n"
-                   "configuration of safecoind. But requiring a configuration file to start ensures\n"
-                   "that safecoind won't accidentally compromise your privacy if there was a default\n"
+                   "configuration of komodod. But requiring a configuration file to start ensures\n"
+                   "that komodod won't accidentally compromise your privacy if there was a default\n"
                    "option you needed to change.\n"
                    "\n"
                    "You can look at the example configuration file for suggestions of default\n"
                    "options that you may want to change. It should be in one of these locations,\n"
-                   "depending on how you installed Safecoin:\n") +
+                   "depending on how you installed Komodo:\n") +
                  _("- Source code:  %s\n"
                    "- .deb package: %s\n")).c_str(),
                 GetConfigFile().string().c_str(),
-                "contrib/debian/examples/safecoin.conf",
-                "/usr/share/doc/safecoin/examples/safecoin.conf");
+                "contrib/debian/examples/komodo.conf",
+                "/usr/share/doc/komodo/examples/komodo.conf");
             return false;
         } catch (const std::exception& e) {
             fprintf(stderr,"Error reading configuration file: %s\n", e.what());
@@ -173,12 +208,12 @@ bool AppInit(int argc, char* argv[])
         // Command-line RPC
         bool fCommandLine = false;
         for (int i = 1; i < argc; i++)
-            if (!IsSwitchChar(argv[i][0]) && !boost::algorithm::istarts_with(argv[i], "safecoin:"))
+            if (!IsSwitchChar(argv[i][0]) && !boost::algorithm::istarts_with(argv[i], "komodo:"))
                 fCommandLine = true;
 
         if (fCommandLine)
         {
-            fprintf(stderr, "Error: There is no RPC client functionality in safecoind. Use the safecoin-cli utility instead.\n");
+            fprintf(stderr, "Error: There is no RPC client functionality in komodod. Use the komodo-cli utility instead.\n");
             exit(EXIT_FAILURE);
         }
 
@@ -186,7 +221,7 @@ bool AppInit(int argc, char* argv[])
         fDaemon = GetBoolArg("-daemon", false);
         if (fDaemon)
         {
-            fprintf(stdout, "Safecoin %s server starting\n",ASSETCHAINS_SYMBOL);
+            fprintf(stdout, "Komodo %s server starting\n",ASSETCHAINS_SYMBOL);
 
             // Daemonize
             pid_t pid = fork();

@@ -1,5 +1,5 @@
 FROM ubuntu:16.04
-MAINTAINER <safe@safecoin.org>
+MAINTAINER Mihail Fedorov <kolo@komodoplatform.com>
 
 RUN apt-get -y update && \
     apt-get -y upgrade && \
@@ -9,20 +9,20 @@ RUN apt-get -y update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ADD ./ /safecoin
-ENV HOME /safecoin
-WORKDIR /safecoin
+ADD ./ /komodo
+ENV HOME /komodo
+WORKDIR /komodo
 
 # configure || true or it WILL halt
-RUN cd /safecoin && \
+RUN cd /komodo && \
     ./autogen.sh && \
     ./configure --with-incompatible-bdb --with-gui || true && \
     ./zcutil/build.sh -j$(nproc)
 
 # Unknown stuff goes here
 
-RUN ln -sf /safecoin/src/safecoind /usr/bin/safecoind && \
-    ln -sf /safecoin/zcutil/docker-entrypoint.sh /usr/bin/entrypoint && \
-    ln -sf /safecoin/zcutil/docker-safecoin-cli.sh /usr/bin/safecoin-cli
+RUN ln -sf /komodo/src/komodod /usr/bin/komodod && \
+    ln -sf /komodo/zcutil/docker-entrypoint.sh /usr/bin/entrypoint && \
+    ln -sf /komodo/zcutil/docker-komodo-cli.sh /usr/bin/komodo-cli
 
 CMD ["entrypoint"]

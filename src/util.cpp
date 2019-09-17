@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #if defined(HAVE_CONFIG_H)
 #include "config/bitcoin-config.h"
 #endif
@@ -15,7 +30,7 @@
 #include "sync.h"
 #include "utilstrencodings.h"
 #include "utiltime.h"
-#include "safecoin_defs.h"
+#include "komodo_defs.h"
 
 #include <stdarg.h>
 #include <sstream>
@@ -107,7 +122,6 @@ map<string, vector<string> > mapMultiArgs;
 bool fDebug = false;
 bool fPrintToConsole = false;
 bool fPrintToDebugLog = true;
-bool fLimitDebugLogSize = true;
 bool fDaemon = false;
 bool fServer = false;
 string strMiscWarning;
@@ -175,12 +189,12 @@ static boost::once_flag debugPrintInitFlag = BOOST_ONCE_INIT;
  * We use boost::call_once() to make sure mutexDebugLog and
  * vMsgsBeforeOpenLog are initialized in a thread-safe manner.
  *
- * NOTE: debugLogFp, mutexDebugLog and sometimes vMsgsBeforeOpenLog
+ * NOTE: fileout, mutexDebugLog and sometimes vMsgsBeforeOpenLog
  * are leaked on exit. This is ugly, but will be cleaned up by
  * the OS/libc. When the shutdown sequence is fully audited and
  * tested, explicit destruction of these objects can be implemented.
  */
-static FILE* debugLogFp = NULL;
+static FILE* fileout = NULL;
 static boost::mutex* mutexDebugLog = NULL;
 static list<string> *vMsgsBeforeOpenLog;
 
@@ -210,26 +224,20 @@ static void DebugPrintInit()
     vMsgsBeforeOpenLog = new list<string>;
 }
 
-boost::filesystem::path GetDebugLogPath()
-{
-    return GetDataDir() / "debug.log";
-}
-
 void OpenDebugLog()
 {
     boost::call_once(&DebugPrintInit, debugPrintInitFlag);
     boost::mutex::scoped_lock scoped_lock(*mutexDebugLog);
 
-    boost::filesystem::path pathDebug = GetDebugLogPath();
-    assert(debugLogFp == NULL);
+    assert(fileout == NULL);
     assert(vMsgsBeforeOpenLog);
-    debugLogFp = fopen(pathDebug.string().c_str(), "a");
-    if (debugLogFp)
-        setbuf(debugLogFp, NULL); // unbuffered
+    boost::filesystem::path pathDebug = GetDataDir() / "debug.log";
+    fileout = fopen(pathDebug.string().c_str(), "a");
+    if (fileout) setbuf(fileout, NULL); // unbuffered
 
     // dump buffered messages from before we opened the log
     while (!vMsgsBeforeOpenLog->empty()) {
-        FileWriteStr(vMsgsBeforeOpenLog->front(), debugLogFp);
+        FileWriteStr(vMsgsBeforeOpenLog->front(), fileout);
         vMsgsBeforeOpenLog->pop_front();
     }
 
@@ -309,25 +317,22 @@ int LogPrintStr(const std::string &str)
         string strTimestamped = LogTimestampStr(str, &fStartedNewLine);
 
         // buffer if we haven't opened the log yet
-        if (debugLogFp == NULL) {
+        if (fileout == NULL) {
             assert(vMsgsBeforeOpenLog);
             ret = strTimestamped.length();
             vMsgsBeforeOpenLog->push_back(strTimestamped);
         }
         else
         {
-            // prevent log from endless growth
-            if (fLimitDebugLogSize)
-                ShrinkDebugFile();
             // reopen the log file, if requested
             if (fReopenDebugLog) {
                 fReopenDebugLog = false;
-                boost::filesystem::path pathDebug = GetDebugLogPath();
-                if (freopen(pathDebug.string().c_str(),"a", debugLogFp) != NULL)
-                    setbuf(debugLogFp, NULL); // unbuffered
+                boost::filesystem::path pathDebug = GetDataDir() / "debug.log";
+                if (freopen(pathDebug.string().c_str(),"a",fileout) != NULL)
+                    setbuf(fileout, NULL); // unbuffered
             }
 
-            ret = FileWriteStr(strTimestamped, debugLogFp);
+            ret = FileWriteStr(strTimestamped, fileout);
         }
     }
     return ret;
@@ -389,7 +394,27 @@ void ParseParameters(int argc, const char* const argv[])
     }
 }
 
-void Split(const std::string& strVal, uint64_t *outVals, const uint64_t nDefault)
+// split string using by space or comma as a delimiter char
+void SplitStr(const std::string& strVal, std::vector<std::string> &outVals)
+{
+    stringstream ss(strVal);
+    
+    while (!ss.eof()) {
+        int c;
+        std::string str;
+
+        while (std::isspace(ss.peek()))
+            ss.ignore();
+
+        while ((c = ss.get()) != EOF && !std::isspace(c) && c != ',')
+            str += c;
+
+        if (!str.empty())
+            outVals.push_back(str);
+    }
+}
+
+void Split(const std::string& strVal, int32_t outsize, uint64_t *outVals, const uint64_t nDefault)
 {
     stringstream ss(strVal);
     vector<uint64_t> vec;
@@ -417,7 +442,7 @@ void Split(const std::string& strVal, uint64_t *outVals, const uint64_t nDefault
     else
         nLast = nDefault;
 
-    for ( i = numVals; i < ASSETCHAINS_MAX_ERAS; i++ )
+    for ( i = numVals; i < outsize; i++ )
     {
         outVals[i] = nLast;
     }
@@ -485,7 +510,7 @@ static std::string FormatException(const std::exception* pex, const char* pszThr
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(NULL, pszModule, sizeof(pszModule));
 #else
-    const char* pszModule = "Safecoin";
+    const char* pszModule = "Komodo";
 #endif
     if (pex)
         return strprintf(
@@ -503,13 +528,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
     strMiscWarning = message;
 }
 
-extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
 //int64_t MAX_MONEY = 200000000 * 100000000LL;
 
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-    char symbol[SAFECOIN_ASSETCHAIN_MAXLEN];
+    char symbol[KOMODO_ASSETCHAIN_MAXLEN];
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         strcpy(symbol,ASSETCHAINS_SYMBOL);
     else symbol[0] = 0;
@@ -520,8 +545,8 @@ boost::filesystem::path GetDefaultDataDir()
 #ifdef _WIN32
     // Windows
     if ( symbol[0] == 0 )
-        return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin";
-    else return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin" / symbol;
+        return GetSpecialFolderPath(CSIDL_APPDATA) / "Komodo";
+    else return GetSpecialFolderPath(CSIDL_APPDATA) / "Komodo" / symbol;
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -534,18 +559,18 @@ boost::filesystem::path GetDefaultDataDir()
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
     if ( symbol[0] == 0 )
-        return pathRet / "Safecoin";
+        return pathRet / "Komodo";
     else
     {
-        pathRet /= "Safecoin";
+        pathRet /= "Komodo";
         TryCreateDirectory(pathRet);
         return pathRet / symbol;
     }
 #else
     // Unix
     if ( symbol[0] == 0 )
-        return pathRet / ".safecoin";
-    else return pathRet / ".safecoin" / symbol;
+        return pathRet / ".komodo";
+    else return pathRet / ".komodo" / symbol;
 #endif
 #endif
 }
@@ -668,9 +693,9 @@ boost::filesystem::path GetConfigFile()
     else
     {
 #ifdef __APPLE__
-        strcpy(confname,"Safecoin.conf");
+        strcpy(confname,"Komodo.conf");
 #else
-        strcpy(confname,"safecoin.conf");
+        strcpy(confname,"komodo.conf");
 #endif
     }
     boost::filesystem::path pathConfigFile(GetArg("-conf",confname));
@@ -692,7 +717,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 
     for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
     {
-        // Don't overwrite existing settings so command line settings override safecoin.conf
+        // Don't overwrite existing settings so command line settings override komodo.conf
         string strKey = string("-") + it->string_key;
         if (mapSettingsRet.count(strKey) == 0)
         {
@@ -711,7 +736,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 #ifndef _WIN32
 boost::filesystem::path GetPidFile()
 {
-    boost::filesystem::path pathPidFile(GetArg("-pid", "safecoind.pid"));
+    boost::filesystem::path pathPidFile(GetArg("-pid", "komodod.pid"));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
@@ -854,23 +879,25 @@ void AllocateFileRange(FILE *file, unsigned int offset, unsigned int length) {
 void ShrinkDebugFile()
 {
     // Scroll debug.log if it's getting too big
-    boost::filesystem::path pathDebug = GetDebugLogPath();
-    if (boost::filesystem::exists(pathDebug) && boost::filesystem::file_size(pathDebug) > 10 * 1000000)
+    boost::filesystem::path pathLog = GetDataDir() / "debug.log";
+    FILE* file = fopen(pathLog.string().c_str(), "r");
+    if (file && boost::filesystem::file_size(pathLog) > 10 * 1000000)
     {
         // Restart the file with some of the end
-        FILE* file = fopen(pathDebug.string().c_str(), "r");
-        std::vector <char> vch(200000, 0);
+        std::vector <char> vch(200000,0);
         fseek(file, -((long)vch.size()), SEEK_END);
         int nBytes = fread(begin_ptr(vch), 1, vch.size(), file);
         fclose(file);
 
-        file = fopen(pathDebug.string().c_str(), "w");
+        file = fopen(pathLog.string().c_str(), "w");
         if (file)
         {
             fwrite(begin_ptr(vch), 1, nBytes, file);
             fclose(file);
         }
     }
+    else if (file != NULL)
+        fclose(file);
 }
 
 #ifdef _WIN32

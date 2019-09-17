@@ -2,21 +2,21 @@ dnl require autoconf 2.60 (AS_ECHO/AS_ECHO_N)
 AC_PREREQ([2.60])
 define(_CLIENT_VERSION_MAJOR, 2)
 define(_CLIENT_VERSION_MINOR, 0)
-define(_CLIENT_VERSION_REVISION, 3)
-define(_CLIENT_VERSION_BUILD, 50)
+define(_CLIENT_VERSION_REVISION, 15)
+define(_CLIENT_VERSION_BUILD, 26)
 define(_ZC_BUILD_VAL, m4_if(m4_eval(_CLIENT_VERSION_BUILD < 25), 1, m4_incr(_CLIENT_VERSION_BUILD), m4_eval(_CLIENT_VERSION_BUILD < 50), 1, m4_eval(_CLIENT_VERSION_BUILD - 24), m4_eval(_CLIENT_VERSION_BUILD == 50), 1, , m4_eval(_CLIENT_VERSION_BUILD - 50)))
 define(_CLIENT_VERSION_SUFFIX, m4_if(m4_eval(_CLIENT_VERSION_BUILD < 25), 1, _CLIENT_VERSION_REVISION-beta$1, m4_eval(_CLIENT_VERSION_BUILD < 50), 1, _CLIENT_VERSION_REVISION-rc$1, m4_eval(_CLIENT_VERSION_BUILD == 50), 1, _CLIENT_VERSION_REVISION, _CLIENT_VERSION_REVISION-$1)))
 define(_CLIENT_VERSION_IS_RELEASE, true)
-define(_COPYRIGHT_YEAR, 2019)
-AC_INIT([Safecoin],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_SUFFIX(_ZC_BUILD_VAL)],[https://github.com/Fair-Exchange/safecoin/issues],[safecoin])
+define(_COPYRIGHT_YEAR, 2018)
+AC_INIT([Verus-CLI],[_CLIENT_VERSION_MAJOR._CLIENT_VERSION_MINOR._CLIENT_VERSION_SUFFIX(_ZC_BUILD_VAL)],[https://github.com/VerusCoin/VerusCoin/issues],[verus-cli])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([build-aux/m4])
 
-BITCOIN_DAEMON_NAME=safecoind
-BITCOIN_CLI_NAME=safecoin-cli
-BITCOIN_TX_NAME=safecoin-tx
+BITCOIN_DAEMON_NAME=komodod
+BITCOIN_CLI_NAME=komodo-cli
+BITCOIN_TX_NAME=komodo-tx
 
 dnl Unless the user specified ARFLAGS, force it to be cr
 AC_ARG_VAR(ARFLAGS, [Flags for the archiver, defaults to <cr> if not set])
@@ -226,7 +226,7 @@ CPPFLAGS="$CPPFLAGS -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS"
 
 AC_ARG_WITH([utils],
   [AS_HELP_STRING([--with-utils],
-  [build safecoin-cli safecoin-tx wallet-utility (default=yes)])],
+  [build komodo-cli komodo-tx wallet-utility (default=yes)])],
   [build_bitcoin_utils=$withval],
   [build_bitcoin_utils=yes])
 
@@ -587,21 +587,13 @@ fi
 
 dnl Check Qpid Proton headers and library exist
 if test x$use_proton = xyes; then
- AC_CHECK_HEADERS([proton/connection.hpp],
+  AC_CHECK_HEADERS([proton/connection.hpp],
     [],
     [AC_MSG_WARN([Proton headers not found, disabling Proton support])
     use_proton=no])
- AC_CHECK_LIB([qpid-proton-cpp-static], [main],
-    [PROTON_LIBS="-lqpid-proton-cpp-static"],
-    [AC_MSG_WARN([Proton qpid-proton-cpp-static library not found, disabling Proton support])
-    use_proton=no])
- AC_CHECK_LIB([qpid-proton-core-static], [main],
-    [PROTON_LIBS+=" -lqpid-proton-core-static"],
-    [AC_MSG_WARN([Proton qpid-proton-core-static library not found, disabling Proton support])
-    use_proton=no])
- AC_CHECK_LIB([qpid-proton-static], [main],
-    [PROTON_LIBS+=" -lqpid-proton-static"],
-    [AC_MSG_WARN([Proton qpid-proton-static library not found, disabling Proton support])
+ AC_CHECK_LIB([qpid-proton-cpp], [main],
+    [PROTON_LIBS="-lqpid-proton-cpp -lqpid-proton"],
+    [AC_MSG_WARN([Proton libraries not found, disabling Proton support])
     use_proton=no])
 fi
 if test x$use_proton = xyes; then
@@ -812,7 +804,7 @@ AC_MSG_CHECKING([whether to build bitcoind])
 AM_CONDITIONAL([BUILD_BITCOIND], [test x$build_bitcoind = xyes])
 AC_MSG_RESULT($build_bitcoind)
 
-AC_MSG_CHECKING([whether to build utils (safecoin-cli safecoin-tx wallet-utility)])
+AC_MSG_CHECKING([whether to build utils (komodo-cli komodo-tx wallet-utility)])
 AM_CONDITIONAL([BUILD_BITCOIN_UTILS], [test x$build_bitcoin_utils = xyes])
 AC_MSG_RESULT($build_bitcoin_utils)
 
@@ -892,6 +884,7 @@ fi
 
 AM_CONDITIONAL([TARGET_DARWIN], [test x$TARGET_OS = xdarwin])
 AM_CONDITIONAL([BUILD_DARWIN], [test x$BUILD_OS = xdarwin])
+AM_CONDITIONAL([TARGET_LINUX], [test x$TARGET_OS = xlinux])
 AM_CONDITIONAL([TARGET_WINDOWS], [test x$TARGET_OS = xwindows])
 AM_CONDITIONAL([ENABLE_WALLET],[test x$enable_wallet = xyes])
 AM_CONDITIONAL([ENABLE_MINING],[test x$enable_mining = xyes])

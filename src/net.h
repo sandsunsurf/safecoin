@@ -3,6 +3,21 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/******************************************************************************
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
+ *                                                                            *
+ * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
+ * the top-level directory of this distribution for the individual copyright  *
+ * holder information and the developer policies on copyright and licensing.  *
+ *                                                                            *
+ * Unless otherwise agreed in a custom licensing agreement, no part of the    *
+ * SuperNET software, including this file may be copied, modified, propagated *
+ * or distributed except according to the terms contained in the LICENSE file *
+ *                                                                            *
+ * Removal or modification of this copyright notice is prohibited.            *
+ *                                                                            *
+ ******************************************************************************/
+
 #ifndef BITCOIN_NET_H
 #define BITCOIN_NET_H
 
@@ -18,6 +33,7 @@
 #include "sync.h"
 #include "uint256.h"
 #include "utilstrencodings.h"
+#include "util.h"
 
 #include <deque>
 #include <stdint.h>
@@ -29,10 +45,6 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/foreach.hpp>
 #include <boost/signals2/signal.hpp>
-
-// Enable OpenSSL Support for Safecoin
-#include <openssl/bio.h>
-#include <openssl/ssl.h>
 
 class CAddrMan;
 class CBlockIndex;
@@ -52,7 +64,7 @@ static const unsigned int MAX_INV_SZ = 50000;
 /** The maximum number of new addresses to accumulate before announcing. */
 static const unsigned int MAX_ADDR_TO_SEND = 1000;
 /** Maximum length of incoming protocol messages (no message over 2 MiB is currently acceptable). */
-static const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = 4 * 1024 * 1024;
+static const unsigned int MAX_PROTOCOL_MESSAGE_LENGTH = (_MAX_BLOCK_SIZE + 24); // 24 is msgheader size
 /** Maximum length of strSubVer in `version` message */
 static const unsigned int MAX_SUBVERSION_LENGTH = 256;
 /** -listen default */
@@ -82,20 +94,6 @@ bool BindListenPort(const CService &bindAddr, std::string& strError, bool fWhite
 void StartNode(boost::thread_group& threadGroup, CScheduler& scheduler);
 bool StopNode();
 void SocketSendData(CNode *pnode);
-SSL_CTX* create_context(bool server_side);
-EVP_PKEY *generate_key();
-X509 *generate_x509(EVP_PKEY *pkey);
-bool write_to_disk(EVP_PKEY *pkey, X509 *x509);
-void configure_context(SSL_CTX *ctx, bool server_side);
-static boost::filesystem::path tlsKeyPath;
-static boost::filesystem::path tlsCertPath;
-
-// OpenSSL related variables for metrics.cpp
-static std::string routingsecrecy;
-static std::string cipherdescription;
-static std::string securitylevel;
-static std::string validationdescription;
-
 
 typedef int NodeId;
 
@@ -178,13 +176,12 @@ extern CCriticalSection cs_nLastNodeId;
 
 /** Subversion as sent to the P2P network in `version` messages */
 extern std::string strSubVersion;
-extern SSL_CTX *tls_ctx_server;
-extern SSL_CTX *tls_ctx_client;
 
 struct LocalServiceInfo {
     int nScore;
     int nPort;
 };
+
 extern CCriticalSection cs_mapLocalHost;
 extern std::map<CNetAddr, LocalServiceInfo> mapLocalHost;
 
@@ -193,9 +190,6 @@ class CNodeStats
 public:
     NodeId nodeid;
     uint64_t nServices;
-    bool fTLSEstablished;
-    bool fTLSVerified;
-
     int64_t nLastSend;
     int64_t nLastRecv;
     int64_t nTimeConnected;
@@ -262,13 +256,9 @@ public:
 class CNode
 {
 public:
-    // OpenSSL
-    SSL *ssl;
-
     // socket
     uint64_t nServices;
     SOCKET hSocket;
-    CCriticalSection cs_hSocket;
     CDataStream ssSend;
     size_t nSendSize; // total size of all vSendMsg entries
     size_t nSendOffset; // offset inside the first vSendMsg already sent
@@ -303,6 +293,9 @@ public:
     bool fNetworkNode;
     bool fSuccessfullyConnected;
     bool fDisconnect;
+    // count blocks seen.
+    int8_t nBlocksinARow;
+    int8_t nBlocksinARow2;
     // We use fRelayTxes for two purposes -
     // a) it allows us to not relay tx invs before receiving the peer's version message
     // b) the peer may tell us in its version message that we should not relay tx invs
@@ -358,7 +351,7 @@ public:
     // Whether a ping is requested.
     bool fPingQueued;
 
-    CNode(SOCKET hSocketIn, const CAddress &addrIn, const std::string &addrNameIn = "", bool fInboundIn = false, SSL *sslIn = NULL);
+    CNode(SOCKET hSocketIn, const CAddress &addrIn, const std::string &addrNameIn = "", bool fInboundIn = false);
     ~CNode();
 
 private:

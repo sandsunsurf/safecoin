@@ -2,21 +2,21 @@
 
 #set -ex
 
-echo "...Checking safecoin.conf"
+echo "...Checking komodo.conf"
 
-if [ ! -e "$HOME/.safecoin/safecoin.conf" ]; then
-    mkdir -p $HOME/.safecoin
+if [ ! -e "$HOME/.komodo/komodo.conf" ]; then
+    mkdir -p $HOME/.komodo
 
-    echo "...Creating safecoin.conf"
-    cat <<EOF > $HOME/.safecoin/safecoin.conf
-rpcuser=${rpcuser:-safecoinrpc}
+    echo "...Creating komodo.conf"
+    cat <<EOF > $HOME/.komodo/komodo.conf
+rpcuser=${rpcuser:-komodorpc}
 rpcpassword=${rpcpassword:-`dd if=/dev/urandom bs=33 count=1 2>/dev/null | base64`}
 txindex=1
 bind=${listenip:-127.0.0.1}
 rpcbind=${listenip:-127.0.0.1}
 EOF
 
-    cat $HOME/.safecoin/safecoin.conf
+    cat $HOME/.komodo/komodo.conf
 fi
 
 echo "...Checking fetch-params"
@@ -41,7 +41,7 @@ fi
 
 echo
 echo "****************************************************"
-echo "Running: safecoind ${args[@]}"
+echo "Running: komodod ${args[@]}"
 echo "****************************************************"
 
-exec safecoind ${args[@]}
+exec komodod ${args[@]}
