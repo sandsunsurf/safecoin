@@ -135,7 +135,7 @@ bool AppInit(int argc, char* argv[])
     // Process help and version before taking care about datadir
     if (mapArgs.count("-?") || mapArgs.count("-h") ||  mapArgs.count("-help") || mapArgs.count("-version"))
     {
-        std::string strUsage = _("Komodo Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
+        std::string strUsage = _("Safecoin Daemon") + " " + _("version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
 
         if (mapArgs.count("-version"))
         {
@@ -144,7 +144,7 @@ bool AppInit(int argc, char* argv[])
         else
         {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  safecoind [options]                     " + _("Start Komodo Daemon") + "\n";
+                  "  safecoind [options]                     " + _("Start Safecoin Daemon") + "\n";
 
             strUsage += "\n" + HelpMessage(HMM_BITCOIND);
         }
@@ -188,7 +188,7 @@ bool AppInit(int argc, char* argv[])
                    "\n"
                    "You can look at the example configuration file for suggestions of default\n"
                    "options that you may want to change. It should be in one of these locations,\n"
-                   "depending on how you installed Komodo:\n") +
+                   "depending on how you installed Safecoin:\n") +
                  _("- Source code:  %s\n"
                    "- .deb package: %s\n")).c_str(),
                 GetConfigFile().string().c_str(),
@@ -221,7 +221,7 @@ bool AppInit(int argc, char* argv[])
         fDaemon = GetBoolArg("-daemon", false);
         if (fDaemon)
         {
-            fprintf(stdout, "Komodo %s server starting\n",ASSETCHAINS_SYMBOL);
+            fprintf(stdout, "Safecoin %s server starting\n",ASSETCHAINS_SYMBOL);
 
             // Daemonize
             pid_t pid = fork();

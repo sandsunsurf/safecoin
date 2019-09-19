@@ -56,8 +56,8 @@ int32_t ensure_CCrequirements(uint8_t evalcode);
 bool EnsureWalletIsAvailable(bool avoidException);
 
 
-int32_t safecoin_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip);
-int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height);
+int32_t safecoin_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *safetxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip);
+int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t safeheight,int32_t notarized_height);
 struct safecoin_ccdata_entry *safecoin_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t safestarti,int32_t safeendi);
 uint256 safecoin_calcMoM(int32_t height,int32_t MoMdepth);
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
@@ -93,7 +93,7 @@ UniValue crosschainproof(const UniValue& params, bool fHelp)
 
 UniValue height_MoM(const UniValue& params, bool fHelp)
 {
-    int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,safestarti,safeendi; uint256 MoM,MoMoM,kmdtxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
+    int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,safestarti,safeendi; uint256 MoM,MoMoM,safetxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
     if ( fHelp || params.size() != 1 )
         throw runtime_error("height_MoM height\n");
     LOCK(cs_main);
@@ -108,7 +108,7 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
         height = chainActive.Tip()->GetHeight();
     }
     //fprintf(stderr,"height_MoM height.%d\n",height);
-    depth = safecoin_MoM(&notarized_height,&MoM,&kmdtxid,height,&MoMoM,&MoMoMoffset,&MoMoMdepth,&safestarti,&safeendi);
+    depth = safecoin_MoM(&notarized_height,&MoM,&safetxid,height,&MoMoM,&MoMoMoffset,&MoMoMdepth,&safestarti,&safeendi);
     ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL)));
     ret.push_back(Pair("height",height));
     ret.push_back(Pair("timestamp",(uint64_t)timestamp));
@@ -117,7 +117,7 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
         ret.push_back(Pair("depth",depth));
         ret.push_back(Pair("notarized_height",notarized_height));
         ret.push_back(Pair("MoM",MoM.GetHex()));
-        ret.push_back(Pair("kmdtxid",kmdtxid.GetHex()));
+        ret.push_back(Pair("safetxid",safetxid.GetHex()));
         if ( ASSETCHAINS_SYMBOL[0] != 0 )
         {
             ret.push_back(Pair("MoMoM",MoMoM.GetHex()));
@@ -134,18 +134,18 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
 UniValue MoMoMdata(const UniValue& params, bool fHelp)
 {
     if ( fHelp || params.size() != 3 )
-        throw runtime_error("MoMoMdata symbol kmdheight ccid\n");
+        throw runtime_error("MoMoMdata symbol safeheight ccid\n");
     UniValue ret(UniValue::VOBJ);
     char* symbol = (char *)params[0].get_str().c_str();
-    int kmdheight = atoi(params[1].get_str().c_str());
+    int safeheight = atoi(params[1].get_str().c_str());
     uint32_t ccid = atoi(params[2].get_str().c_str());
     ret.push_back(Pair("coin",symbol));
-    ret.push_back(Pair("kmdheight",kmdheight-5));
+    ret.push_back(Pair("safeheight",safeheight-5));
     ret.push_back(Pair("ccid", (int) ccid));
 
     uint256 destNotarisationTxid;
     std::vector<uint256> moms;
-    uint256 MoMoM = CalculateProofRoot(symbol, ccid, kmdheight-5, moms, destNotarisationTxid);
+    uint256 MoMoM = CalculateProofRoot(symbol, ccid, safeheight-5, moms, destNotarisationTxid);
 
     UniValue valMoms(UniValue::VARR);
     for (int i=0; i<moms.size(); i++) valMoms.push_back(moms[i].GetHex());
@@ -1147,7 +1147,7 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
     UniValue out(UniValue::VOBJ);
     //out.push_back(make_pair("blocktime",(int)));
     UniValue labs(UniValue::VARR);
-    UniValue kmd(UniValue::VARR);
+    UniValue safe(UniValue::VARR);
     int8_t numNN = 0, numSN = 0; uint8_t notarypubkeys[64][33] = {0}; uint8_t LABSpubkeys[64][33] = {0};
     numNN = safecoin_notaries(notarypubkeys, height, chainActive[height]->nTime);
     numSN = numStakedNotaries(LABSpubkeys,STAKED_era(chainActive[height]->nTime));
@@ -1181,9 +1181,9 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
         if ( is_STAKED(n.second.symbol) != 0 )
             labs.push_back(item);
         else 
-            kmd.push_back(item);
+            safe.push_back(item);
     }
-    out.push_back(make_pair("SAFE", kmd));
+    out.push_back(make_pair("SAFE", safe));
     out.push_back(make_pair("LABS", labs));
     return out;
 }

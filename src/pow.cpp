@@ -46,6 +46,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
     if (ASSETCHAINS_ALGO != ASSETCHAINS_EQUIHASH && ASSETCHAINS_STAKED == 0)
         return lwmaGetNextWorkRequired(pindexLast, pblock, params);
 
+    const CChainParams& chainParams = Params();
     arith_uint256 bnLimit;
     if (ASSETCHAINS_ALGO == ASSETCHAINS_EQUIHASH)
         bnLimit = UintToArith256(params.powLimit);
@@ -69,6 +70,15 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         //        return nProofOfWorkLimit;
         //}
     //}
+
+
+   // Reset the difficulty after the algo fork
+   if (pindexLast->GetHeight() > chainParams.eh_epoch_1_end() - 1
+   	&& pindexLast->GetHeight() < chainParams.eh_epoch_1_end() + params.nPowAveragingWindow) {
+         LogPrint("pow", "Reset the difficulty for the eh_epoch_2 algo change: %d\n", nProofOfWorkLimit);
+        return nProofOfWorkLimit;
+       }
+
 
     // Find the first block in the averaging interval
     const CBlockIndex* pindexFirst = pindexLast;
@@ -347,9 +357,23 @@ bool CheckEquihashSolution(const CBlockHeader *pblock, const CChainParams& param
     if ( ASSETCHAINS_NK[0] != 0 && ASSETCHAINS_NK[1] != 0 && pblock->GetHash().ToString() == "027e3758c3a65b12aa1046462b486d0a63bfa1beae327897f56c5cfb7daaae71" )
         return true;
 
-    unsigned int n = params.EquihashN();
-    unsigned int k = params.EquihashK();
+  //Set parameters N,K from solution size. Filtering of valid parameters
+  //for the givenblock height will be carried out in main.cpp/ContextualCheckBlockHeader
+  unsigned int n,k;
+  size_t nSolSize = pblock->nSolution.size();
+  switch (nSolSize){
+  case 1344: n=200; k=9; break;
+  case 400: n=192; k=7; break;
+  case 100:  n=144; k=5; break;
+  case 68:   n=96;  k=5; break;
+  case 36:   n=48;  k=5; break;
+  default: return error("CheckEquihashSolution: Unsupported solution size of %d", nSolSize);
+  }
 
+  LogPrint("pow", "selected n,k : %d, %d \n", n,k);
+
+  //need to put block height param switching code here
+  
     if ( Params().NetworkIDString() == "regtest" )
         return(true);
     // Hash state

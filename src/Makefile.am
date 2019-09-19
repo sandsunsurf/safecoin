@@ -53,6 +53,7 @@ LIBCRYPTOCONDITIONS=cryptoconditions/libcryptoconditions_core.la
 LIBSNARK=snark/libsnark.a
 LIBUNIVALUE=univalue/libunivalue.la
 LIBZCASH=libzcash.a
+LIBSAFECOIN=libsafecoin.a
 
 if ENABLE_ZMQ
 LIBBITCOIN_ZMQ=libbitcoin_zmq.a
@@ -101,7 +102,9 @@ EXTRA_LIBRARIES += \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_CLI) \
-  libzcash.a
+  $(LIBZCASH) \
+  $(LIBSAFECOIN)
+
 if ENABLE_WALLET
 BITCOIN_INCLUDES += $(BDB_CPPFLAGS)
 EXTRA_LIBRARIES += $(LIBBITCOIN_WALLET)
@@ -252,6 +255,7 @@ BITCOIN_CORE_H = \
   utilmoneystr.h \
   utilstrencodings.h \
   utiltime.h \
+  safe/utiltls.h \
   validationinterface.h \
   version.h \
   wallet/asyncrpcoperation_mergetoaddress.h \
@@ -268,6 +272,8 @@ BITCOIN_CORE_H = \
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h
 
+LIBSAFECOIN_H = \
+    safe/utiltls.h
 
 obj/build.h: FORCE
 	@$(MKDIR_P) $(builddir)/obj
@@ -349,9 +355,11 @@ libbitcoin_server_a_SOURCES = \
   torcontrol.cpp \
   txdb.cpp \
   txmempool.cpp \
+  safe/utiltls.cpp \
   validationinterface.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 if ENABLE_ZMQ
 libbitcoin_zmq_a_CPPFLAGS = $(BITCOIN_INCLUDES) $(ZMQ_CFLAGS)
@@ -399,7 +407,8 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/walletdb.cpp \
   zcash/zip32.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 # crypto primitives library
 crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_CONFIG_INCLUDES)
@@ -494,7 +503,8 @@ libbitcoin_common_a_SOURCES = \
   cc/CCtokenutils.cpp \
   cc/CCutilbits.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 # util: shared between all executables.
 # This library *must* be included to make sure that the glibc
@@ -518,7 +528,8 @@ libbitcoin_util_a_SOURCES = \
   utilstrencodings.cpp \
   utiltime.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 if GLIBC_BACK_COMPAT
 libbitcoin_util_a_SOURCES += compat/glibc_compat.cpp
@@ -535,7 +546,8 @@ libbitcoin_cli_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
   $(BITCOIN_CORE_H) \
-  $(LIBZCASH_H)
+  $(LIBZCASH_H) \
+  $(LIBSAFECOIN_H)
 
 nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 #
@@ -561,6 +573,7 @@ safecoind_LDADD = \
   $(LIBVERUS_CRYPTO) \
   $(LIBVERUS_PORTABLE_CRYPTO) \
   $(LIBZCASH) \
+  $(LIBSAFECOIN) \
   $(LIBSNARK) \
   $(LIBLEVELDB) \
   $(LIBMEMENV) \
@@ -634,6 +647,7 @@ safecoin_cli_LDADD = \
 	$(CRYPTO_LIBS) \
 	$(EVENT_LIBS) \
 	$(LIBZCASH) \
+	$(LIBSAFECOIN) \
 	$(LIBBITCOIN_CRYPTO) \
   $(LIBVERUS_CRYPTO) \
   $(LIBVERUS_PORTABLE_CRYPTO) \
@@ -674,6 +688,7 @@ safecoin_tx_LDADD = \
   $(LIBBITCOIN_UTIL) \
   $(LIBSECP256K1) \
   $(LIBZCASH) \
+  $(LIBSAFECOIN) \
   $(LIBSNARK) \
   $(LIBBITCOIN_CRYPTO) \
   $(LIBVERUS_CRYPTO) \
@@ -743,6 +758,22 @@ libzcashconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
 #
+
+# safecoin-specific sources #
+libsafecoin_a_SOURCES = \
+    safe/utiltls.cpp\
+    safe/tlsmanager.cpp
+
+if HAVE_OPENMP
+libsafecoin_a_CPPFLAGS = -DMULTICORE -fopenmp
+endif
+libsafecoin_a_CPPFLAGS := $(libsafecoin_a_CPPFLAGS) -fPIC -DBINARY_OUTPUT -DCURVE_ALT_BN128 -DBOOST_SPIRIT_THREADSAFE -DHAVE_BUILD_INFO -D__STDC_FORMAT_MACROS $(HARDENED_CPPFLAGS) -pipe -O1 -g -Wstack-protector -fstack-protector-all -fPIE -fvisibility=hidden -DSTATIC $(BITCOIN_INCLUDES)
+
+libsafecoin_a_CXXFLAGS = $(HARDENED_CXXFLAGS) -fwrapv -fno-strict-aliasing
+
+libsafecoin_a_LDFLAGS = $(HARDENED_LDFLAGS)
+
+libsafecoin_a_CPPFLAGS += -DMONTGOMERY_OUTPUT
 
 CLEANFILES = leveldb/libleveldb.a leveldb/libmemenv.a *.gcda *.gcno */*.gcno wallet/*/*.gcno
 

@@ -203,7 +203,7 @@ public:
 
 #include "equihash.tcc"
 /*
-* Equihash 200,9 (KMD/Zcash)
+* Equihash 200,9 (SAFE/Zcash)
 * Equihash 48,5 (regtest)
 * Equihash 144,5 (SnowGem) 
 * Equihash 192,7 (Zero, Safecoin)

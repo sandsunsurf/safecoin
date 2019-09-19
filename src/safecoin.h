@@ -147,7 +147,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight);
-            safecoin_eventadd_kmdheight(sp,symbol,ht,kheight,0);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -158,7 +158,7 @@ int32_t safecoin_parsestatefile(struct safecoin_state *sp,FILE *fp,char *symbol,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            safecoin_eventadd_kmdheight(sp,symbol,ht,kheight,ktimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -287,7 +287,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
             int32_t kheight;
             if ( memread(&kheight,sizeof(kheight),filedata,&fpos,datalen) != sizeof(kheight) )
                 errs++;
-             safecoin_eventadd_kmdheight(sp,symbol,ht,kheight,0);
+             safecoin_eventadd_safeheight(sp,symbol,ht,kheight,0);
         }
         else if ( func == 'T' )
         {
@@ -298,7 +298,7 @@ int32_t safecoin_parsestatefiledata(struct safecoin_state *sp,uint8_t *filedata,
                 errs++;
             //if ( matched != 0 ) global independent states -> inside *sp
             //printf("%s.%d load[%s] ht.%d t.%u\n",ASSETCHAINS_SYMBOL,ht,symbol,kheight,ktimestamp);
-            safecoin_eventadd_kmdheight(sp,symbol,ht,kheight,ktimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,ht,kheight,ktimestamp);
         }
         else if ( func == 'R' )
         {
@@ -413,7 +413,7 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
                 if ( fwrite(&SAFEheight,1,sizeof(SAFEheight),fp) != sizeof(SAFEheight) )
                     errs++;
             }
-            safecoin_eventadd_kmdheight(sp,symbol,height,SAFEheight,SAFEtimestamp);
+            safecoin_eventadd_safeheight(sp,symbol,height,SAFEheight,SAFEtimestamp);
         }
         else if ( opretbuf != 0 && opretlen > 0 )
         {

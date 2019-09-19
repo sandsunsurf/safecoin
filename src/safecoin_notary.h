@@ -60,7 +60,7 @@ const char *Notaries_genesis[][2] =
 
 #define CRYPTO777_PUBSECPSTR "02004a23684b6e12441ac4c913775f4f74584c48a9167d2fb65da6a2ddc9852761"
 
-int32_t getkmdseason(int32_t height)
+int32_t getsafeseason(int32_t height)
 {
     if ( height <= SAFECOIN_SEASON_HEIGHTS[0] )
         return(1);
@@ -87,43 +87,43 @@ int32_t getacseason(uint32_t timestamp)
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp)
 {
     int32_t i,htind,n; uint64_t mask = 0; struct knotary_entry *kp,*tmp;
-    static uint8_t kmd_pubkeys[NUM_SAFECOIN_SEASONS][64][33],didinit[NUM_SAFECOIN_SEASONS];
+    static uint8_t safe_pubkeys[NUM_SAFECOIN_SEASONS][64][33],didinit[NUM_SAFECOIN_SEASONS];
     
     if ( timestamp == 0 && ASSETCHAINS_SYMBOL[0] != 0 )
         timestamp = safecoin_heightstamp(height);
     else if ( ASSETCHAINS_SYMBOL[0] == 0 )
         timestamp = 0;
 
-    // If this chain is not a staked chain, use the normal Komodo logic to determine notaries. This allows SAFECOIN to still sync and use its proper pubkeys for dPoW.
+    // If this chain is not a staked chain, use the normal Safecoin logic to determine notaries. This allows SAFECOIN to still sync and use its proper pubkeys for dPoW.
     if ( is_STAKED(ASSETCHAINS_SYMBOL) == 0 )
     {
-        int32_t kmd_season = 0;
+        int32_t safe_season = 0;
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
         {
             // This is SAFECOIN, use block heights to determine the SAFECOIN notary season.. 
             if ( height >= SAFECOIN_NOTARIES_HARDCODED )
-                kmd_season = getkmdseason(height);
+                safe_season = getsafeseason(height);
         }
         else 
         {
             // This is a non LABS assetchain, use timestamp to detemine notary pubkeys. 
-            kmd_season = getacseason(timestamp);
+            safe_season = getacseason(timestamp);
         }
-        if ( kmd_season != 0 )
+        if ( safe_season != 0 )
         {
-            if ( didinit[kmd_season-1] == 0 )
+            if ( didinit[safe_season-1] == 0 )
             {
                 for (i=0; i<NUM_SAFECOIN_NOTARIES; i++) 
-                    decode_hex(kmd_pubkeys[kmd_season-1][i],33,(char *)notaries_elected[kmd_season-1][i][1]);
+                    decode_hex(safe_pubkeys[safe_season-1][i],33,(char *)notaries_elected[safe_season-1][i][1]);
                 if ( ASSETCHAINS_PRIVATE != 0 )
                 {
                     // this is PIRATE, we need to populate the address array for the notary exemptions. 
                     for (i = 0; i<NUM_SAFECOIN_NOTARIES; i++)
-                        pubkey2addr((char *)NOTARY_ADDRESSES[kmd_season-1][i],(uint8_t *)kmd_pubkeys[kmd_season-1][i]);
+                        pubkey2addr((char *)NOTARY_ADDRESSES[safe_season-1][i],(uint8_t *)safe_pubkeys[safe_season-1][i]);
                 }
-                didinit[kmd_season-1] = 1;
+                didinit[safe_season-1] = 1;
             }
-            memcpy(pubkeys,kmd_pubkeys[kmd_season-1],NUM_SAFECOIN_NOTARIES * 33);
+            memcpy(pubkeys,safe_pubkeys[safe_season-1],NUM_SAFECOIN_NOTARIES * 33);
             return(NUM_SAFECOIN_NOTARIES);
         }
     }

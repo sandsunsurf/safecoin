@@ -510,7 +510,7 @@ static std::string FormatException(const std::exception* pex, const char* pszThr
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(NULL, pszModule, sizeof(pszModule));
 #else
-    const char* pszModule = "Komodo";
+    const char* pszModule = "Safecoin";
 #endif
     if (pex)
         return strprintf(
@@ -545,8 +545,8 @@ boost::filesystem::path GetDefaultDataDir()
 #ifdef _WIN32
     // Windows
     if ( symbol[0] == 0 )
-        return GetSpecialFolderPath(CSIDL_APPDATA) / "Komodo";
-    else return GetSpecialFolderPath(CSIDL_APPDATA) / "Komodo" / symbol;
+        return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin";
+    else return GetSpecialFolderPath(CSIDL_APPDATA) / "Safecoin" / symbol;
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -559,10 +559,10 @@ boost::filesystem::path GetDefaultDataDir()
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
     if ( symbol[0] == 0 )
-        return pathRet / "Komodo";
+        return pathRet / "Safecoin";
     else
     {
-        pathRet /= "Komodo";
+        pathRet /= "Safecoin";
         TryCreateDirectory(pathRet);
         return pathRet / symbol;
     }
@@ -693,7 +693,7 @@ boost::filesystem::path GetConfigFile()
     else
     {
 #ifdef __APPLE__
-        strcpy(confname,"Komodo.conf");
+        strcpy(confname,"Safecoin.conf");
 #else
         strcpy(confname,"safecoin.conf");
 #endif

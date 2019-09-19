@@ -543,7 +543,7 @@ extern int32_t SAFECOIN_PAX;
 extern uint64_t SAFECOIN_INTERESTSUM,SAFECOIN_WALLETBALANCE;
 int32_t safecoin_is_issuer();
 int32_t iguana_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endianedp);
-int32_t safecoin_isrealtime(int32_t *kmdheightp);
+int32_t safecoin_isrealtime(int32_t *safeheightp);
 int32_t pax_fiatstatus(uint64_t *available,uint64_t *deposited,uint64_t *issued,uint64_t *withdrawn,uint64_t *approved,uint64_t *redeemed,char *base);
 int32_t safecoin_kvsearch(uint256 *refpubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen);
 int32_t safecoin_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint16_t valuesize);
@@ -743,7 +743,7 @@ UniValue paxdeposit(const UniValue& params, bool fHelp)
 
 UniValue paxwithdraw(const UniValue& params, bool fHelp)
 {
-    CWalletTx wtx; std::string dest; int32_t kmdheight; uint64_t seed,safetoshis = 0; char destaddr[64]; uint8_t i,pubkey37[37]; bool fSubtractFeeFromAmount = false;
+    CWalletTx wtx; std::string dest; int32_t safeheight; uint64_t seed,safetoshis = 0; char destaddr[64]; uint8_t i,pubkey37[37]; bool fSubtractFeeFromAmount = false;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
         return(0);
     if (!EnsureWalletIsAvailable(fHelp))
@@ -751,26 +751,26 @@ UniValue paxwithdraw(const UniValue& params, bool fHelp)
     throw runtime_error("paxwithdraw deprecated");
     if (fHelp || params.size() != 2)
         throw runtime_error("paxwithdraw address fiatamount");
-    if ( safecoin_isrealtime(&kmdheight) == 0 )
+    if ( safecoin_isrealtime(&safeheight) == 0 )
         return(0);
     LOCK2(cs_main, pwalletMain->cs_wallet);
     CBitcoinAddress address(params[0].get_str());
     if (!address.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Bitcoin address");
     int64_t fiatoshis = atof(params[1].get_str().c_str()) * COIN;
-    safetoshis = PAX_fiatdest(&seed,1,destaddr,pubkey37,(char *)params[0].get_str().c_str(),kmdheight,ASSETCHAINS_SYMBOL,fiatoshis);
+    safetoshis = PAX_fiatdest(&seed,1,destaddr,pubkey37,(char *)params[0].get_str().c_str(),safeheight,ASSETCHAINS_SYMBOL,fiatoshis);
     dest.append(destaddr);
     CBitcoinAddress destaddress(CRYPTO777_SAFEADDR);
     if (!destaddress.IsValid())
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid dest Bitcoin address");
     for (i=0; i<33; i++)
         printf("%02x",pubkey37[i]);
-    printf(" kmdheight.%d srcaddr.(%s) %s fiatoshis.%lld -> dest.(%s) safetoshis.%llu seed.%llx\n",kmdheight,(char *)params[0].get_str().c_str(),ASSETCHAINS_SYMBOL,(long long)fiatoshis,destaddr,(long long)safetoshis,(long long)seed);
+    printf(" safeheight.%d srcaddr.(%s) %s fiatoshis.%lld -> dest.(%s) safetoshis.%llu seed.%llx\n",safeheight,(char *)params[0].get_str().c_str(),ASSETCHAINS_SYMBOL,(long long)fiatoshis,destaddr,(long long)safetoshis,(long long)seed);
     EnsureWalletIsUnlocked();
     uint8_t opretbuf[64]; int32_t opretlen; uint64_t fee = fiatoshis / 1000;
     if ( fee < 10000 )
         fee = 10000;
-    iguana_rwnum(1,&pubkey37[33],sizeof(kmdheight),&kmdheight);
+    iguana_rwnum(1,&pubkey37[33],sizeof(safeheight),&safeheight);
     opretlen = safecoin_opreturnscript(opretbuf,'W',pubkey37,37);
     SendMoney(destaddress.Get(),fee,fSubtractFeeFromAmount,wtx,opretbuf,opretlen,fiatoshis);
     return wtx.GetHash().GetHex();
@@ -2577,7 +2577,7 @@ UniValue encryptwallet(const UniValue& params, bool fHelp)
     // slack space in .dat files; that is bad if the old data is
     // unencrypted private keys. So:
     StartShutdown();
-    return "wallet encrypted; Komodo server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
+    return "wallet encrypted; Safecoin server stopping, restart to run with encrypted wallet. The keypool has been flushed, you need to make a new backup.";
 }
 
 UniValue lockunspent(const UniValue& params, bool fHelp)

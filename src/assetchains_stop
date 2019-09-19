@@ -2,5 +2,5 @@
 set -eo pipefail
 
 ./listassetchains | while read chain; do
-  ./komodo-cli --ac_name=$chain stop
+  ./safecoin-cli --ac_name=$chain stop
 done
