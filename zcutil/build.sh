@@ -110,3 +110,10 @@ echo $PWD
 cd $WD
 
 "$MAKE" "$@" V=1
+
+# strip debug symbols from binaries
+strip src/safecoind
+strip src/safecoin-cli
+strip src/safecoin-tx
+strip src/wallet-utility
+
