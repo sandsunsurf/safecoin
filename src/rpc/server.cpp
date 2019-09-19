@@ -255,7 +255,7 @@ UniValue help(const UniValue& params, bool fHelp)
     return tableRPC.help(strCommand);
 }
 
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 #ifdef ENABLE_WALLET
 void GenerateBitcoins(bool b, CWallet *pw, int t);
@@ -858,11 +858,11 @@ UniValue CRPCTable::execute(const std::string &strMethod, const UniValue &params
 std::string HelpExampleCli(const std::string& methodname, const std::string& args)
 {
     if ( ASSETCHAINS_SYMBOL[0] == 0 ) {
-        return "> komodo-cli " + methodname + " " + args + "\n";
+        return "> safecoin-cli " + methodname + " " + args + "\n";
     } else if ((strncmp(ASSETCHAINS_SYMBOL, "HUSH3", 5) == 0) ) {
         return "> hush-cli " + methodname + " " + args + "\n";
     } else {
-        return "> komodo-cli -ac_name=" + strprintf("%s", ASSETCHAINS_SYMBOL) + " " + methodname + " " + args + "\n";
+        return "> safecoin-cli -ac_name=" + strprintf("%s", ASSETCHAINS_SYMBOL) + " " + methodname + " " + args + "\n";
     }
 }
 
@@ -874,8 +874,8 @@ std::string HelpExampleRpc(const std::string& methodname, const std::string& arg
 
 string experimentalDisabledHelpMsg(const string& rpc, const string& enableArg)
 {
-    string daemon = ASSETCHAINS_SYMBOL[0] == 0 ? "komodod" : "hushd";
-    string ticker = ASSETCHAINS_SYMBOL[0] == 0 ? "komodo" : ASSETCHAINS_SYMBOL;
+    string daemon = ASSETCHAINS_SYMBOL[0] == 0 ? "safecoind" : "hushd";
+    string ticker = ASSETCHAINS_SYMBOL[0] == 0 ? "safecoin" : ASSETCHAINS_SYMBOL;
 
     return "\nWARNING: " + rpc + " is disabled.\n"
         "To enable it, restart " + daemon + " with the -experimentalfeatures and\n"

@@ -56,11 +56,11 @@ int32_t ensure_CCrequirements(uint8_t evalcode);
 bool EnsureWalletIsAvailable(bool avoidException);
 
 
-int32_t komodo_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *kmdstartip,int32_t *kmdendip);
-int32_t komodo_MoMoMdata(char *hexstr,int32_t hexsize,struct komodo_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height);
-struct komodo_ccdata_entry *komodo_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t kmdstarti,int32_t kmdendi);
-uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth);
-int32_t komodo_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
+int32_t safecoin_MoM(int32_t *notarized_htp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip);
+int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height);
+struct safecoin_ccdata_entry *safecoin_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t safestarti,int32_t safeendi);
+uint256 safecoin_calcMoM(int32_t height,int32_t MoMdepth);
+int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 extern std::string ASSETCHAINS_SELFIMPORT;
 
 //std::string MakeSelfImportSourceTx(CTxDestination &dest, int64_t amount, CMutableTransaction &mtx);
@@ -93,7 +93,7 @@ UniValue crosschainproof(const UniValue& params, bool fHelp)
 
 UniValue height_MoM(const UniValue& params, bool fHelp)
 {
-    int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,kmdstarti,kmdendi; uint256 MoM,MoMoM,kmdtxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
+    int32_t height,depth,notarized_height,MoMoMdepth,MoMoMoffset,safestarti,safeendi; uint256 MoM,MoMoM,kmdtxid; uint32_t timestamp = 0; UniValue ret(UniValue::VOBJ); UniValue a(UniValue::VARR);
     if ( fHelp || params.size() != 1 )
         throw runtime_error("height_MoM height\n");
     LOCK(cs_main);
@@ -108,8 +108,8 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
         height = chainActive.Tip()->GetHeight();
     }
     //fprintf(stderr,"height_MoM height.%d\n",height);
-    depth = komodo_MoM(&notarized_height,&MoM,&kmdtxid,height,&MoMoM,&MoMoMoffset,&MoMoMdepth,&kmdstarti,&kmdendi);
-    ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL)));
+    depth = safecoin_MoM(&notarized_height,&MoM,&kmdtxid,height,&MoMoM,&MoMoMoffset,&MoMoMdepth,&safestarti,&safeendi);
+    ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL)));
     ret.push_back(Pair("height",height));
     ret.push_back(Pair("timestamp",(uint64_t)timestamp));
     if ( depth > 0 )
@@ -123,8 +123,8 @@ UniValue height_MoM(const UniValue& params, bool fHelp)
             ret.push_back(Pair("MoMoM",MoMoM.GetHex()));
             ret.push_back(Pair("MoMoMoffset",MoMoMoffset));
             ret.push_back(Pair("MoMoMdepth",MoMoMdepth));
-            ret.push_back(Pair("kmdstarti",kmdstarti));
-            ret.push_back(Pair("kmdendi",kmdendi));
+            ret.push_back(Pair("safestarti",safestarti));
+            ret.push_back(Pair("safeendi",safeendi));
         }
     } else ret.push_back(Pair("error",(char *)"no MoM for height"));
 
@@ -169,8 +169,8 @@ UniValue calc_MoM(const UniValue& params, bool fHelp)
     if ( height <= 0 || MoMdepth <= 0 || MoMdepth >= height )
         throw runtime_error("calc_MoM illegal height or MoMdepth\n");
     //fprintf(stderr,"height_MoM height.%d\n",height);
-    MoM = komodo_calcMoM(height,MoMdepth);
-    ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL)));
+    MoM = safecoin_calcMoM(height,MoMdepth);
+    ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL)));
     ret.push_back(Pair("height",height));
     ret.push_back(Pair("MoMdepth",MoMdepth));
     ret.push_back(Pair("MoM",MoM.GetHex()));
@@ -192,8 +192,8 @@ UniValue migrate_converttoexport(const UniValue& params, bool fHelp)
             "import transaction.\n"
             );
 
-    if (ASSETCHAINS_CC < KOMODO_FIRSTFUNGIBLEID)
-        throw runtime_error("-ac_cc < KOMODO_FIRSTFUNGIBLEID");
+    if (ASSETCHAINS_CC < SAFECOIN_FIRSTFUNGIBLEID)
+        throw runtime_error("-ac_cc < SAFECOIN_FIRSTFUNGIBLEID");
 
     if (ASSETCHAINS_SYMBOL[0] == 0)
         throw runtime_error("Must be called on assetchain");
@@ -266,8 +266,8 @@ UniValue migrate_createburntransaction(const UniValue& params, bool fHelp)
             "the \"migrate_createimporttransaction\" method to get the corresponding import transaction.\n"
         );
 
-    if (ASSETCHAINS_CC < KOMODO_FIRSTFUNGIBLEID)
-        throw runtime_error("-ac_cc < KOMODO_FIRSTFUNGIBLEID");
+    if (ASSETCHAINS_CC < SAFECOIN_FIRSTFUNGIBLEID)
+        throw runtime_error("-ac_cc < SAFECOIN_FIRSTFUNGIBLEID");
 
     if (ASSETCHAINS_SYMBOL[0] == 0)
         throw runtime_error("Must be called on assetchain");
@@ -308,7 +308,7 @@ UniValue migrate_createburntransaction(const UniValue& params, bool fHelp)
     struct CCcontract_info *cpTokens, C;
     cpTokens = CCinit(&C, EVAL_TOKENS);
 
-    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), komodo_nextheight());
+    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), safecoin_nextheight());
 
     const std::string chainSymbol(ASSETCHAINS_SYMBOL);
     std::vector<uint8_t> rawproof; //(chainSymbol.begin(), chainSymbol.end());
@@ -548,8 +548,8 @@ UniValue migrate_createimporttransaction(const UniValue& params, bool fHelp)
                 "optional notarytxids are txids of notary operator proofs of burn tx existense (from destination chain).\n"
                 "Do not make subsequent call to migrate_completeimporttransaction if notary txids are set");
 
-    if (ASSETCHAINS_CC < KOMODO_FIRSTFUNGIBLEID)
-        throw runtime_error("-ac_cc < KOMODO_FIRSTFUNGIBLEID");
+    if (ASSETCHAINS_CC < SAFECOIN_FIRSTFUNGIBLEID)
+        throw runtime_error("-ac_cc < SAFECOIN_FIRSTFUNGIBLEID");
 
     if (ASSETCHAINS_SYMBOL[0] == 0)
         throw runtime_error("Must be called on assetchain");
@@ -605,10 +605,10 @@ UniValue migrate_completeimporttransaction(const UniValue& params, bool fHelp)
         throw runtime_error("migrate_completeimporttransaction importTx [offset]\n\n"
                 "Takes a cross chain import tx with proof generated on assetchain "
                 "and extends proof to target chain proof root\n"
-                "offset is optional, use it to increase the used KMD height, use when import fails.");
+                "offset is optional, use it to increase the used SAFE height, use when import fails.");
 
     if (ASSETCHAINS_SYMBOL[0] != 0)
-        throw runtime_error("Must be called on KMD");
+        throw runtime_error("Must be called on SAFE");
 
     CTransaction importTx;
     if (!E_UNMARSHAL(ParseHexV(params[0], "argument 1"), ss >> importTx))
@@ -673,7 +673,7 @@ UniValue migrate_createnotaryapprovaltransaction(const UniValue& params, bool fH
     if (fHelp || params.size() != 2)
         throw runtime_error("migrate_createnotaryapprovaltransaction burntxid txoutproof\n\n"
             "Creates a tx for destination chain with burn tx proof\n"
-            "txoutproof should be retrieved by komodo-cli migrate_checkburntransactionsource call on the source chain\n" );
+            "txoutproof should be retrieved by safecoin-cli migrate_checkburntransactionsource call on the source chain\n" );
 
     if (ASSETCHAINS_SYMBOL[0] == 0)
         throw runtime_error("Must be called on asset chain");
@@ -697,7 +697,7 @@ UniValue migrate_createnotaryapprovaltransaction(const UniValue& params, bool fH
     cpDummy = CCinit(&C, EVAL_TOKENS);  // just for FinalizeCCtx to work 
 
     // creating a tx with proof:
-    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), komodo_nextheight());
+    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), safecoin_nextheight());
     if (AddNormalinputs(mtx, Mypubkey(), txfee*2, 4) == 0) 
         throw runtime_error("Cannot find normal inputs\n");
     
@@ -1149,7 +1149,7 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
     UniValue labs(UniValue::VARR);
     UniValue kmd(UniValue::VARR);
     int8_t numNN = 0, numSN = 0; uint8_t notarypubkeys[64][33] = {0}; uint8_t LABSpubkeys[64][33] = {0};
-    numNN = komodo_notaries(notarypubkeys, height, chainActive[height]->nTime);
+    numNN = safecoin_notaries(notarypubkeys, height, chainActive[height]->nTime);
     numSN = numStakedNotaries(LABSpubkeys,STAKED_era(chainActive[height]->nTime));
 
     BOOST_FOREACH(const Notarisation& n, nibs)
@@ -1173,7 +1173,7 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
         item.push_back(make_pair("chain", n.second.symbol));
         item.push_back(make_pair("height", (int)n.second.height));
         item.push_back(make_pair("blockhash", n.second.blockHash.GetHex()));
-        //item.push_back(make_pair("KMD_height", height)); // for when timstamp input is used.
+        //item.push_back(make_pair("SAFE_height", height)); // for when timstamp input is used.
         
         for ( auto notary : NotarisationNotaries )
             notaryarr.push_back(notary);
@@ -1183,7 +1183,7 @@ UniValue getNotarisationsForBlock(const UniValue& params, bool fHelp)
         else 
             kmd.push_back(item);
     }
-    out.push_back(make_pair("KMD", kmd));
+    out.push_back(make_pair("SAFE", kmd));
     out.push_back(make_pair("LABS", labs));
     return out;
 }

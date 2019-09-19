@@ -1,4 +1,3 @@
-// Copyright (c) 2016 Jack Grigg
 // Copyright (c) 2016 The Zcash developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
@@ -10,7 +9,7 @@
 #include "utilstrencodings.h"
 
 #include "sodium.h"
-#include "komodo_nk.h"
+#include "safecoin_nk.h"
 
 #include <cstring>
 #include <exception>

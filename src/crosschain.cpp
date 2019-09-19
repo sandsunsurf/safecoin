@@ -25,7 +25,7 @@
 /*
  * The crosschain workflow.
  *
- * 3 chains, A, B, and KMD. We would like to prove TX on B.
+ * 3 chains, A, B, and SAFE. We would like to prove TX on B.
  * There is a notarisation, nA0, which will include TX via an MoM.
  * The notarisation nA0 must fall between 2 notarisations of B,
  * ie, nB0 and nB1. An MoMoM including this range is propagated to
@@ -33,7 +33,7 @@
  *
  * A:                 TX   bnA0
  *                     \   /
- * KMD:      nB0        nA0     nB1      nB2
+ * SAFE:      nB0        nA0     nB1      nB2
  *              \                 \       \
  * B:          bnB0              bnB1     bnB2
  */
@@ -43,15 +43,15 @@
 
 
 int NOTARISATION_SCAN_LIMIT_BLOCKS = 1440;
-CBlockIndex *komodo_getblockindex(uint256 hash);
+CBlockIndex *safecoin_getblockindex(uint256 hash);
 
 
-/* On KMD */
+/* On SAFE */
 uint256 CalculateProofRoot(const char* symbol, uint32_t targetCCid, int kmdHeight,
         std::vector<uint256> &moms, uint256 &destNotarisationTxid)
 {
     /*
-     * Notaries don't wait for confirmation on KMD before performing a backnotarisation,
+     * Notaries don't wait for confirmation on SAFE before performing a backnotarisation,
      * but we need a determinable range that will encompass all merkle roots. Include MoMs
      * including the block height of the last notarisation until the height before the
      * previous notarisation.
@@ -144,7 +144,7 @@ int ScanNotarisationsFromHeight(int nHeight, const IsTarget f, Notarisation &fou
 }
 
 
-/* On KMD */
+/* On SAFE */
 TxProof GetCrossChainProof(const uint256 txid, const char* targetSymbol, uint32_t targetCCid,
         const TxProof assetChainProof, int32_t offset)
 {
@@ -261,7 +261,7 @@ bool GetNextBacknotarisation(uint256 kmdNotarisationTxid, Notarisation &out)
 {
     /*
      * Here we are given a txid, and a proof.
-     * We go from the KMD notarisation txid to the backnotarisation,
+     * We go from the SAFE notarisation txid to the backnotarisation,
      * then jump to the next backnotarisation, which contains the corresponding MoMoM.
      */
     Notarisation bn;
@@ -351,7 +351,7 @@ bool CheckNotariesApproval(uint256 burntxid, const std::vector<uint256> & notary
                         if (merkleBlock.txn.ExtractMatches(prooftxids) != merkleBlock.header.hashMerkleRoot ||  // check block merkle root is correct
                             std::find(prooftxids.begin(), prooftxids.end(), burntxid) != prooftxids.end()) {    // check burn txid is in proven txids list
                             
-                            if (komodo_notaries(notaries_pubkeys, block.GetHeight(), block.GetBlockTime()) >= 0) {
+                            if (safecoin_notaries(notaries_pubkeys, block.GetHeight(), block.GetBlockTime()) >= 0) {
                                 // check it is a notary who signed approved tx:
                                 int i;
                                 for (i = 0; i < sizeof(notaries_pubkeys) / sizeof(notaries_pubkeys[0]); i++) {
@@ -439,7 +439,7 @@ TxProof GetAssetchainProof(uint256 hash,CTransaction burnTx)
         if (blockHash.IsNull())
             throw std::runtime_error("tx still in mempool");
 
-        blockIndex = komodo_getblockindex(blockHash);
+        blockIndex = safecoin_getblockindex(blockHash);
         int h = blockIndex->GetHeight();
         // The assumption here is that the first notarisation for a height GTE than
         // the transaction block height will contain the corresponding MoM. If there

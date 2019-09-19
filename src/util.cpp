@@ -30,7 +30,7 @@
 #include "sync.h"
 #include "utilstrencodings.h"
 #include "utiltime.h"
-#include "komodo_defs.h"
+#include "safecoin_defs.h"
 
 #include <stdarg.h>
 #include <sstream>
@@ -528,13 +528,13 @@ void PrintExceptionContinue(const std::exception* pex, const char* pszThread)
     strMiscWarning = message;
 }
 
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 //int64_t MAX_MONEY = 200000000 * 100000000LL;
 
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-    char symbol[KOMODO_ASSETCHAIN_MAXLEN];
+    char symbol[SAFECOIN_ASSETCHAIN_MAXLEN];
     if ( ASSETCHAINS_SYMBOL[0] != 0 )
         strcpy(symbol,ASSETCHAINS_SYMBOL);
     else symbol[0] = 0;
@@ -569,8 +569,8 @@ boost::filesystem::path GetDefaultDataDir()
 #else
     // Unix
     if ( symbol[0] == 0 )
-        return pathRet / ".komodo";
-    else return pathRet / ".komodo" / symbol;
+        return pathRet / ".safecoin";
+    else return pathRet / ".safecoin" / symbol;
 #endif
 #endif
 }
@@ -695,7 +695,7 @@ boost::filesystem::path GetConfigFile()
 #ifdef __APPLE__
         strcpy(confname,"Komodo.conf");
 #else
-        strcpy(confname,"komodo.conf");
+        strcpy(confname,"safecoin.conf");
 #endif
     }
     boost::filesystem::path pathConfigFile(GetArg("-conf",confname));
@@ -717,7 +717,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 
     for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it)
     {
-        // Don't overwrite existing settings so command line settings override komodo.conf
+        // Don't overwrite existing settings so command line settings override safecoin.conf
         string strKey = string("-") + it->string_key;
         if (mapSettingsRet.count(strKey) == 0)
         {
@@ -736,7 +736,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 #ifndef _WIN32
 boost::filesystem::path GetPidFile()
 {
-    boost::filesystem::path pathPidFile(GetArg("-pid", "komodod.pid"));
+    boost::filesystem::path pathPidFile(GetArg("-pid", "safecoind.pid"));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }

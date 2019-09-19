@@ -6,7 +6,7 @@
 
 extern char NOTARYADDRS[64][64];
 extern std::string NOTARY_ADDRESS,NOTARY_PUBKEY;
-extern int32_t STAKED_ERA,IS_STAKED_NOTARY,IS_KOMODO_NOTARY;
+extern int32_t STAKED_ERA,IS_STAKED_NOTARY,IS_SAFECOIN_NOTARY;
 extern pthread_mutex_t staked_mutex;
 extern uint8_t NOTARY_PUBKEY33[33];
 
@@ -67,7 +67,7 @@ int8_t numStakedNotaries(uint8_t pubkeys[64][33],int8_t era) {
     if ( ChainName[0] == 0 )
     {
         if ( ASSETCHAINS_SYMBOL[0] == 0 )
-            strcpy(ChainName,"KMD");
+            strcpy(ChainName,"SAFE");
         else
             strcpy(ChainName,ASSETCHAINS_SYMBOL);
     }

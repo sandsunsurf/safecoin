@@ -99,7 +99,7 @@ UniValue convertpassphrase(const UniValue& params, bool fHelp)
             "1. \"agamapassphrase\"   (string, required) Agama passphrase\n"
             "\nResult:\n"
             "\"agamapassphrase\": \"agamapassphrase\",   (string) Agama passphrase you entered\n"
-            "\"address\": \"komodoaddress\",             (string) Address corresponding to your passphrase\n"
+            "\"address\": \"safecoinaddress\",             (string) Address corresponding to your passphrase\n"
             "\"pubkey\": \"publickeyhex\",               (string) The hex value of the raw public key\n"
             "\"privkey\": \"privatekeyhex\",             (string) The hex value of the raw private key\n"
             "\"wif\": \"wif\"                            (string) The private key in WIF format to use with 'importprivkey'\n"
@@ -155,10 +155,10 @@ UniValue importprivkey(const UniValue& params, bool fHelp)
 
     if (fHelp || params.size() < 1 || params.size() > 5)
         throw runtime_error(
-            "importprivkey \"komodoprivkey\" ( \"label\" rescan height secret_key)\n"
+            "importprivkey \"safecoinprivkey\" ( \"label\" rescan height secret_key)\n"
             "\nAdds a private key (as returned by dumpprivkey) to your wallet.\n"
             "\nArguments:\n"
-            "1. \"komodoprivkey\"   (string, required) The private key (see dumpprivkey)\n"
+            "1. \"safecoinprivkey\"   (string, required) The private key (see dumpprivkey)\n"
             "2. \"label\"            (string, optional, default=\"\") An optional label\n"
             "3. rescan               (boolean, optional, default=true) Rescan the wallet for transactions\n"
             "4. height               (integer, optional, default=0) start at block height?\n"
@@ -524,7 +524,7 @@ UniValue z_exportwallet(const UniValue& params, bool fHelp)
             "z_exportwallet \"filename\"\n"
             "\nExports all wallet keys, for taddr and zaddr, in a human-readable format.  Overwriting an existing file is not permitted.\n"
             "\nArguments:\n"
-            "1. \"filename\"    (string, required) The filename, saved in folder set by komodod -exportdir option\n"
+            "1. \"filename\"    (string, required) The filename, saved in folder set by safecoind -exportdir option\n"
             "\nResult:\n"
             "\"path\"           (string) The full path of the destination file\n"
             "\nExamples:\n"
@@ -545,7 +545,7 @@ UniValue dumpwallet(const UniValue& params, bool fHelp)
             "dumpwallet \"filename\"\n"
             "\nDumps taddr wallet keys in a human-readable format.  Overwriting an existing file is not permitted.\n"
             "\nArguments:\n"
-            "1. \"filename\"    (string, required) The filename, saved in folder set by komodod -exportdir option\n"
+            "1. \"filename\"    (string, required) The filename, saved in folder set by safecoind -exportdir option\n"
             "\nResult:\n"
             "\"path\"           (string) The full path of the destination file\n"
             "\nExamples:\n"
@@ -569,7 +569,7 @@ UniValue dumpwallet_impl(const UniValue& params, bool fHelp, bool fDumpZKeys)
         throw JSONRPCError(RPC_INTERNAL_ERROR, e.what());
     }
     if (exportdir.empty()) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Cannot export wallet until the komodod -exportdir option has been set");
+        throw JSONRPCError(RPC_WALLET_ERROR, "Cannot export wallet until the safecoind -exportdir option has been set");
     }
     std::string unclean = params[0].get_str();
     std::string clean = SanitizeFilename(unclean);

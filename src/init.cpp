@@ -91,12 +91,12 @@
 using namespace std;
 
 extern void ThreadSendAlert();
-extern bool komodo_dailysnapshot(int32_t height);
-extern int32_t KOMODO_LOADINGBLOCKS;
+extern bool safecoin_dailysnapshot(int32_t height);
+extern int32_t SAFECOIN_LOADINGBLOCKS;
 extern bool VERUS_MINTBLOCKS;
 extern char ASSETCHAINS_SYMBOL[];
-extern int32_t KOMODO_SNAPSHOT_INTERVAL;
-extern void komodo_init(int32_t height);
+extern int32_t SAFECOIN_SNAPSHOT_INTERVAL;
+extern void safecoin_init(int32_t height);
 
 ZCJoinSplit* pzcashParams = NULL;
 
@@ -373,7 +373,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-checkblocks=<n>", strprintf(_("How many blocks to check at startup (default: %u, 0 = all)"), 288));
     strUsage += HelpMessageOpt("-checklevel=<n>", strprintf(_("How thorough the block verification of -checkblocks is (0-4, default: %u)"), 3));
     strUsage += HelpMessageOpt("-clientname=<SomeName>", _("Full node client name, default 'MagicBean'"));
-    strUsage += HelpMessageOpt("-conf=<file>", strprintf(_("Specify configuration file (default: %s)"), "komodo.conf"));
+    strUsage += HelpMessageOpt("-conf=<file>", strprintf(_("Specify configuration file (default: %s)"), "safecoin.conf"));
     if (mode == HMM_BITCOIND)
     {
 #if !defined(WIN32)
@@ -389,7 +389,7 @@ std::string HelpMessage(HelpMessageMode mode)
     strUsage += HelpMessageOpt("-par=<n>", strprintf(_("Set the number of script verification threads (%u to %d, 0 = auto, <0 = leave that many cores free, default: %d)"),
         -(int)boost::thread::hardware_concurrency(), MAX_SCRIPTCHECK_THREADS, DEFAULT_SCRIPTCHECK_THREADS));
 #ifndef _WIN32
-    strUsage += HelpMessageOpt("-pid=<file>", strprintf(_("Specify pid file (default: %s)"), "komodod.pid"));
+    strUsage += HelpMessageOpt("-pid=<file>", strprintf(_("Specify pid file (default: %s)"), "safecoind.pid"));
 #endif
     strUsage += HelpMessageOpt("-prune=<n>", strprintf(_("Reduce storage requirements by pruning (deleting) old blocks. This mode disables wallet support and is incompatible with -txindex. "
             "Warning: Reverting this setting requires re-downloading the entire blockchain. "
@@ -652,8 +652,8 @@ void CleanupBlockRevFiles()
                 remove(it->path());
         }
     }
-    path komodostate = GetDataDir() / "komodostate";
-    remove(komodostate);
+    path safecoinstate = GetDataDir() / "safecoinstate";
+    remove(safecoinstate);
     path minerids = GetDataDir() / "minerids";
     remove(minerids);
     // Remove all block files that aren't part of a contiguous set starting at
@@ -693,7 +693,7 @@ void ThreadImport(std::vector<boost::filesystem::path> vImportFiles)
         LogPrintf("Reindexing finished\n");
         // To avoid ending up in a situation without genesis block, re-try initializing (no-op if reindexing worked):
         InitBlockIndex();
-        KOMODO_LOADINGBLOCKS = 0;
+        SAFECOIN_LOADINGBLOCKS = 0;
     }
 
     // hardcoded $DATADIR/bootstrap.dat
@@ -834,7 +834,7 @@ bool AppInitServers(boost::thread_group& threadGroup)
 /** Initialize bitcoin.
  *  @pre Parameters should be parsed and config file should be read.
  */
-extern int32_t KOMODO_REWIND;
+extern int32_t SAFECOIN_REWIND;
 
 bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 {
@@ -1591,7 +1591,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
 
                 if (fReindex) {
-                    boost::filesystem::remove(GetDataDir() / "komodostate");
+                    boost::filesystem::remove(GetDataDir() / "safecoinstate");
                     boost::filesystem::remove(GetDataDir() / "signedmasks");
                     pblocktree->WriteReindexing(true);
                     //If we're reindexing in prune mode, wipe away unusable block files and all undo data files
@@ -1609,13 +1609,13 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                 if (!mapBlockIndex.empty() && mapBlockIndex.count(chainparams.GetConsensus().hashGenesisBlock) == 0)
                     return InitError(_("Incorrect or no genesis block found. Wrong datadir for network?"));
                 
-                komodo_init(1);
+                safecoin_init(1);
                 // Initialize the block index (no-op if non-empty database was already loaded)
                 if (!InitBlockIndex()) {
                     strLoadError = _("Error initializing block database");
                     break;
                 }
-                KOMODO_LOADINGBLOCKS = 0;
+                SAFECOIN_LOADINGBLOCKS = 0;
                 // Check for changed -txindex state
                 if (fTxIndex != GetBoolArg("-txindex", true)) {
                     strLoadError = _("You need to rebuild the database using -reindex to change -txindex");
@@ -1629,9 +1629,9 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                     break;
                 }
                 
-                if ( ASSETCHAINS_CC != 0 && KOMODO_SNAPSHOT_INTERVAL != 0 && chainActive.Height() >= KOMODO_SNAPSHOT_INTERVAL )
+                if ( ASSETCHAINS_CC != 0 && SAFECOIN_SNAPSHOT_INTERVAL != 0 && chainActive.Height() >= SAFECOIN_SNAPSHOT_INTERVAL )
                 {
-                    if ( !komodo_dailysnapshot(chainActive.Height()) )
+                    if ( !safecoin_dailysnapshot(chainActive.Height()) )
                     {
                         strLoadError = _("daily snapshot failed, please reindex your chain.");
                         break;
@@ -1651,7 +1651,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
                     LogPrintf("Prune: pruned datadir may not have more than %d blocks; -checkblocks=%d may fail\n",
                         MIN_BLOCKS_TO_KEEP, GetArg("-checkblocks", 288));
                 }
-                if ( KOMODO_REWIND == 0 )
+                if ( SAFECOIN_REWIND == 0 )
                 {
                     if (!CVerifyDB().VerifyDB(pcoinsdbview, GetArg("-checklevel", 3),
                                               GetArg("-checkblocks", 288))) {
@@ -1686,7 +1686,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
             }
         }
     }
-    KOMODO_LOADINGBLOCKS = 0;
+    SAFECOIN_LOADINGBLOCKS = 0;
 
     // As LoadBlockIndex can take several minutes, it's possible the user
     // requested to kill the GUI during the last operation. If so, exit.
@@ -1897,7 +1897,7 @@ bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler)
 
     if (mapArgs.count("-blocknotify"))
         uiInterface.NotifyBlockTip.connect(BlockNotifyCallback);
-    if ( KOMODO_REWIND >= 0 )
+    if ( SAFECOIN_REWIND >= 0 )
     {
         uiInterface.InitMessage(_("Activating best chain..."));
         // scan for better chains in the block chain database, that are not yet connected in the active best chain

@@ -17,16 +17,16 @@
  CCutils has low level functions that are universally useful for all contracts.
  */
 #include "CCinclude.h"
-#include "komodo_structs.h"
+#include "safecoin_structs.h"
 
 #ifdef TESTMODE           
     #define MIN_NON_NOTARIZED_CONFIRMS 2
 #else
     #define MIN_NON_NOTARIZED_CONFIRMS 101
 #endif // TESTMODE
-int32_t komodo_dpowconfs(int32_t height,int32_t numconfs);
-struct komodo_state *komodo_stateptr(char *symbol,char *dest);
-extern uint32_t KOMODO_DPOWCONFS;
+int32_t safecoin_dpowconfs(int32_t height,int32_t numconfs);
+struct safecoin_state *safecoin_stateptr(char *symbol,char *dest);
+extern uint32_t SAFECOIN_DPOWCONFS;
 
 void endiancpy(uint8_t *dest,uint8_t *src,int32_t len)
 {
@@ -502,7 +502,7 @@ int64_t CCduration(int32_t &numblocks,uint256 txid)
         //fprintf(stderr,"CCduration no hashBlock for txid %s\n",uint256_str(str,txid));
         return(0);
     }
-    else if ( (pindex= komodo_getblockindex(hashBlock)) == 0 || (txtime= pindex->nTime) == 0 || (txheight= pindex->GetHeight()) <= 0 )
+    else if ( (pindex= safecoin_getblockindex(hashBlock)) == 0 || (txtime= pindex->nTime) == 0 || (txheight= pindex->GetHeight()) <= 0 )
     {
         fprintf(stderr,"CCduration no txtime %u or txheight.%d %p for txid %s\n",txtime,txheight,pindex,uint256_str(str,txid));
         return(0);
@@ -608,37 +608,37 @@ uint256 BitcoinGetProofMerkleRoot(const std::vector<uint8_t> &proofData, std::ve
     return merkleBlock.txn.ExtractMatches(txids);
 }
 
-bool komodo_txnotarizedconfirmed(uint256 txid)
+bool safecoin_txnotarizedconfirmed(uint256 txid)
 {
     char str[65];
     uint32_t confirms,notarized=0,txheight;
     CTransaction tx;
     uint256 hashBlock;
     CBlockIndex *pindex;    
-    char symbol[KOMODO_ASSETCHAIN_MAXLEN],dest[KOMODO_ASSETCHAIN_MAXLEN]; struct komodo_state *sp;
+    char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; struct safecoin_state *sp;
 
     if ( myGetTransaction(txid,tx,hashBlock) == 0 )
     {
-        fprintf(stderr,"komodo_txnotarizedconfirmed cant find txid %s\n",txid.ToString().c_str());
+        fprintf(stderr,"safecoin_txnotarizedconfirmed cant find txid %s\n",txid.ToString().c_str());
         return(0);
     }
     else if ( hashBlock == zeroid )
     {
-        fprintf(stderr,"komodo_txnotarizedconfirmed no hashBlock for txid %s\n",txid.ToString().c_str());
+        fprintf(stderr,"safecoin_txnotarizedconfirmed no hashBlock for txid %s\n",txid.ToString().c_str());
         return(0);
     }
-    else if ( (pindex= komodo_blockindex(hashBlock)) == 0 || (txheight= pindex->GetHeight()) <= 0 )
+    else if ( (pindex= safecoin_blockindex(hashBlock)) == 0 || (txheight= pindex->GetHeight()) <= 0 )
     {
-        fprintf(stderr,"komodo_txnotarizedconfirmed no txheight.%d %p for txid %s\n",txheight,pindex,txid.ToString().c_str());
+        fprintf(stderr,"safecoin_txnotarizedconfirmed no txheight.%d %p for txid %s\n",txheight,pindex,txid.ToString().c_str());
         return(0);
     }
     else if ( (pindex= chainActive.LastTip()) == 0 || pindex->GetHeight() < txheight )
     {
-        fprintf(stderr,"komodo_txnotarizedconfirmed backwards heights for txid %s hts.(%d %d)\n",txid.ToString().c_str(),txheight,(int32_t)pindex->GetHeight());
+        fprintf(stderr,"safecoin_txnotarizedconfirmed backwards heights for txid %s hts.(%d %d)\n",txid.ToString().c_str(),txheight,(int32_t)pindex->GetHeight());
         return(0);
     }    
     confirms=1 + pindex->GetHeight() - txheight;        
-    if ((sp= komodo_stateptr(symbol,dest)) != 0 && (notarized=sp->NOTARIZED_HEIGHT) > 0 && txheight > sp->NOTARIZED_HEIGHT)  notarized=0;            
+    if ((sp= safecoin_stateptr(symbol,dest)) != 0 && (notarized=sp->NOTARIZED_HEIGHT) > 0 && txheight > sp->NOTARIZED_HEIGHT)  notarized=0;            
 #ifdef TESTMODE           
     notarized=0;
 #endif //TESTMODE
@@ -733,12 +733,12 @@ int64_t TotalPubkeyCCInputs(const CTransaction &tx, const CPubKey &pubkey)
 bool ProcessCC(struct CCcontract_info *cp,Eval* eval, std::vector<uint8_t> paramsNull,const CTransaction &ctx, unsigned int nIn)
 {
     CTransaction createTx; uint256 assetid,assetid2,hashBlock; uint8_t funcid; int32_t height,i,n,from_mempool = 0; int64_t amount; std::vector<uint8_t> origpubkey;
-    height = KOMODO_CONNECTING;
-    if ( KOMODO_CONNECTING < 0 ) // always comes back with > 0 for final confirmation
+    height = SAFECOIN_CONNECTING;
+    if ( SAFECOIN_CONNECTING < 0 ) // always comes back with > 0 for final confirmation
         return(true);
-    if ( ASSETCHAINS_CC == 0 || (height & ~(1<<30)) < KOMODO_CCACTIVATE )
+    if ( ASSETCHAINS_CC == 0 || (height & ~(1<<30)) < SAFECOIN_CCACTIVATE )
         return eval->Invalid("CC are disabled or not active yet");
-    if ( (KOMODO_CONNECTING & (1<<30)) != 0 )
+    if ( (SAFECOIN_CONNECTING & (1<<30)) != 0 )
     {
         from_mempool = 1;
         height &= ((1<<30) - 1);
@@ -746,7 +746,7 @@ bool ProcessCC(struct CCcontract_info *cp,Eval* eval, std::vector<uint8_t> param
     if (cp->validate == NULL)
         return eval->Invalid("validation not supported for eval code");
 
-    //fprintf(stderr,"KOMODO_CONNECTING.%d mempool.%d vs CCactive.%d\n",height,from_mempool,KOMODO_CCACTIVATE);
+    //fprintf(stderr,"SAFECOIN_CONNECTING.%d mempool.%d vs CCactive.%d\n",height,from_mempool,SAFECOIN_CCACTIVATE);
     // there is a chance CC tx is valid in mempool, but invalid when in block, so we cant filter duplicate requests. if any of the vins are spent, for example
     //txid = ctx.GetHash();
     //if ( txid == cp->prevtxid )
@@ -779,12 +779,12 @@ bool CClib_Dispatch(const CC *cond,Eval *eval,std::vector<uint8_t> paramsNull,co
         fprintf(stderr,"-ac_cclib=%s vs myname %s\n",ASSETCHAINS_CCLIB.c_str(),MYCCLIBNAME.c_str());
         return eval->Invalid("-ac_cclib name mismatches myname");
     }
-    height = KOMODO_CONNECTING;
-    if ( KOMODO_CONNECTING < 0 ) // always comes back with > 0 for final confirmation
+    height = SAFECOIN_CONNECTING;
+    if ( SAFECOIN_CONNECTING < 0 ) // always comes back with > 0 for final confirmation
         return(true);
-    if ( ASSETCHAINS_CC == 0 || (height & ~(1<<30)) < KOMODO_CCACTIVATE )
+    if ( ASSETCHAINS_CC == 0 || (height & ~(1<<30)) < SAFECOIN_CCACTIVATE )
         return eval->Invalid("CC are disabled or not active yet");
-    if ( (KOMODO_CONNECTING & (1<<30)) != 0 )
+    if ( (SAFECOIN_CONNECTING & (1<<30)) != 0 )
     {
         from_mempool = 1;
         height &= ((1<<30) - 1);
