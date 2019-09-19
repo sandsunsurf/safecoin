@@ -1725,16 +1725,16 @@ void safecoin_args(char *argv0)
         {
             // We dont have any chain data yet, so use system clock to guess. 
             // I think on season change should reccomend notaries to use -notary to avoid needing this. 
-            int32_t kmd_season = getacseason(time(NULL));
+            int32_t safe_season = getacseason(time(NULL));
             for (i=0; i<64; i++)
             {
-                if ( strcmp(NOTARY_PUBKEY.c_str(),notaries_elected[kmd_season-1][i][1]) == 0 )
+                if ( strcmp(NOTARY_PUBKEY.c_str(),notaries_elected[safe_season-1][i][1]) == 0 )
                 {
                     IS_SAFECOIN_NOTARY = 1;
                     SAFECOIN_MININGTHREADS = 1;
                     mapArgs ["-genproclimit"] = itostr(SAFECOIN_MININGTHREADS);
                     IS_STAKED_NOTARY = -1;
-                    fprintf(stderr,"running as notary.%d %s\n",i,notaries_elected[kmd_season-1][i][0]);
+                    fprintf(stderr,"running as notary.%d %s\n",i,notaries_elected[safe_season-1][i][0]);
                     break;
                 }
             }
@@ -2403,7 +2403,7 @@ void safecoin_args(char *argv0)
             CCENABLE(EVAL_TOKENS);
             CCENABLE(EVAL_ORACLES);
         }
-        if ( strcmp("KMDICE",ASSETCHAINS_SYMBOL) == 0 )
+        if ( strcmp("SAFEICE",ASSETCHAINS_SYMBOL) == 0 )
         {
             CCDISABLEALL;
             CCENABLE(EVAL_FAUCET);
@@ -2412,7 +2412,7 @@ void safecoin_args(char *argv0)
         }
     } else BITCOIND_RPCPORT = GetArg("-rpcport", BaseParams().RPCPort());
     SAFECOIN_DPOWCONFS = GetArg("-dpowconfs",dpowconfs);
-    if ( ASSETCHAINS_SYMBOL[0] == 0 || strcmp(ASSETCHAINS_SYMBOL,"SUPERNET") == 0 || strcmp(ASSETCHAINS_SYMBOL,"DEX") == 0 || strcmp(ASSETCHAINS_SYMBOL,"COQUI") == 0 || strcmp(ASSETCHAINS_SYMBOL,"PIRATE") == 0 || strcmp(ASSETCHAINS_SYMBOL,"KMDICE") == 0 )
+    if ( ASSETCHAINS_SYMBOL[0] == 0 || strcmp(ASSETCHAINS_SYMBOL,"SUPERNET") == 0 || strcmp(ASSETCHAINS_SYMBOL,"DEX") == 0 || strcmp(ASSETCHAINS_SYMBOL,"COQUI") == 0 || strcmp(ASSETCHAINS_SYMBOL,"PIRATE") == 0 || strcmp(ASSETCHAINS_SYMBOL,"SAFEICE") == 0 )
         SAFECOIN_EXTRASATOSHI = 1;
 }
 

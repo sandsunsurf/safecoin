@@ -101,10 +101,10 @@ static int AppInitRPC(int argc, char* argv[])
         strncpy(ASSETCHAINS_SYMBOL,name.c_str(),sizeof(ASSETCHAINS_SYMBOL)-1);
 
     if (argc<2 || mapArgs.count("-?") || mapArgs.count("-h") || mapArgs.count("-help") || mapArgs.count("-version")) {
-        std::string strUsage = _("Komodo RPC client version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
+        std::string strUsage = _("Safecoin RPC client version") + " " + FormatFullVersion() + "\n" + PrivacyInfo();
         if (!mapArgs.count("-version")) {
             strUsage += "\n" + _("Usage:") + "\n" +
-                  "  safecoin-cli [options] <command> [params]  " + _("Send command to Komodo") + "\n" +
+                  "  safecoin-cli [options] <command> [params]  " + _("Send command to Safecoin") + "\n" +
                   "  safecoin-cli [options] help                " + _("List commands") + "\n" +
                   "  safecoin-cli [options] help <command>      " + _("Get help for a command") + "\n";
 

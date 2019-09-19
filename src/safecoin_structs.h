@@ -98,7 +98,7 @@ struct safecoin_ccdataMoM
     int32_t MoMdepth,notarized_height,height,txi;
 };
 
-struct safecoin_ccdata_entry { uint256 MoM; int32_t notarized_height,kmdheight,txi; char symbol[65]; };
+struct safecoin_ccdata_entry { uint256 MoM; int32_t notarized_height,safeheight,txi; char symbol[65]; };
 struct safecoin_ccdatapair { int32_t notarized_height,MoMoMoffset; };
 
 struct safecoin_ccdataMoMoM
@@ -123,7 +123,7 @@ struct safecoin_state
     uint32_t SAVEDTIMESTAMP;
     uint64_t deposited,issued,withdrawn,approved,redeemed,shorted;
     struct notarized_checkpoint *NPOINTS; int32_t NUM_NPOINTS,last_NPOINTSi;
-    struct safecoin_event **Komodo_events; int32_t Komodo_numevents;
+    struct safecoin_event **Safecoin_events; int32_t Safecoin_numevents;
     uint32_t RTbufs[64][3]; uint64_t RTmask;
 };
 

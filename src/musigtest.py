@@ -16,13 +16,13 @@ def def_credentials(chain):
     rpcport = '';
     operating_system = platform.system()
     if operating_system == 'Darwin':
-        ac_dir = os.environ['HOME'] + '/Library/Application Support/Komodo'
+        ac_dir = os.environ['HOME'] + '/Library/Application Support/Safecoin'
     elif operating_system == 'Linux':
-        ac_dir = os.environ['HOME'] + '/.komodo'
+        ac_dir = os.environ['HOME'] + '/.safecoin'
     elif operating_system == 'Windows':
-        ac_dir = '%s/komodo/' % os.environ['APPDATA']
-    if chain == 'KMD':
-        coin_config_file = str(ac_dir + '/komodo.conf')
+        ac_dir = '%s/safecoin/' % os.environ['APPDATA']
+    if chain == 'SAFE':
+        coin_config_file = str(ac_dir + '/safecoin.conf')
     else:
         coin_config_file = str(ac_dir + '/' + chain + '/' + chain + '.conf')
     with open(coin_config_file, 'r') as f:
@@ -35,7 +35,7 @@ def def_credentials(chain):
             elif re.search('rpcport', l):
                 rpcport = l.replace('rpcport=', '')
     if len(rpcport) == 0:
-        if chain == 'KMD':
+        if chain == 'SAFE':
             rpcport = 7771
         else:
             print("rpcport not in conf file, exiting")

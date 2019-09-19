@@ -271,7 +271,7 @@ UniValue stop(const UniValue& params, bool fHelp)
     if (fHelp || params.size() > 1)
         throw runtime_error(
             "stop\n"
-            "\nStop Komodo server.");
+            "\nStop Safecoin server.");
 
 #ifdef ENABLE_WALLET
     GenerateBitcoins(false, pwalletMain, 0);
@@ -281,7 +281,7 @@ UniValue stop(const UniValue& params, bool fHelp)
 
     // Shutdown will take long enough that the response should get back
     StartShutdown();
-    sprintf(buf,"%s server stopping",ASSETCHAINS_SYMBOL[0] != 0 ? ASSETCHAINS_SYMBOL : "Komodo");
+    sprintf(buf,"%s server stopping",ASSETCHAINS_SYMBOL[0] != 0 ? ASSETCHAINS_SYMBOL : "Safecoin");
     return buf;
 }
 

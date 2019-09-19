@@ -654,7 +654,7 @@ uint16_t safecoin_userpass(char *userpass,char *symbol)
     if ( strcmp("SAFE",symbol) == 0 )
     {
 #ifdef __APPLE__
-        sprintf(confname,"Komodo.conf");
+        sprintf(confname,"Safecoin.conf");
 #else
         sprintf(confname,"safecoin.conf");
 #endif

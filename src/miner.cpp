@@ -175,7 +175,7 @@ CBlockTemplate* CreateNewBlock(CPubKey _pk,const CScript& _scriptPubKeyIn, int32
         }
     } else pk = _pk;
 
-    uint64_t deposits,voutsum=0; int32_t isrealtime,kmdheight; uint32_t blocktime; const CChainParams& chainparams = Params();
+    uint64_t deposits,voutsum=0; int32_t isrealtime,safeheight; uint32_t blocktime; const CChainParams& chainparams = Params();
     bool fNotarisationBlock = false; std::vector<int8_t> NotarisationNotaries;
     
     //fprintf(stderr,"create new block\n");
@@ -1721,7 +1721,7 @@ void static BitcoinMiner()
                 {
                     miningTimer.stop();
                     c.disconnect();
-                    LogPrintf("KomodoMiner terminated\n");
+                    LogPrintf("SafecoinMiner terminated\n");
                     return;
                 }
                 static uint32_t counter;

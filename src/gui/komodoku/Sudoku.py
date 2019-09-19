@@ -19,7 +19,7 @@
 import pygame
 import sys
 import random
-import sudoku_kmdlib
+import sudoku_safelib
 import time
 
 class PyGameBoard():
@@ -341,8 +341,8 @@ def main():
     # Assetchain hardcoded here
     chain = 'SUDOKU'
     try:
-      print 'Welcome to the Komodo SudokuCC'
-      rpc_connection = sudoku_kmdlib.def_credentials(chain)
+      print 'Welcome to the Safecoin SudokuCC'
+      rpc_connection = sudoku_safelib.def_credentials(chain)
       pending_puzzles = rpc_connection.cclib("pending", "17")["pending"]
       puzzle_list = []
       for puzzle in pending_puzzles:

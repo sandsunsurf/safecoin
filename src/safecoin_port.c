@@ -762,10 +762,10 @@ int32_t iguana_rwnum(int32_t rwflag,uint8_t *serialized,int32_t len,void *endian
     return(len);
 }
 
-uint32_t komodo_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int32_t extralen)
+uint32_t safecoin_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int32_t extralen)
 {
     uint8_t buf[512]; uint32_t crc0=0; int32_t len = 0; bits256 hash;
-    if ( strcmp(symbol,"KMD") == 0 )
+    if ( strcmp(symbol,"SAFE") == 0 )
         return(0x8de4eef9);
     len = iguana_rwnum(1,&buf[len],sizeof(supply),(void *)&supply);
     strcpy((char *)&buf[len],symbol);
@@ -778,7 +778,7 @@ uint32_t komodo_assetmagic(char *symbol,uint64_t supply,uint8_t *extraptr,int32_
     return(calc_crc32(crc0,buf,len));
 }
 
-uint16_t komodo_assetport(uint32_t magic,int32_t extralen)
+uint16_t safecoin_assetport(uint32_t magic,int32_t extralen)
 {
     if ( magic == 0x8de4eef9 )
         return(7770);
@@ -787,18 +787,18 @@ uint16_t komodo_assetport(uint32_t magic,int32_t extralen)
     else return(16000 + (magic % 49500));
 }
 
-uint16_t komodo_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *extraptr,int32_t extralen)
+uint16_t safecoin_port(char *symbol,uint64_t supply,uint32_t *magicp,uint8_t *extraptr,int32_t extralen)
 {
-    if ( symbol == 0 || symbol[0] == 0 || strcmp("KMD",symbol) == 0 )
+    if ( symbol == 0 || symbol[0] == 0 || strcmp("SAFE",symbol) == 0 )
     {
         *magicp = 0x8de4eef9;
         return(7770);
     }
-    *magicp = komodo_assetmagic(symbol,supply,extraptr,extralen);
-    return(komodo_assetport(*magicp,extralen));
+    *magicp = safecoin_assetmagic(symbol,supply,extraptr,extralen);
+    return(safecoin_assetport(*magicp,extralen));
 }
 
-uint16_t komodo_calcport(char *name,uint64_t supply,uint64_t endsubsidy,uint64_t reward,uint64_t halving,uint64_t decay,uint64_t commission,uint8_t staked,int32_t cc)
+uint16_t safecoin_calcport(char *name,uint64_t supply,uint64_t endsubsidy,uint64_t reward,uint64_t halving,uint64_t decay,uint64_t commission,uint8_t staked,int32_t cc)
 {
     uint8_t extrabuf[4096],*extraptr=0; int32_t extralen=0; uint64_t val;
     if ( halving != 0 && halving < 1440 )
@@ -828,7 +828,7 @@ uint16_t komodo_calcport(char *name,uint64_t supply,uint64_t endsubsidy,uint64_t
         val = commission | (((uint64_t)staked & 0xff) << 32) | (((uint64_t)cc & 0xffffff) << 40);
         extralen += iguana_rwnum(1,&extraptr[extralen],sizeof(val),(void *)&val);
     }
-    return(komodo_port(name,supply,&ASSETCHAINS_MAGIC,extraptr,extralen));
+    return(safecoin_port(name,supply,&ASSETCHAINS_MAGIC,extraptr,extralen));
 }
 
 int main(int argc, char * argv[])
@@ -860,8 +860,8 @@ int main(int argc, char * argv[])
         halving = (long long)atof(argv[offset + 5]);
     if ( argc > offset + 6 )
         decay = (long long)atof(argv[offset + 6]);
-    rpcport = 1 + komodo_calcport(argv[offset + 1],supply,endsubsidy,reward,halving,decay,commission,staked,cc);
-    printf("./komodod -ac_name=%s -ac_cc=%u -ac_supply=%llu -ac_end=%llu -ac_reward=%llu -ac_halving=%llu -ac_decay=%llu & # rpcport %u\n[",argv[offset + 1],cc,(long long)supply,(long long)endsubsidy,(long long)reward,(long long)halving,(long long)decay,rpcport);
+    rpcport = 1 + safecoin_calcport(argv[offset + 1],supply,endsubsidy,reward,halving,decay,commission,staked,cc);
+    printf("./safecoind -ac_name=%s -ac_cc=%u -ac_supply=%llu -ac_end=%llu -ac_reward=%llu -ac_halving=%llu -ac_decay=%llu & # rpcport %u\n[",argv[offset + 1],cc,(long long)supply,(long long)endsubsidy,(long long)reward,(long long)halving,(long long)decay,rpcport);
     if ( allocated != 0 )
     {
         char name[64],newname[64];
@@ -874,12 +874,12 @@ int main(int argc, char * argv[])
             j = 0;
             while ( 1 )
             {
-                rpcport = 1 + komodo_calcport(newname,supply+j,endsubsidy,reward,halving,decay,commission,staked,cc);
+                rpcport = 1 + safecoin_calcport(newname,supply+j,endsubsidy,reward,halving,decay,commission,staked,cc);
                 if ( allocated[rpcport] == 0 && allocated[rpcport-1] == 0 )
                 {
                     if ( jsonflag == 0 )
                     {
-                        printf("./komodod -ac_name=%s -ac_cc=%u -ac_supply=%llu -ac_end=%llu -ac_reward=%llu -ac_halving=%llu -ac_decay=%llu & # rpcport %u\n",newname,cc,(long long)supply+j,(long long)endsubsidy,(long long)reward,(long long)halving,(long long)decay,rpcport);
+                        printf("./safecoind -ac_name=%s -ac_cc=%u -ac_supply=%llu -ac_end=%llu -ac_reward=%llu -ac_halving=%llu -ac_decay=%llu & # rpcport %u\n",newname,cc,(long long)supply+j,(long long)endsubsidy,(long long)reward,(long long)halving,(long long)decay,rpcport);
                     }
                     else
                     {
