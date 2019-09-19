@@ -131,3 +131,4 @@ src/cryptoconditions/compile
 
 src/cc/customcc.so
 src/libcc.so
+src/cryptoconditions/src/stamp-h1
