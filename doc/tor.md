@@ -44,11 +44,11 @@ reachable from the Tor network. Add these lines to your /etc/tor/torrc (or equiv
 config file):
 
 	HiddenServiceDir /var/lib/tor/zcash-service/
-	HiddenServicePort 7771 127.0.0.1:7771
-	HiddenServicePort 17771 127.0.0.1:17771
+	HiddenServicePort 8771 127.0.0.1:8771
+	HiddenServicePort 18771 127.0.0.1:18771
 
 The directory can be different of course, but (both) port numbers should be equal to
-your safecoind's P2P listen port (7771 by default).
+your safecoind's P2P listen port (8771 by default).
 
 	-externalip=X   You can tell Safecoin about its publicly reachable address using
 	                this option, and this can be a .onion address. Given the above
@@ -83,7 +83,7 @@ as well, use `discover` instead:
 
 	./safecoind ... -discover
 
-and open port 7771 on your firewall (or use -upnp).
+and open port 8771 on your firewall (or use -upnp).
 
 If you only want to use Tor to reach onion addresses, but not use it as a proxy
 for normal IPv4/IPv6 communication, use:
@@ -136,7 +136,7 @@ Now use safecoin-cli to verify there is only a single peer connection.
 	[
 	    {
 	        "id" : 1,
-	        "addr" : "zctestseie6wxgio.onion:17770",
+	        "addr" : "zctestseie6wxgio.onion:18770",
 	        ...
 	        "version" : 170002,
 	        "subver" : "/MagicBean:1.0.0/",

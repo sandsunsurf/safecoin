@@ -91,7 +91,7 @@ def def_credentials(chain):
                 rpcport = l.replace('rpcport=', '')
     if len(rpcport) == 0:
         if chain == 'SAFE':
-            rpcport = 7771
+            rpcport = 8771
         else:
             print("rpcport not in conf file, exiting")
             print("check "+coin_config_file)
