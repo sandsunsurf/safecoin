@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin Core developers
+// Copyright (c) 2019 The Safecoin developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -50,6 +51,7 @@
 #include "notaries_staked.h"
 
 #include <cstring>
+#include <sstream>      // std::istringstream
 #include <algorithm>
 #include <atomic>
 #include <sstream>
@@ -63,11 +65,18 @@
 #include <boost/math/distributions/poisson.hpp>
 #include <boost/thread.hpp>
 #include <boost/static_assert.hpp>
+#include <boost/crc.hpp>
+
+#include "rpc/server.h"
+#include "rpc/client.h"
+#include <boost/algorithm/string.hpp>
+
+
 
 using namespace std;
 
 #if defined(NDEBUG)
-# error "Zcash cannot be compiled without assertions."
+# error "Safecoin cannot be compiled without assertions."
 #endif
 
 #include "librustzcash.h"
@@ -2418,13 +2427,36 @@ CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
     int32_t numhalvings,i; uint64_t numerator; CAmount nSubsidy = 3 * COIN;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
-        if ( nHeight == 1 )
-            return(100000000 * COIN); // ICO allocation
-        else if ( nHeight < SAFECOIN_ENDOFERA )
-            return(3 * COIN);
-        else if ( nHeight < 2*SAFECOIN_ENDOFERA )
-            return(2 * COIN);
-        else return(COIN);
+   if ( nHeight == 1 ) nSubsidy = (4000000 * COIN);
+      else if ( nHeight == 80185 ) nSubsidy = (665600 * COIN); //refund for interest rate attack
+      else if ( nHeight < 123840 ) nSubsidy = (128 * COIN);
+      else if ( nHeight < 178378 ) nSubsidy = (64 * COIN);
+      else if ( nHeight < 181378 ) nSubsidy = (56 * COIN);
+      else if ( nHeight < 184376 ) nSubsidy = (48 * COIN);
+      else if ( nHeight < 187378 ) nSubsidy = (40 * COIN);
+      else if ( nHeight < 197378 ) nSubsidy = (32 * COIN);
+      else if ( nHeight < 207378 ) nSubsidy = (28 * COIN);
+      else if ( nHeight < 217378 ) nSubsidy = (24 * COIN);
+      else if ( nHeight < 227378 ) nSubsidy = (22 * COIN);
+      else if ( nHeight < 237378 ) nSubsidy = (20 * COIN);
+      else if ( nHeight < 247378 ) nSubsidy = (18 * COIN);
+      else if ( nHeight < 287378 ) nSubsidy = (16 * COIN);
+      else if ( nHeight < 327378 ) nSubsidy = (15 * COIN);
+      else if ( nHeight < 367378 ) nSubsidy = (14 * COIN);
+      else if ( nHeight < 407378 ) nSubsidy = (13 * COIN);
+      else if ( nHeight < 447378 ) nSubsidy = (12 * COIN);
+      else if ( nHeight < 487378 ) nSubsidy = (11 * COIN);
+      else if ( nHeight < 527378 ) nSubsidy = (10 * COIN);  
+      else if ( nHeight < 557378 ) nSubsidy = (5 * COIN);      //ends in 2019
+      else if ( nHeight < 1207378 ) nSubsidy = (4 * COIN);     //ends in 2020
+      else if ( nHeight < 1707378 ) nSubsidy = (3 * COIN);     //ends in 2021
+      else if ( nHeight < 2207378 ) nSubsidy = (2 * COIN);     //ends in 2022
+      else if ( nHeight < 2707378 ) nSubsidy = (1 * COIN);     //ends in 2023
+      else if ( nHeight < 3707378 ) nSubsidy = (0.5 * COIN);   //ends in 2025
+      else if ( nHeight < 4707378 ) nSubsidy = (0.25 * COIN);  //ends in 2027
+      else if ( nHeight < 5707378 ) nSubsidy = (0.125 * COIN); // 2029 10 Year Mark
+      else nSubsidy = 0;  // TX fees and additional implementations
+      return nSubsidy;
     }
     else
     {
@@ -2818,7 +2850,8 @@ namespace Consensus {
             return state.DoS(100, error("CheckInputs(): shielded input to transparent value pool out of range"),
                              REJECT_INVALID, "bad-txns-inputvalues-outofrange");
 
-        if (nValueIn < tx.GetValueOut())
+        
+        if (nValueIn < tx.GetValueOut() && nSpendHeight > 103820)
         {
             fprintf(stderr,"spentheight.%d valuein %s vs %s error\n",nSpendHeight,FormatMoney(nValueIn).c_str(), FormatMoney(tx.GetValueOut()).c_str());
             return state.DoS(100, error("CheckInputs(): %s value in (%s) < value out (%s) diff %.8f",
@@ -2826,11 +2859,11 @@ namespace Consensus {
         }
         // Tally transaction fees
         CAmount nTxFee = nValueIn - tx.GetValueOut();
-        if (nTxFee < 0)
+        if (nTxFee < 0 && nSpendHeight > 103820)
             return state.DoS(100, error("CheckInputs(): %s nTxFee < 0", tx.GetHash().ToString()),
                              REJECT_INVALID, "bad-txns-fee-negative");
         nFees += nTxFee;
-        if (!MoneyRange(nFees))
+        if (!MoneyRange(nFees) && nSpendHeight > 103820)
             return state.DoS(100, error("CheckInputs(): nFees out of range"),
                              REJECT_INVALID, "bad-txns-fee-outofrange");
         return true;
@@ -3293,7 +3326,7 @@ bool FindUndoPos(CValidationState &state, int nFile, CDiskBlockPos &pos, unsigne
 static CCheckQueue<CScriptCheck> scriptcheckqueue(128);
 
 void ThreadScriptCheck() {
-    RenameThread("zcash-scriptch");
+    RenameThread("safecoin-scriptch");
     scriptcheckqueue.Thread();
 }
 
@@ -3724,9 +3757,9 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         return state.DoS(100, error("ConnectBlock(): coinbase for block 1 pays wrong amount (actual=%d vs correct=%d)", block.vtx[0].GetValueOut(), blockReward),
                             REJECT_INVALID, "bad-cb-amount");
     }
-    if ( block.vtx[0].GetValueOut() > blockReward+SAFECOIN_EXTRASATOSHI )
+    if ( block.vtx[0].GetValueOut() > blockReward+SAFECOIN_EXTRASATOSHI && pindex->GetHeight() >= 103820)
     {
-        if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->GetHeight() >= SAFECOIN_NOTARIES_HEIGHT1 || block.vtx[0].vout[0].nValue > blockReward )
+      if ( ASSETCHAINS_SYMBOL[0] != 0 || pindex->GetHeight() >= 194253 || block.vtx[0].vout[0].nValue > blockReward )
         {
             //fprintf(stderr, "coinbase pays too much\n");
             //sleepflag = true;
@@ -5180,8 +5213,8 @@ bool CheckBlock(int32_t *futureblockp,int32_t height,CBlockIndex *pindex,const C
     for (uint32_t i = 0; i < block.vtx.size(); i++)
     {
         const CTransaction& tx = block.vtx[i];
-        if ( safecoin_validate_interest(tx,height == 0 ? safecoin_block2height((CBlock *)&block) : height,block.nTime,0) < 0 )
-            return error("CheckBlock: safecoin_validate_interest failed");
+	//      if ((height>103820) & safecoin_validate_interest(tx,height == 0 ? safecoin_block2height((CBlock *)&block) : height,block.nTime,0) < 0 )
+	//            return error("CheckBlock: safecoin_validate_interest failed");
         if (!CheckTransaction(tiptime,tx, state, verifier))
             return error("CheckBlock: CheckTransaction failed");
     }

@@ -78,7 +78,7 @@ int8_t StakedNotaryID(std::string &notaryname, char *Raddress);
 uint64_t safecoin_notarypayamount(int32_t nHeight, int64_t notarycount);
 int32_t safecoin_notaries(uint8_t pubkeys[64][33],int32_t height,uint32_t timestamp);
 
-#define SAFECOIN_VERSION "0.4.0a"
+#define SAFECOIN_VERSION "2.0.4"
 #define VERUS_VERSION "0.4.0g"
 extern uint16_t ASSETCHAINS_P2PPORT,ASSETCHAINS_RPCPORT;
 extern uint32_t ASSETCHAINS_CC;
@@ -208,6 +208,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
             "  \"blocks\": xxxxxx,           (numeric) the current number of blocks processed in the server\n"
             "  \"timeoffset\": xxxxx,        (numeric) the time offset\n"
             "  \"connections\": xxxxx,       (numeric) the number of connections\n"
+            "  \"tls_connections\": xxxxx,   (numeric) the number of TLS connections\n"
             "  \"proxy\": \"host:port\",     (string, optional) the proxy used by the server\n"
             "  \"difficulty\": xxxxxx,       (numeric) the current difficulty\n"
             "  \"testnet\": true|false,      (boolean) if the server is using testnet or not\n"
@@ -275,6 +276,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     if ( chainActive.LastTip() != 0 )
         obj.push_back(Pair("tiptime", (int)chainActive.LastTip()->nTime));
     obj.push_back(Pair("connections",   (int)vNodes.size()));
+    obj.push_back(Pair("tls_connections", (int)std::count_if(vNodes.begin(), vNodes.end(), [](CNode* n) {return n->ssl != NULL;})));
     obj.push_back(Pair("proxy",         (proxy.IsValid() ? proxy.proxy.ToStringIPPort() : string())));
     obj.push_back(Pair("difficulty",    (double)GetDifficulty()));
     obj.push_back(Pair("testnet",       Params().TestnetToBeDeprecatedFieldRPC()));
@@ -296,6 +298,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
             obj.push_back(Pair("notaryname",      notaryname));
         } else if( (notaryid= safecoin_whoami(pubkeystr,(int32_t)chainActive.LastTip()->GetHeight(),safecoin_chainactive_timestamp())) >= 0 )  {
             obj.push_back(Pair("notaryid",        notaryid));
+            obj.push_back(Pair("pubkey",        pubkeystr));
             if ( SAFECOIN_LASTMINED != 0 )
                 obj.push_back(Pair("lastmined", SAFECOIN_LASTMINED));
         }
