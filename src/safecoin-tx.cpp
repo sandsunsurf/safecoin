@@ -41,13 +41,13 @@ using namespace std;
 
 #include "uint256.h"
 #include "arith_uint256.h"
-#include "komodo_structs.h"
-#include "komodo_globals.h"
-#include "komodo_defs.h"
+#include "safecoin_structs.h"
+#include "safecoin_globals.h"
+#include "safecoin_defs.h"
 
-#include "komodo_interest.h"
+#include "safecoin_interest.h"
 
-uint64_t komodo_accrued_interest(int32_t *txheightp,uint32_t *locktimep,uint256 hash,int32_t n,int32_t checkheight,uint64_t checkvalue,int32_t tipheight)
+uint64_t safecoin_accrued_interest(int32_t *txheightp,uint32_t *locktimep,uint256 hash,int32_t n,int32_t checkheight,uint64_t checkvalue,int32_t tipheight)
 {
     return(0);
 }
@@ -193,7 +193,7 @@ static void RegisterLoad(const std::string& strInput)
 }
 
 
-int32_t komodo_nextheight()
+int32_t safecoin_nextheight()
 {
     return(100000000);
 }

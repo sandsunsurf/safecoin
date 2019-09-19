@@ -27,7 +27,7 @@
 #include "chainparams.h"
 
 static const std::string CLIENT_VERSION_STR = FormatVersion(CLIENT_VERSION);
-extern char ASSETCHAINS_SYMBOL[KOMODO_ASSETCHAIN_MAXLEN];
+extern char ASSETCHAINS_SYMBOL[SAFECOIN_ASSETCHAIN_MAXLEN];
 
 void EnforceNodeDeprecation(int nHeight, bool forceLogging, bool fThread) {
 

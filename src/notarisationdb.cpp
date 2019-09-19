@@ -34,7 +34,7 @@ NotarisationsInBlock ScanBlockNotarisations(const CBlock &block, int nHeight)
         //printf("Checked notarisation data for %s \n",data.symbol);
         int authority = GetSymbolAuthority(data.symbol);
 
-        if (authority == CROSSCHAIN_KOMODO) {
+        if (authority == CROSSCHAIN_SAFECOIN) {
             if (!eval->CheckNotaryInputs(tx, nHeight, block.nTime))
                 continue;
             //printf("Authorised notarisation data for %s \n",data.symbol);

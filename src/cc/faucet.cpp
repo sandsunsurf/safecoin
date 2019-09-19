@@ -178,7 +178,7 @@ int64_t AddFaucetInputs(struct CCcontract_info *cp,CMutableTransaction &mtx,CPub
 
 std::string FaucetGet(uint64_t txfee)
 {
-    CMutableTransaction tmpmtx,mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), komodo_nextheight());
+    CMutableTransaction tmpmtx,mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), safecoin_nextheight());
     CPubKey mypk,faucetpk; int64_t inputs,CCchange=0,nValue=FAUCETSIZE; struct CCcontract_info *cp,C; std::string rawhex; uint32_t j; int32_t i,len; uint8_t buf[32768]; bits256 hash;
     cp = CCinit(&C,EVAL_FAUCET);
     if ( txfee == 0 )
@@ -219,7 +219,7 @@ std::string FaucetGet(uint64_t txfee)
 
 std::string FaucetFund(uint64_t txfee,int64_t funds)
 {
-    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), komodo_nextheight());
+    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), safecoin_nextheight());
     CPubKey mypk,faucetpk; CScript opret; struct CCcontract_info *cp,C;
     cp = CCinit(&C,EVAL_FAUCET);
     if ( txfee == 0 )
@@ -237,7 +237,7 @@ std::string FaucetFund(uint64_t txfee,int64_t funds)
 UniValue FaucetInfo()
 {
     UniValue result(UniValue::VOBJ); char numstr[64];
-    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), komodo_nextheight());
+    CMutableTransaction mtx = CreateNewContextualCMutableTransaction(Params().GetConsensus(), safecoin_nextheight());
     CPubKey faucetpk; struct CCcontract_info *cp,C; int64_t funding;
     result.push_back(Pair("result","success"));
     result.push_back(Pair("name","Faucet"));

@@ -13,12 +13,12 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef H_KOMODOKV_H
-#define H_KOMODOKV_H
+#ifndef H_SAFECOINKV_H
+#define H_SAFECOINKV_H
 
-#include "komodo_defs.h"
+#include "safecoin_defs.h"
 
-int32_t komodo_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint16_t valuesize)
+int32_t safecoin_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint16_t valuesize)
 {
     if ( refvalue == 0 && value == 0 )
         return(0);
@@ -29,7 +29,7 @@ int32_t komodo_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint
     else return(memcmp(refvalue,value,valuesize));
 }
 
-int32_t komodo_kvnumdays(uint32_t flags)
+int32_t safecoin_kvnumdays(uint32_t flags)
 {
     int32_t numdays;
     if ( (numdays= ((flags>>2)&0x3ff)+1) > 365 )
@@ -37,37 +37,37 @@ int32_t komodo_kvnumdays(uint32_t flags)
     return(numdays);
 }
 
-int32_t komodo_kvduration(uint32_t flags)
+int32_t safecoin_kvduration(uint32_t flags)
 {
-    return(komodo_kvnumdays(flags) * KOMODO_KVDURATION);
+    return(safecoin_kvnumdays(flags) * SAFECOIN_KVDURATION);
 }
 
-uint64_t komodo_kvfee(uint32_t flags,int32_t opretlen,int32_t keylen)
+uint64_t safecoin_kvfee(uint32_t flags,int32_t opretlen,int32_t keylen)
 {
     int32_t numdays,k; uint64_t fee;
     if ( (k= keylen) > 32 )
         k = 32;
-    numdays = komodo_kvnumdays(flags);
+    numdays = safecoin_kvnumdays(flags);
     if ( (fee= (numdays*(opretlen * opretlen / k))) < 100000 )
         fee = 100000;
     return(fee);
 }
 
-int32_t komodo_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen)
+int32_t safecoin_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp,int32_t *heightp,uint8_t value[IGUANA_MAXSCRIPTSIZE],uint8_t *key,int32_t keylen)
 {
-    struct komodo_kv *ptr; int32_t duration,retval = -1;
+    struct safecoin_kv *ptr; int32_t duration,retval = -1;
     *heightp = -1;
     *flagsp = 0;
     memset(pubkeyp,0,sizeof(*pubkeyp));
-    portable_mutex_lock(&KOMODO_KV_mutex);
-    HASH_FIND(hh,KOMODO_KV,key,keylen,ptr);
+    portable_mutex_lock(&SAFECOIN_KV_mutex);
+    HASH_FIND(hh,SAFECOIN_KV,key,keylen,ptr);
     if ( ptr != 0 )
     {
-        duration = komodo_kvduration(ptr->flags);
+        duration = safecoin_kvduration(ptr->flags);
         //fprintf(stderr,"duration.%d flags.%d current.%d ht.%d keylen.%d valuesize.%d\n",duration,ptr->flags,current_height,ptr->height,ptr->keylen,ptr->valuesize);
         if ( current_height > (ptr->height + duration) )
         {
-            HASH_DELETE(hh,KOMODO_KV,ptr);
+            HASH_DELETE(hh,SAFECOIN_KV,ptr);
             if ( ptr->value != 0 )
                 free(ptr->value);
             if ( ptr->key != 0 )
@@ -89,7 +89,7 @@ int32_t komodo_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp
                 memcpy(value,ptr->value,retval);
         }
     } //else fprintf(stderr,"couldnt find (%s)\n",(char *)key);
-    portable_mutex_unlock(&KOMODO_KV_mutex);
+    portable_mutex_unlock(&SAFECOIN_KV_mutex);
     if ( retval < 0 )
     {
         // search rawmempool
@@ -97,11 +97,11 @@ int32_t komodo_kvsearch(uint256 *pubkeyp,int32_t current_height,uint32_t *flagsp
     return(retval);
 }
 
-void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
+void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
 {
     static uint256 zeroes;
-    uint32_t flags; uint256 pubkey,refpubkey,sig; int32_t i,refvaluesize,hassig,coresize,haspubkey,height,kvheight; uint16_t keylen,valuesize,newflag = 0; uint8_t *key,*valueptr,keyvalue[IGUANA_MAXSCRIPTSIZE*8]; struct komodo_kv *ptr; char *transferpubstr,*tstr; uint64_t fee;
-    if ( ASSETCHAINS_SYMBOL[0] == 0 ) // disable KV for KMD
+    uint32_t flags; uint256 pubkey,refpubkey,sig; int32_t i,refvaluesize,hassig,coresize,haspubkey,height,kvheight; uint16_t keylen,valuesize,newflag = 0; uint8_t *key,*valueptr,keyvalue[IGUANA_MAXSCRIPTSIZE*8]; struct safecoin_kv *ptr; char *transferpubstr,*tstr; uint64_t fee;
+    if ( ASSETCHAINS_SYMBOL[0] == 0 ) // disable KV for SAFE
         return;
     iguana_rwnum(0,&opretbuf[1],sizeof(keylen),&keylen);
     iguana_rwnum(0,&opretbuf[3],sizeof(valuesize),&valuesize);
@@ -112,11 +112,11 @@ void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
     {
         static uint32_t counter;
         if ( ++counter < 1 )
-            fprintf(stderr,"komodo_kvupdate: keylen.%d + 13 > opretlen.%d, this can be ignored\n",keylen,opretlen);
+            fprintf(stderr,"safecoin_kvupdate: keylen.%d + 13 > opretlen.%d, this can be ignored\n",keylen,opretlen);
         return;
     }
     valueptr = &key[keylen];
-    fee = komodo_kvfee(flags,opretlen,keylen);
+    fee = safecoin_kvfee(flags,opretlen,keylen);
     //fprintf(stderr,"fee %.8f vs %.8f flags.%d keylen.%d valuesize.%d height.%d (%02x %02x %02x) (%02x %02x %02x)\n",(double)fee/COIN,(double)value/COIN,flags,keylen,valuesize,height,key[0],key[1],key[2],valueptr[0],valueptr[1],valueptr[2]);
     if ( value >= fee )
     {
@@ -136,23 +136,23 @@ void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     ((uint8_t *)&sig)[i] = opretbuf[coresize+sizeof(uint256)+i];
             }
             memcpy(keyvalue,key,keylen);
-            if ( (refvaluesize= komodo_kvsearch((uint256 *)&refpubkey,height,&flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
+            if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,height,&flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
             {
                 if ( memcmp(&zeroes,&refpubkey,sizeof(refpubkey)) != 0 )
                 {
-                    if ( komodo_kvsigverify(keyvalue,keylen+refvaluesize,refpubkey,sig) < 0 )
+                    if ( safecoin_kvsigverify(keyvalue,keylen+refvaluesize,refpubkey,sig) < 0 )
                     {
-                        //fprintf(stderr,"komodo_kvsigverify error [%d]\n",coresize-13);
+                        //fprintf(stderr,"safecoin_kvsigverify error [%d]\n",coresize-13);
                         return;
                     }
                 }
             }
-            portable_mutex_lock(&KOMODO_KV_mutex);
-            HASH_FIND(hh,KOMODO_KV,key,keylen,ptr);
+            portable_mutex_lock(&SAFECOIN_KV_mutex);
+            HASH_FIND(hh,SAFECOIN_KV,key,keylen,ptr);
             if ( ptr != 0 )
             {
                 //fprintf(stderr,"(%s) already there\n",(char *)key);
-                //if ( (ptr->flags & KOMODO_KVPROTECTED) != 0 )
+                //if ( (ptr->flags & SAFECOIN_KVPROTECTED) != 0 )
                 {
                     tstr = (char *)"transfer:";
                     transferpubstr = (char *)&valueptr[strlen(tstr)];
@@ -166,15 +166,15 @@ void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             }
             else if ( ptr == 0 )
             {
-                ptr = (struct komodo_kv *)calloc(1,sizeof(*ptr));
+                ptr = (struct safecoin_kv *)calloc(1,sizeof(*ptr));
                 ptr->key = (uint8_t *)calloc(1,keylen);
                 ptr->keylen = keylen;
                 memcpy(ptr->key,key,keylen);
                 newflag = 1;
-                HASH_ADD_KEYPTR(hh,KOMODO_KV,ptr->key,ptr->keylen,ptr);
+                HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
                 //fprintf(stderr,"KV add.(%s) (%s)\n",ptr->key,valueptr);
             }
-            if ( newflag != 0 || (ptr->flags & KOMODO_KVPROTECTED) == 0 )
+            if ( newflag != 0 || (ptr->flags & SAFECOIN_KVPROTECTED) == 0 )
             {
                 if ( ptr->value != 0 )
                     free(ptr->value), ptr->value = 0;
@@ -183,7 +183,7 @@ void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
                     ptr->value = (uint8_t *)calloc(1,valuesize);
                     memcpy(ptr->value,valueptr,valuesize);
                 }
-            } else fprintf(stderr,"newflag.%d zero or protected %d\n",newflag,(ptr->flags & KOMODO_KVPROTECTED));
+            } else fprintf(stderr,"newflag.%d zero or protected %d\n",newflag,(ptr->flags & SAFECOIN_KVPROTECTED));
             /*for (i=0; i<32; i++)
                 printf("%02x",((uint8_t *)&ptr->pubkey)[i]);
             printf(" <- ");
@@ -193,7 +193,7 @@ void komodo_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             memcpy(&ptr->pubkey,&pubkey,sizeof(ptr->pubkey));
             ptr->height = height;
             ptr->flags = flags; // jl777 used to or in KVPROTECTED
-            portable_mutex_unlock(&KOMODO_KV_mutex);
+            portable_mutex_unlock(&SAFECOIN_KV_mutex);
         } else fprintf(stderr,"KV update size mismatch %d vs %d\n",opretlen,coresize);
     } else fprintf(stderr,"not enough fee\n");
 }

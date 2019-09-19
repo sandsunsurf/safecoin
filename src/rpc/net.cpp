@@ -180,8 +180,8 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
     return ret;
 }
 
-int32_t KOMODO_LONGESTCHAIN;
-int32_t komodo_longestchain()
+int32_t SAFECOIN_LONGESTCHAIN;
+int32_t safecoin_longestchain()
 {
     static int32_t depth;
     int32_t ht,n=0,num=0,maxheight=0,height = 0;
@@ -197,7 +197,7 @@ int32_t komodo_longestchain()
         }
         BOOST_FOREACH(const CNodeStats& stats, vstats)
         {
-            //fprintf(stderr,"komodo_longestchain iter.%d\n",n);
+            //fprintf(stderr,"safecoin_longestchain iter.%d\n",n);
             CNodeStateStats statestats;
             bool fStateStats = GetNodeStateStats(stats.nodeid,statestats);
             if ( statestats.nSyncHeight < 0 )
@@ -219,14 +219,14 @@ int32_t komodo_longestchain()
         depth--;
         if ( num > (n >> 1) )
         {
-            if ( 0 && height != KOMODO_LONGESTCHAIN )
-                fprintf(stderr,"set %s KOMODO_LONGESTCHAIN <- %d\n",ASSETCHAINS_SYMBOL,height);
-            KOMODO_LONGESTCHAIN = height;
+            if ( 0 && height != SAFECOIN_LONGESTCHAIN )
+                fprintf(stderr,"set %s SAFECOIN_LONGESTCHAIN <- %d\n",ASSETCHAINS_SYMBOL,height);
+            SAFECOIN_LONGESTCHAIN = height;
             return(height);
         }
-        KOMODO_LONGESTCHAIN = 0;
+        SAFECOIN_LONGESTCHAIN = 0;
     }
-    return(KOMODO_LONGESTCHAIN);
+    return(SAFECOIN_LONGESTCHAIN);
 }
 
 UniValue addnode(const UniValue& params, bool fHelp)

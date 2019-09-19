@@ -54,8 +54,8 @@ using namespace libzcash;
 
 extern char ASSETCHAINS_SYMBOL[65];
 
-int32_t komodo_dpowconfs(int32_t height,int32_t numconfs);
-int32_t komodo_blockheight(uint256 hash);
+int32_t safecoin_dpowconfs(int32_t height,int32_t numconfs);
+int32_t safecoin_blockheight(uint256 hash);
 int tx_height( const uint256 &hash );
 extern UniValue signrawtransaction(const UniValue& params, bool fHelp);
 extern UniValue sendrawtransaction(const UniValue& params, bool fHelp);
@@ -837,7 +837,7 @@ bool AsyncRPCOperation_sendmany::main_impl() {
                 if (mapBlockIndex.find(wtx.hashBlock) == mapBlockIndex.end()) {
                     throw JSONRPCError(RPC_WALLET_ERROR, strprintf("mapBlockIndex does not contain block hash %s", wtx.hashBlock.ToString()));
                 }
-                wtxHeight = komodo_blockheight(wtx.hashBlock);
+                wtxHeight = safecoin_blockheight(wtx.hashBlock);
                 wtxDepth = wtx.GetDepthInMainChain();
             }
             LogPrint("zrpcunsafe", "%s: spending note (txid=%s, vjoinsplit=%d, ciphertext=%d, amount=%s, height=%d, confirmations=%d)\n",
@@ -1054,7 +1054,7 @@ bool AsyncRPCOperation_sendmany::find_utxos(bool fAcceptCoinbase=false) {
 
         if( mindepth_ > 1 ) {
             int nHeight    = tx_height(out.tx->GetHash());
-            int dpowconfs  = komodo_dpowconfs(nHeight, out.nDepth);
+            int dpowconfs  = safecoin_dpowconfs(nHeight, out.nDepth);
             if (dpowconfs < mindepth_) {
                 continue;
             }

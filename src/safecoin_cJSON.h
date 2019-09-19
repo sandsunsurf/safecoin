@@ -35,8 +35,8 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef komodo_cJSON__h
-#define komodo_cJSON__h
+#ifndef safecoin_cJSON__h
+#define safecoin_cJSON__h
 
 #include <stdio.h>
 #include <stdlib.h>

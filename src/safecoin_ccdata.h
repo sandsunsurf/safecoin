@@ -13,15 +13,15 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef H_KOMODOCCDATA_H
-#define H_KOMODOCCDATA_H
+#ifndef H_SAFECOINCCDATA_H
+#define H_SAFECOINCCDATA_H
 
-struct komodo_ccdata *CC_data;
+struct safecoin_ccdata *CC_data;
 int32_t CC_firstheight;
 
 uint256 BuildMerkleTree(bool* fMutated, const std::vector<uint256> leaves, std::vector<uint256> &vMerkleTree);
 
-uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
+uint256 safecoin_calcMoM(int32_t height,int32_t MoMdepth)
 {
     static uint256 zero; CBlockIndex *pindex; int32_t i; std::vector<uint256> tree, leaves;
     bool fMutated;
@@ -30,7 +30,7 @@ uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
         return(zero);
     for (i=0; i<MoMdepth; i++)
     {
-        if ( (pindex= komodo_chainactive(height - i)) != 0 )
+        if ( (pindex= safecoin_chainactive(height - i)) != 0 )
             leaves.push_back(pindex->hashMerkleRoot);
         else
             return(zero);
@@ -38,20 +38,20 @@ uint256 komodo_calcMoM(int32_t height,int32_t MoMdepth)
     return BuildMerkleTree(&fMutated, leaves, tree);
 }
 
-struct komodo_ccdata_entry *komodo_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t kmdstarti,int32_t kmdendi)
+struct safecoin_ccdata_entry *safecoin_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t safestarti,int32_t safeendi)
 {
-    struct komodo_ccdata_entry *allMoMs=0; struct komodo_ccdata *ccdata,*tmpptr; int32_t i,num,max;
+    struct safecoin_ccdata_entry *allMoMs=0; struct safecoin_ccdata *ccdata,*tmpptr; int32_t i,num,max;
     bool fMutated; std::vector<uint256> tree, leaves;
     num = max = 0;
-    portable_mutex_lock(&KOMODO_CC_mutex);
+    portable_mutex_lock(&SAFECOIN_CC_mutex);
     DL_FOREACH_SAFE(CC_data,ccdata,tmpptr)
     {
-        if ( ccdata->MoMdata.height <= kmdendi && ccdata->MoMdata.height >= kmdstarti )
+        if ( ccdata->MoMdata.height <= safeendi && ccdata->MoMdata.height >= safestarti )
         {
             if ( num >= max )
             {
                 max += 100;
-                allMoMs = (struct komodo_ccdata_entry *)realloc(allMoMs,max * sizeof(*allMoMs));
+                allMoMs = (struct safecoin_ccdata_entry *)realloc(allMoMs,max * sizeof(*allMoMs));
             }
             allMoMs[num].MoM = ccdata->MoMdata.MoM;
             allMoMs[num].notarized_height = ccdata->MoMdata.notarized_height;
@@ -60,10 +60,10 @@ struct komodo_ccdata_entry *komodo_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t
             strcpy(allMoMs[num].symbol,ccdata->symbol);
             num++;
         }
-        if ( ccdata->MoMdata.height < kmdstarti )
+        if ( ccdata->MoMdata.height < safestarti )
             break;
     }
-    portable_mutex_unlock(&KOMODO_CC_mutex);
+    portable_mutex_unlock(&SAFECOIN_CC_mutex);
     if ( (*nump= num) > 0 )
     {
         for (i=0; i<num; i++)
@@ -78,17 +78,17 @@ struct komodo_ccdata_entry *komodo_allMoMs(int32_t *nump,uint256 *MoMoMp,int32_t
     return(allMoMs);
 }
 
-int32_t komodo_addpair(struct komodo_ccdataMoMoM *mdata,int32_t notarized_height,int32_t offset,int32_t maxpairs)
+int32_t safecoin_addpair(struct safecoin_ccdataMoMoM *mdata,int32_t notarized_height,int32_t offset,int32_t maxpairs)
 {
     if ( maxpairs >= 0) {
         if ( mdata->numpairs >= maxpairs )
         {
             maxpairs += 100;
-            mdata->pairs = (struct komodo_ccdatapair *)realloc(mdata->pairs,sizeof(*mdata->pairs)*maxpairs);
+            mdata->pairs = (struct safecoin_ccdatapair *)realloc(mdata->pairs,sizeof(*mdata->pairs)*maxpairs);
             //fprintf(stderr,"pairs reallocated to %p num.%d\n",mdata->pairs,mdata->numpairs);
         }
     } else {
-        fprintf(stderr,"komodo_addpair.maxpairs %d must be >= 0\n",(int32_t)maxpairs);
+        fprintf(stderr,"safecoin_addpair.maxpairs %d must be >= 0\n",(int32_t)maxpairs);
         return(-1);
     }
     mdata->pairs[mdata->numpairs].notarized_height = notarized_height;
@@ -97,9 +97,9 @@ int32_t komodo_addpair(struct komodo_ccdataMoMoM *mdata,int32_t notarized_height
     return(maxpairs);
 }
 
-int32_t komodo_MoMoMdata(char *hexstr,int32_t hexsize,struct komodo_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height)
+int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height)
 {
-    uint8_t hexdata[8192]; struct komodo_ccdata *ccdata,*tmpptr; int32_t len,maxpairs,i,retval=-1,depth,starti,endi,CCid=0; struct komodo_ccdata_entry *allMoMs;
+    uint8_t hexdata[8192]; struct safecoin_ccdata *ccdata,*tmpptr; int32_t len,maxpairs,i,retval=-1,depth,starti,endi,CCid=0; struct safecoin_ccdata_entry *allMoMs;
     starti = endi = depth = len = maxpairs = 0;
     hexstr[0] = 0;
     if ( sizeof(hexdata)*2+1 > hexsize )
@@ -108,7 +108,7 @@ int32_t komodo_MoMoMdata(char *hexstr,int32_t hexsize,struct komodo_ccdataMoMoM 
         return(-1);
     }
     memset(mdata,0,sizeof(*mdata));
-    portable_mutex_lock(&KOMODO_CC_mutex);
+    portable_mutex_lock(&SAFECOIN_CC_mutex);
     DL_FOREACH_SAFE(CC_data,ccdata,tmpptr)
     {
         if ( ccdata->MoMdata.height < kmdheight )
@@ -132,24 +132,24 @@ int32_t komodo_MoMoMdata(char *hexstr,int32_t hexsize,struct komodo_ccdataMoMoM 
             starti = ccdata->MoMdata.height;
         }
     }
-    portable_mutex_unlock(&KOMODO_CC_mutex);
-    mdata->kmdstarti = starti;
-    mdata->kmdendi = endi;
+    portable_mutex_unlock(&SAFECOIN_CC_mutex);
+    mdata->safestarti = starti;
+    mdata->safeendi = endi;
     if ( starti != 0 && endi != 0 && endi >= starti )
     {
-        if ( (allMoMs= komodo_allMoMs(&depth,&mdata->MoMoM,starti,endi)) != 0 )
+        if ( (allMoMs= safecoin_allMoMs(&depth,&mdata->MoMoM,starti,endi)) != 0 )
         {
             mdata->MoMoMdepth = depth;
             for (i=0; i<depth; i++)
             {
                 if ( strcmp(symbol,allMoMs[i].symbol) == 0 )
-                    maxpairs = komodo_addpair(mdata,allMoMs[i].notarized_height,i,maxpairs);
+                    maxpairs = safecoin_addpair(mdata,allMoMs[i].notarized_height,i,maxpairs);
             }
             if ( mdata->numpairs > 0 )
             {
                 len += iguana_rwnum(1,&hexdata[len],sizeof(CCid),(uint8_t *)&CCid);
-                len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->kmdstarti);
-                len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->kmdendi);
+                len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->safestarti);
+                len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->safeendi);
                 len += iguana_rwbignum(1,&hexdata[len],sizeof(mdata->MoMoM),(uint8_t *)&mdata->MoMoM);
                 len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->MoMoMdepth);
                 len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->numpairs);
@@ -176,12 +176,12 @@ int32_t komodo_MoMoMdata(char *hexstr,int32_t hexsize,struct komodo_ccdataMoMoM 
     return(retval);
 }
 
-void komodo_purge_ccdata(int32_t height)
+void safecoin_purge_ccdata(int32_t height)
 {
-    struct komodo_ccdata *ccdata,*tmpptr;
+    struct safecoin_ccdata *ccdata,*tmpptr;
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
     {
-        portable_mutex_lock(&KOMODO_CC_mutex);
+        portable_mutex_lock(&SAFECOIN_CC_mutex);
         DL_FOREACH_SAFE(CC_data,ccdata,tmpptr)
         {
             if ( ccdata->MoMdata.height >= height )
@@ -191,7 +191,7 @@ void komodo_purge_ccdata(int32_t height)
                 free(ccdata);
             } else break;
         }
-        portable_mutex_unlock(&KOMODO_CC_mutex);
+        portable_mutex_unlock(&SAFECOIN_CC_mutex);
     }
     else
     {
@@ -200,9 +200,9 @@ void komodo_purge_ccdata(int32_t height)
 }
 
 // this is just a demo of ccdata processing to create example data for the MoMoM and allMoMs calls
-int32_t komodo_rwccdata(char *thischain,int32_t rwflag,struct komodo_ccdata *ccdata,struct komodo_ccdataMoMoM *MoMoMdata)
+int32_t safecoin_rwccdata(char *thischain,int32_t rwflag,struct safecoin_ccdata *ccdata,struct safecoin_ccdataMoMoM *MoMoMdata)
 {
-    uint256 hash,zero; bits256 tmp; int32_t i,nonz; struct komodo_ccdata *ptr; struct notarized_checkpoint *np;
+    uint256 hash,zero; bits256 tmp; int32_t i,nonz; struct safecoin_ccdata *ptr; struct notarized_checkpoint *np;
     return(0); // disable this path as libscott method is much better
     if ( rwflag == 0 )
     {
@@ -231,11 +231,11 @@ int32_t komodo_rwccdata(char *thischain,int32_t rwflag,struct komodo_ccdata *ccd
         }
         else
         {
-            ptr = (struct komodo_ccdata *)calloc(1,sizeof(*ptr));
+            ptr = (struct safecoin_ccdata *)calloc(1,sizeof(*ptr));
             *ptr = *ccdata;
-            portable_mutex_lock(&KOMODO_CC_mutex);
+            portable_mutex_lock(&SAFECOIN_CC_mutex);
             DL_PREPEND(CC_data,ptr);
-            portable_mutex_unlock(&KOMODO_CC_mutex);
+            portable_mutex_unlock(&SAFECOIN_CC_mutex);
         }
     }
     else
@@ -244,7 +244,7 @@ int32_t komodo_rwccdata(char *thischain,int32_t rwflag,struct komodo_ccdata *ccd
         {
             for (i=0; i<MoMoMdata->numpairs; i++)
             {
-                if ( (np= komodo_npptr(MoMoMdata->pairs[i].notarized_height)) != 0 )
+                if ( (np= safecoin_npptr(MoMoMdata->pairs[i].notarized_height)) != 0 )
                 {
                     memset(&zero,0,sizeof(zero));
                     if ( memcmp(&np->MoMoM,&zero,sizeof(np->MoMoM)) == 0 )
@@ -252,12 +252,12 @@ int32_t komodo_rwccdata(char *thischain,int32_t rwflag,struct komodo_ccdata *ccd
                         np->MoMoM = MoMoMdata->MoMoM;
                         np->MoMoMdepth = MoMoMdata->MoMoMdepth;
                         np->MoMoMoffset = MoMoMdata->MoMoMoffset;
-                        np->kmdstarti = MoMoMdata->kmdstarti;
-                        np->kmdendi = MoMoMdata->kmdendi;
+                        np->safestarti = MoMoMdata->safestarti;
+                        np->safeendi = MoMoMdata->safeendi;
                     }
-                    else if ( memcmp(&np->MoMoM,&MoMoMdata->MoMoM,sizeof(np->MoMoM)) != 0 || np->MoMoMdepth != MoMoMdata->MoMoMdepth || np->MoMoMoffset != MoMoMdata->MoMoMoffset || np->kmdstarti != MoMoMdata->kmdstarti || np->kmdendi != MoMoMdata->kmdendi )
+                    else if ( memcmp(&np->MoMoM,&MoMoMdata->MoMoM,sizeof(np->MoMoM)) != 0 || np->MoMoMdepth != MoMoMdata->MoMoMdepth || np->MoMoMoffset != MoMoMdata->MoMoMoffset || np->safestarti != MoMoMdata->safestarti || np->safeendi != MoMoMdata->safeendi )
                     {
-                        fprintf(stderr,"preexisting MoMoM mismatch: %s (%d %d %d %d) vs %s (%d %d %d %d)\n",np->MoMoM.ToString().c_str(),np->MoMoMdepth,np->MoMoMoffset,np->kmdstarti,np->kmdendi,MoMoMdata->MoMoM.ToString().c_str(),MoMoMdata->MoMoMdepth,MoMoMdata->MoMoMoffset,MoMoMdata->kmdstarti,MoMoMdata->kmdendi);
+                        fprintf(stderr,"preexisting MoMoM mismatch: %s (%d %d %d %d) vs %s (%d %d %d %d)\n",np->MoMoM.ToString().c_str(),np->MoMoMdepth,np->MoMoMoffset,np->safestarti,np->safeendi,MoMoMdata->MoMoM.ToString().c_str(),MoMoMdata->MoMoMdepth,MoMoMdata->MoMoMoffset,MoMoMdata->safestarti,MoMoMdata->safeendi);
                     }
                 }
             }

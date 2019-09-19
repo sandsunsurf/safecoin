@@ -18,7 +18,7 @@
 
 #include "cc/eval.h"
 
-const int CROSSCHAIN_KOMODO = 1;
+const int CROSSCHAIN_SAFECOIN = 1;
 const int CROSSCHAIN_TXSCL = 2;
 const int CROSSCHAIN_STAKED = 3;
 

@@ -13,8 +13,8 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef H_KOMODO25519_H
-#define H_KOMODO25519_H
+#ifndef H_SAFECOIN25519_H
+#define H_SAFECOIN25519_H
 // derived from curve25519_donna
 
 #include <stdint.h>
@@ -951,14 +951,14 @@ uint64_t conv_NXTpassword(unsigned char *mysecret,unsigned char *mypublic,uint8_
     return(addr);
 }
 
-uint256 komodo_kvprivkey(uint256 *pubkeyp,char *passphrase)
+uint256 safecoin_kvprivkey(uint256 *pubkeyp,char *passphrase)
 {
     uint256 privkey;
     conv_NXTpassword((uint8_t *)&privkey,(uint8_t *)pubkeyp,(uint8_t *)passphrase,(int32_t)strlen(passphrase));
     return(privkey);
 }
 
-uint256 komodo_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
+uint256 safecoin_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
 {
     bits256 sig,hash,otherpub,checksig,pubkey,privkey; uint256 usig;
     memcpy(&privkey,&_privkey,sizeof(privkey));
@@ -980,7 +980,7 @@ uint256 komodo_kvsig(uint8_t *buf,int32_t len,uint256 _privkey)
     return(usig);
 }
 
-int32_t komodo_kvsigverify(uint8_t *buf,int32_t len,uint256 _pubkey,uint256 sig)
+int32_t safecoin_kvsigverify(uint8_t *buf,int32_t len,uint256 _pubkey,uint256 sig)
 {
     bits256 hash,checksig,pubkey; static uint256 zeroes;
     memcpy(&pubkey,&_pubkey,sizeof(pubkey));
