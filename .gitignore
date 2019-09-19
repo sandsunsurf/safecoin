@@ -128,3 +128,6 @@ src/safecoin-tx.exe
 
 
 src/cryptoconditions/compile
+
+src/cc/customcc.so
+src/libcc.so
