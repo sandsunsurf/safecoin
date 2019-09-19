@@ -110,7 +110,7 @@ public:
     bool RequireStandard() const { return fRequireStandard; }
     int64_t PruneAfterHeight() const { return nPruneAfterHeight; }
 	
-	// TODO: make peace between SAFE and KMD way of changing Equihash N, K
+	// TODO: make peace between SAFE and SAFE way of changing Equihash N, K
 	unsigned int EquihashN() const { return nEquihashN; }
     unsigned int EquihashK() const { return nEquihashK; }
     
@@ -165,7 +165,7 @@ protected:
     int nDefaultPort = 0;
     uint64_t nPruneAfterHeight = 0;
 
-	// TODO: make peace between SAFE and KMD way of changing Equihash N, K
+	// TODO: make peace between SAFE and SAFE way of changing Equihash N, K
 	unsigned int nEquihashN = 0;
     unsigned int nEquihashK = 0;
 

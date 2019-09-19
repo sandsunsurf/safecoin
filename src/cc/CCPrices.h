@@ -20,7 +20,7 @@
 #include "safecoin_defs.h"
 #include "CCinclude.h"
 int32_t safecoinpriceget(int64_t *buf64,int32_t ind,int32_t height,int32_t numblocks);
-extern void GetKomodoEarlytxidScriptPub();
+extern void GetSafecoinEarlytxidScriptPub();
 extern CScript SAFECOIN_EARLYTXID_SCRIPTPUB;
 
 // #define PRICES_DAYWINDOW ((3600*24/ASSETCHAINS_BLOCKTIME) + 1) // defined in safecoindefs.h

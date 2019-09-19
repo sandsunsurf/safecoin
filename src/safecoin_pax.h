@@ -192,9 +192,9 @@ double PAX_BTCUSD(int32_t height,uint32_t btcusd)
     return(BTCUSD);
 }
 
-int32_t dpow_readprices(int32_t height,uint8_t *data,uint32_t *timestampp,double *KMDBTCp,double *BTCUSDp,double *CNYUSDp,uint32_t *pvals)
+int32_t dpow_readprices(int32_t height,uint8_t *data,uint32_t *timestampp,double *SAFEBTCp,double *BTCUSDp,double *CNYUSDp,uint32_t *pvals)
 {
-    uint32_t kmdbtc,btcusd,cnyusd; int32_t i,n,nonz,len = 0;
+    uint32_t safebtc,btcusd,cnyusd; int32_t i,n,nonz,len = 0;
     if ( data[0] == 'P' && data[5] == 35 )
         data++;
     len += iguana_rwnum(0,&data[len],sizeof(uint32_t),(void *)timestampp);
@@ -204,10 +204,10 @@ int32_t dpow_readprices(int32_t height,uint8_t *data,uint32_t *timestampp,double
         printf("dpow_readprices illegal n.%d\n",n);
         return(-1);
     }
-    len += iguana_rwnum(0,&data[len],sizeof(uint32_t),(void *)&kmdbtc); // /= 1000
+    len += iguana_rwnum(0,&data[len],sizeof(uint32_t),(void *)&safebtc); // /= 1000
     len += iguana_rwnum(0,&data[len],sizeof(uint32_t),(void *)&btcusd); // *= 1000
     len += iguana_rwnum(0,&data[len],sizeof(uint32_t),(void *)&cnyusd);
-    *KMDBTCp = ((double)kmdbtc / (1000000000. * 1000.));
+    *SAFEBTCp = ((double)safebtc / (1000000000. * 1000.));
     *BTCUSDp = PAX_BTCUSD(height,btcusd);
     *CNYUSDp = ((double)cnyusd / 1000000000.);
     for (i=nonz=0; i<n-3; i++)
@@ -224,7 +224,7 @@ int32_t dpow_readprices(int32_t height,uint8_t *data,uint32_t *timestampp,double
         //printf("nonz.%d n.%d retval -1\n",nonz,n);
         return(-1);
     }*/
-    pvals[i++] = kmdbtc;
+    pvals[i++] = safebtc;
     pvals[i++] = btcusd;
     pvals[i++] = cnyusd;
     //printf("OP_RETURN prices\n");
@@ -253,14 +253,14 @@ int32_t safecoin_pax_opreturn(int32_t height,uint8_t *opret,int32_t maxsize)
                 check = calc_crc32(0,data+sizeof(crc32),(int32_t)(fsize-sizeof(crc32)));
                 if ( check == crc32 )
                 {
-                    double KMDBTC,BTCUSD,CNYUSD; uint32_t pvals[128];
-                    if ( dpow_readprices(height,&data[len],&timestamp,&KMDBTC,&BTCUSD,&CNYUSD,pvals) > 0 )
+                    double SAFEBTC,BTCUSD,CNYUSD; uint32_t pvals[128];
+                    if ( dpow_readprices(height,&data[len],&timestamp,&SAFEBTC,&BTCUSD,&CNYUSD,pvals) > 0 )
                     {
                         if ( 0 && lastcrc != crc32 )
                         {
                             for (i=0; i<32; i++)
                                 printf("%u ",pvals[i]);
-                            printf("t%u n.%d KMD %f BTC %f CNY %f (%f)\n",timestamp,n,KMDBTC,BTCUSD,CNYUSD,CNYUSD!=0?1./CNYUSD:0);
+                            printf("t%u n.%d SAFE %f BTC %f CNY %f (%f)\n",timestamp,n,SAFEBTC,BTCUSD,CNYUSD,CNYUSD!=0?1./CNYUSD:0);
                         }
                         if ( timestamp > time(NULL)-600 )
                         {
@@ -329,7 +329,7 @@ double PAX_val(uint32_t pval,int32_t baseid)
 
 void safecoin_pvals(int32_t height,uint32_t *pvals,uint8_t numpvals)
 {
-    int32_t i,nonz; uint32_t kmdbtc,btcusd,cnyusd; double KMDBTC,BTCUSD,CNYUSD;
+    int32_t i,nonz; uint32_t safebtc,btcusd,cnyusd; double SAFEBTC,BTCUSD,CNYUSD;
     if ( numpvals >= 35 )
     {
         for (nonz=i=0; i<32; i++)
@@ -340,10 +340,10 @@ void safecoin_pvals(int32_t height,uint32_t *pvals,uint8_t numpvals)
         }
         if ( nonz == 32 )
         {
-            kmdbtc = pvals[i++];
+            safebtc = pvals[i++];
             btcusd = pvals[i++];
             cnyusd = pvals[i++];
-            KMDBTC = ((double)kmdbtc / (1000000000. * 1000.));
+            SAFEBTC = ((double)safebtc / (1000000000. * 1000.));
             BTCUSD = PAX_BTCUSD(height,btcusd);
             CNYUSD = ((double)cnyusd / 1000000000.);
             portable_mutex_lock(&safecoin_mutex);
@@ -353,7 +353,7 @@ void safecoin_pvals(int32_t height,uint32_t *pvals,uint8_t numpvals)
             NUM_PRICES++;
             portable_mutex_unlock(&safecoin_mutex);
             if ( 0 )
-                printf("OP_RETURN.%d KMD %.8f BTC %.6f CNY %.6f NUM_PRICES.%d (%llu %llu %llu)\n",height,KMDBTC,BTCUSD,CNYUSD,NUM_PRICES,(long long)kmdbtc,(long long)btcusd,(long long)cnyusd);
+                printf("OP_RETURN.%d SAFE %.8f BTC %.6f CNY %.6f NUM_PRICES.%d (%llu %llu %llu)\n",height,SAFEBTC,BTCUSD,CNYUSD,NUM_PRICES,(long long)safebtc,(long long)btcusd,(long long)cnyusd);
         }
     }
 }
@@ -420,9 +420,9 @@ uint64_t safecoin_paxcorrelation(uint64_t *votes,int32_t numvotes,uint64_t seed)
     return(sum);
 }
 
-uint64_t safecoin_paxcalc(int32_t height,uint32_t *pvals,int32_t baseid,int32_t relid,uint64_t basevolume,uint64_t refkmdbtc,uint64_t refbtcusd)
+uint64_t safecoin_paxcalc(int32_t height,uint32_t *pvals,int32_t baseid,int32_t relid,uint64_t basevolume,uint64_t refsafebtc,uint64_t refbtcusd)
 {
-    uint32_t pvalb,pvalr; double BTCUSD; uint64_t price,kmdbtc,btcusd,usdvol,baseusd,usdkmd,baserel,ranked[32];
+    uint32_t pvalb,pvalr; double BTCUSD; uint64_t price,safebtc,btcusd,usdvol,baseusd,usdsafe,baserel,ranked[32];
     if ( basevolume > SAFECOIN_PAXMAX )
     {
         printf("paxcalc overflow %.8f\n",dstr(basevolume));
@@ -434,41 +434,41 @@ uint64_t safecoin_paxcalc(int32_t height,uint32_t *pvals,int32_t baseid,int32_t 
         {
             if ( height < 236000 )
             {
-                if ( kmdbtc == 0 )
-                    kmdbtc = pvals[MAX_CURRENCIES];
+                if ( safebtc == 0 )
+                    safebtc = pvals[MAX_CURRENCIES];
                 if ( btcusd == 0 )
                     btcusd = pvals[MAX_CURRENCIES + 1];
             }
             else
             {
-                if ( (kmdbtc= pvals[MAX_CURRENCIES]) == 0 )
-                    kmdbtc = refkmdbtc;
+                if ( (safebtc= pvals[MAX_CURRENCIES]) == 0 )
+                    safebtc = refsafebtc;
                 if ( (btcusd= pvals[MAX_CURRENCIES + 1]) == 0 )
                     btcusd = refbtcusd;
             }
-            if ( kmdbtc < 25000000 )
-                kmdbtc = 25000000;
-            if ( pvals[USD] != 0 && kmdbtc != 0 && btcusd != 0 )
+            if ( safebtc < 25000000 )
+                safebtc = 25000000;
+            if ( pvals[USD] != 0 && safebtc != 0 && btcusd != 0 )
             {
                 baseusd = (((uint64_t)pvalb * 1000000000) / pvals[USD]);
                 usdvol = safecoin_paxvol(basevolume,baseusd);
-                usdkmd = ((uint64_t)kmdbtc * 1000000000) / btcusd;
+                usdsafe = ((uint64_t)safebtc * 1000000000) / btcusd;
                 if ( height >= 236000-10 )
                 {
                     BTCUSD = PAX_BTCUSD(height,btcusd);
                     if ( height < BTCFACTOR_HEIGHT || (height < 500000 && BTCUSD > 20000) )
-                        usdkmd = ((uint64_t)kmdbtc * btcusd) / 1000000000;
-                    else usdkmd = ((uint64_t)kmdbtc * btcusd) / 10000000;
+                        usdsafe = ((uint64_t)safebtc * btcusd) / 1000000000;
+                    else usdsafe = ((uint64_t)safebtc * btcusd) / 10000000;
                     ///if ( height >= BTCFACTOR_HEIGHT && BTCUSD >= 43 )
-                    //    usdkmd = ((uint64_t)kmdbtc * btcusd) / 10000000;
-                    //else usdkmd = ((uint64_t)kmdbtc * btcusd) / 1000000000;
-                    price = ((uint64_t)10000000000 * MINDENOMS[USD] / MINDENOMS[baseid]) / safecoin_paxvol(usdvol,usdkmd);
-                    //fprintf(stderr,"ht.%d %.3f kmdbtc.%llu btcusd.%llu base -> USD %llu, usdkmd %llu usdvol %llu -> %llu\n",height,BTCUSD,(long long)kmdbtc,(long long)btcusd,(long long)baseusd,(long long)usdkmd,(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdkmd) / (MINDENOMS[baseid]/100)));
-                    //fprintf(stderr,"usdkmd.%llu basevolume.%llu baseusd.%llu paxvol.%llu usdvol.%llu -> %llu %llu\n",(long long)usdkmd,(long long)basevolume,(long long)baseusd,(long long)safecoin_paxvol(basevolume,baseusd),(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdkmd) / (MINDENOMS[baseid]/100)),(long long)price);
-                    //fprintf(stderr,"usdkmd.%llu basevolume.%llu baseusd.%llu paxvol.%llu usdvol.%llu -> %llu\n",(long long)usdkmd,(long long)basevolume,(long long)baseusd,(long long)safecoin_paxvol(basevolume,baseusd),(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdkmd) / (MINDENOMS[baseid]/100)));
-                } else price = (MINDENOMS[USD] * safecoin_paxvol(usdvol,usdkmd) / (MINDENOMS[baseid]/100));
+                    //    usdsafe = ((uint64_t)safebtc * btcusd) / 10000000;
+                    //else usdsafe = ((uint64_t)safebtc * btcusd) / 1000000000;
+                    price = ((uint64_t)10000000000 * MINDENOMS[USD] / MINDENOMS[baseid]) / safecoin_paxvol(usdvol,usdsafe);
+                    //fprintf(stderr,"ht.%d %.3f safebtc.%llu btcusd.%llu base -> USD %llu, usdsafe %llu usdvol %llu -> %llu\n",height,BTCUSD,(long long)safebtc,(long long)btcusd,(long long)baseusd,(long long)usdsafe,(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdsafe) / (MINDENOMS[baseid]/100)));
+                    //fprintf(stderr,"usdsafe.%llu basevolume.%llu baseusd.%llu paxvol.%llu usdvol.%llu -> %llu %llu\n",(long long)usdsafe,(long long)basevolume,(long long)baseusd,(long long)safecoin_paxvol(basevolume,baseusd),(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdsafe) / (MINDENOMS[baseid]/100)),(long long)price);
+                    //fprintf(stderr,"usdsafe.%llu basevolume.%llu baseusd.%llu paxvol.%llu usdvol.%llu -> %llu\n",(long long)usdsafe,(long long)basevolume,(long long)baseusd,(long long)safecoin_paxvol(basevolume,baseusd),(long long)usdvol,(long long)(MINDENOMS[USD] * safecoin_paxvol(usdvol,usdsafe) / (MINDENOMS[baseid]/100)));
+                } else price = (MINDENOMS[USD] * safecoin_paxvol(usdvol,usdsafe) / (MINDENOMS[baseid]/100));
                 return(price);
-            } //else printf("zero val in KMD conv %llu %llu %llu\n",(long long)pvals[USD],(long long)kmdbtc,(long long)btcusd);
+            } //else printf("zero val in SAFE conv %llu %llu %llu\n",(long long)pvals[USD],(long long)safebtc,(long long)btcusd);
         }
         else if ( baseid == relid )
         {
@@ -494,7 +494,7 @@ uint64_t safecoin_paxcalc(int32_t height,uint32_t *pvals,int32_t baseid,int32_t 
     return(0);
 }
 
-uint64_t _safecoin_paxprice(uint64_t *kmdbtcp,uint64_t *btcusdp,int32_t height,char *base,char *rel,uint64_t basevolume,uint64_t kmdbtc,uint64_t btcusd)
+uint64_t _safecoin_paxprice(uint64_t *safebtcp,uint64_t *btcusdp,int32_t height,char *base,char *rel,uint64_t basevolume,uint64_t safebtc,uint64_t btcusd)
 {
     int32_t baseid=-1,relid=-1,i; uint32_t *ptr,*pvals;
     if ( height > 10 )
@@ -508,14 +508,14 @@ uint64_t _safecoin_paxprice(uint64_t *kmdbtcp,uint64_t *btcusdp,int32_t height,c
             if ( *ptr < height )
             {
                 pvals = &ptr[1];
-                if ( kmdbtcp != 0 && btcusdp != 0 )
+                if ( safebtcp != 0 && btcusdp != 0 )
                 {
-                    *kmdbtcp = pvals[MAX_CURRENCIES] / 539;
+                    *safebtcp = pvals[MAX_CURRENCIES] / 539;
                     *btcusdp = pvals[MAX_CURRENCIES + 1] / 539;
                 }
                 //portable_mutex_unlock(&safecoin_mutex);
-                if ( kmdbtc != 0 && btcusd != 0 )
-                    return(safecoin_paxcalc(height,pvals,baseid,relid,basevolume,kmdbtc,btcusd));
+                if ( safebtc != 0 && btcusd != 0 )
+                    return(safecoin_paxcalc(height,pvals,baseid,relid,basevolume,safebtc,btcusd));
                 else return(0);
             }
         }
@@ -524,66 +524,66 @@ uint64_t _safecoin_paxprice(uint64_t *kmdbtcp,uint64_t *btcusdp,int32_t height,c
     return(0);
 }
 
-int32_t safecoin_kmdbtcusd(int32_t rwflag,uint64_t *kmdbtcp,uint64_t *btcusdp,int32_t height)
+int32_t safecoin_safebtcusd(int32_t rwflag,uint64_t *safebtcp,uint64_t *btcusdp,int32_t height)
 {
-    static uint64_t *KMDBTCS,*BTCUSDS; static int32_t maxheight = 0; int32_t incr = 10000;
+    static uint64_t *SAFEBTCS,*BTCUSDS; static int32_t maxheight = 0; int32_t incr = 10000;
     if ( height >= maxheight )
     {
         //printf("height.%d maxheight.%d incr.%d\n",height,maxheight,incr);
         if ( height >= maxheight+incr )
             incr = (height - (maxheight+incr) + 1000);
-        KMDBTCS = (uint64_t *)realloc(KMDBTCS,((incr + maxheight) * sizeof(*KMDBTCS)));
-        memset(&KMDBTCS[maxheight],0,(incr * sizeof(*KMDBTCS)));
+        SAFEBTCS = (uint64_t *)realloc(SAFEBTCS,((incr + maxheight) * sizeof(*SAFEBTCS)));
+        memset(&SAFEBTCS[maxheight],0,(incr * sizeof(*SAFEBTCS)));
         BTCUSDS = (uint64_t *)realloc(BTCUSDS,((incr + maxheight) * sizeof(*BTCUSDS)));
         memset(&BTCUSDS[maxheight],0,(incr * sizeof(*BTCUSDS)));
         maxheight += incr;
     }
     if ( rwflag == 0 )
     {
-        *kmdbtcp = KMDBTCS[height];
+        *safebtcp = SAFEBTCS[height];
         *btcusdp = BTCUSDS[height];
     }
     else
     {
-        KMDBTCS[height] = *kmdbtcp;
+        SAFEBTCS[height] = *safebtcp;
         BTCUSDS[height] = *btcusdp;
     }
-    if ( *kmdbtcp != 0 && *btcusdp != 0 )
+    if ( *safebtcp != 0 && *btcusdp != 0 )
         return(0);
     else return(-1);
 }
 
 uint64_t _safecoin_paxpriceB(uint64_t seed,int32_t height,char *base,char *rel,uint64_t basevolume)
 {
-    int32_t i,j,k,ind,zeroes,numvotes,wt,nonz; int64_t delta; uint64_t lastprice,tolerance,den,densum,sum=0,votes[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],btcusds[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],kmdbtcs[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],kmdbtc,btcusd;
+    int32_t i,j,k,ind,zeroes,numvotes,wt,nonz; int64_t delta; uint64_t lastprice,tolerance,den,densum,sum=0,votes[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],btcusds[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],safebtcs[sizeof(Peggy_inds)/sizeof(*Peggy_inds)],safebtc,btcusd;
     if ( basevolume > SAFECOIN_PAXMAX )
     {
         printf("safecoin_paxprice overflow %.8f\n",dstr(basevolume));
         return(0);
     }
-    if ( strcmp(base,"KMD") == 0 || strcmp(base,"kmd") == 0 )
+    if ( strcmp(base,"SAFE") == 0 || strcmp(base,"safe") == 0 )
     {
-        printf("kmd cannot be base currency\n");
+        printf("safe cannot be base currency\n");
         return(0);
     }
     numvotes = (int32_t)(sizeof(Peggy_inds)/sizeof(*Peggy_inds));
     memset(votes,0,sizeof(votes));
-    //if ( safecoin_kmdbtcusd(0,&kmdbtc,&btcusd,height) < 0 ) crashes when via passthru GUI use
+    //if ( safecoin_safebtcusd(0,&safebtc,&btcusd,height) < 0 ) crashes when via passthru GUI use
     {
         memset(btcusds,0,sizeof(btcusds));
-        memset(kmdbtcs,0,sizeof(kmdbtcs));
+        memset(safebtcs,0,sizeof(safebtcs));
         for (i=0; i<numvotes; i++)
         {
-            _safecoin_paxprice(&kmdbtcs[numvotes-1-i],&btcusds[numvotes-1-i],height-i,base,rel,100000,0,0);
-            //printf("(%llu %llu) ",(long long)kmdbtcs[numvotes-1-i],(long long)btcusds[numvotes-1-i]);
+            _safecoin_paxprice(&safebtcs[numvotes-1-i],&btcusds[numvotes-1-i],height-i,base,rel,100000,0,0);
+            //printf("(%llu %llu) ",(long long)safebtcs[numvotes-1-i],(long long)btcusds[numvotes-1-i]);
         }
-        kmdbtc = safecoin_paxcorrelation(kmdbtcs,numvotes,seed) * 539;
+        safebtc = safecoin_paxcorrelation(safebtcs,numvotes,seed) * 539;
         btcusd = safecoin_paxcorrelation(btcusds,numvotes,seed) * 539;
-        //safecoin_kmdbtcusd(1,&kmdbtc,&btcusd,height);
+        //safecoin_safebtcusd(1,&safebtc,&btcusd,height);
     }
     for (i=nonz=0; i<numvotes; i++)
     {
-        if ( (votes[numvotes-1-i]= _safecoin_paxprice(0,0,height-i,base,rel,100000,kmdbtc,btcusd)) == 0 )
+        if ( (votes[numvotes-1-i]= _safecoin_paxprice(0,0,height-i,base,rel,100000,safebtc,btcusd)) == 0 )
             zeroes++;
         else
         {
@@ -593,7 +593,7 @@ uint64_t _safecoin_paxpriceB(uint64_t seed,int32_t height,char *base,char *rel,u
             //    fprintf(stderr,"[%llu] ",(long long)votes[numvotes-1-i]);
         }
     }
-    //fprintf(stderr,"kmdbtc %llu btcusd %llu ",(long long)kmdbtc,(long long)btcusd);
+    //fprintf(stderr,"safebtc %llu btcusd %llu ",(long long)safebtc,(long long)btcusd);
     //fprintf(stderr,"safecoin_paxprice nonz.%d of numvotes.%d seed.%llu %.8f\n",nonz,numvotes,(long long)seed,nonz!=0?dstr(1000. * (double)sum/nonz):0);
     if ( nonz <= (numvotes >> 1) )
     {
@@ -604,33 +604,33 @@ uint64_t _safecoin_paxpriceB(uint64_t seed,int32_t height,char *base,char *rel,u
 
 uint64_t safecoin_paxpriceB(uint64_t seed,int32_t height,char *base,char *rel,uint64_t basevolume)
 {
-    uint64_t baseusd,basekmd,usdkmd; int32_t baseid = safecoin_baseid(base);
-    if ( height >= 236000 && strcmp(rel,"kmd") == 0 )
+    uint64_t baseusd,basesafe,usdsafe; int32_t baseid = safecoin_baseid(base);
+    if ( height >= 236000 && strcmp(rel,"safe") == 0 )
     {
-        usdkmd = _safecoin_paxpriceB(seed,height,(char *)"USD",(char *)"KMD",SATOSHIDEN);
+        usdsafe = _safecoin_paxpriceB(seed,height,(char *)"USD",(char *)"SAFE",SATOSHIDEN);
         if ( strcmp("usd",base) == 0 )
-            return(safecoin_paxvol(basevolume,usdkmd) * 10);
+            return(safecoin_paxvol(basevolume,usdsafe) * 10);
         baseusd = _safecoin_paxpriceB(seed,height,base,(char *)"USD",SATOSHIDEN);
-        basekmd = (safecoin_paxvol(basevolume,baseusd) * usdkmd) / 10000000;
-        //if ( strcmp("KMD",base) == 0 )
-        //    printf("baseusd.%llu usdkmd.%llu %llu\n",(long long)baseusd,(long long)usdkmd,(long long)basekmd);
-        return(basekmd);
+        basesafe = (safecoin_paxvol(basevolume,baseusd) * usdsafe) / 10000000;
+        //if ( strcmp("SAFE",base) == 0 )
+        //    printf("baseusd.%llu usdsafe.%llu %llu\n",(long long)baseusd,(long long)usdsafe,(long long)basesafe);
+        return(basesafe);
     } else return(_safecoin_paxpriceB(seed,height,base,rel,basevolume));
 }
 
 /*uint64_t safecoin_paxpriceB(uint64_t seed,int32_t height,char *base,char *rel,uint64_t basevolume)
 {
-    uint64_t baseusd,basekmd,usdkmd; int32_t baseid = safecoin_baseid(base);
-    //if ( strcmp(rel,"KMD") != 0 || baseid < 0 || MINDENOMS[baseid] == MINDENOMS[USD] )
+    uint64_t baseusd,basesafe,usdsafe; int32_t baseid = safecoin_baseid(base);
+    //if ( strcmp(rel,"SAFE") != 0 || baseid < 0 || MINDENOMS[baseid] == MINDENOMS[USD] )
     //    return(_safecoin_paxpriceB(seed,height,base,rel,basevolume));
     //else
     {
         baseusd = _safecoin_paxpriceB(seed,height,base,(char *)"USD",SATOSHIDEN);
-        usdkmd = _safecoin_paxpriceB(seed,height,(char *)"USD",(char *)"KMD",SATOSHIDEN);
-        basekmd = (safecoin_paxvol(basevolume,baseusd) * usdkmd) / 10000000;
-        if ( strcmp("KMD",base) == 0 )
-            printf("baseusd.%llu usdkmd.%llu %llu\n",(long long)baseusd,(long long)usdkmd,(long long)basekmd);
-        return(basekmd);
+        usdsafe = _safecoin_paxpriceB(seed,height,(char *)"USD",(char *)"SAFE",SATOSHIDEN);
+        basesafe = (safecoin_paxvol(basevolume,baseusd) * usdsafe) / 10000000;
+        if ( strcmp("SAFE",base) == 0 )
+            printf("baseusd.%llu usdsafe.%llu %llu\n",(long long)baseusd,(long long)usdsafe,(long long)basesafe);
+        return(basesafe);
     }
 }*/
 
@@ -706,8 +706,8 @@ int32_t safecoin_paxprices(int32_t *heights,uint64_t *prices,int32_t max,char *b
 
 void safecoin_paxpricefeed(int32_t height,uint8_t *pricefeed,int32_t opretlen)
 {
-    double KMDBTC,BTCUSD,CNYUSD; uint32_t numpvals,timestamp,pvals[128]; uint256 zero;
-    numpvals = dpow_readprices(height,pricefeed,&timestamp,&KMDBTC,&BTCUSD,&CNYUSD,pvals);
+    double SAFEBTC,BTCUSD,CNYUSD; uint32_t numpvals,timestamp,pvals[128]; uint256 zero;
+    numpvals = dpow_readprices(height,pricefeed,&timestamp,&SAFEBTC,&BTCUSD,&CNYUSD,pvals);
     memset(&zero,0,sizeof(zero));
     safecoin_stateupdate(height,0,0,0,zero,0,0,pvals,numpvals,0,0,0,0,0,0,zero,0);
     if ( 0 )
@@ -715,7 +715,7 @@ void safecoin_paxpricefeed(int32_t height,uint8_t *pricefeed,int32_t opretlen)
         int32_t i;
         for (i=0; i<numpvals; i++)
             printf("%u ",pvals[i]);
-        printf("safecoin_paxpricefeed vout OP_RETURN.%d prices numpvals.%d opretlen.%d kmdbtc %.8f BTCUSD %.8f CNYUSD %.8f\n",height,numpvals,opretlen,KMDBTC,BTCUSD,CNYUSD);
+        printf("safecoin_paxpricefeed vout OP_RETURN.%d prices numpvals.%d opretlen.%d safebtc %.8f BTCUSD %.8f CNYUSD %.8f\n",height,numpvals,opretlen,SAFEBTC,BTCUSD,CNYUSD);
     }
 }
 
@@ -734,8 +734,8 @@ uint64_t PAX_fiatdest(uint64_t *seedp,int32_t tosafecoin,char *destaddr,uint8_t 
     base[i] = 0;
     if ( fiatoshis < 0 )
         shortflag = 1, fiatoshis = -fiatoshis;
-    safetoshis = safecoin_paxprice(seedp,height,base,(char *)"KMD",(uint64_t)fiatoshis);
-    //printf("PAX_fiatdest ht.%d price %s %.8f -> KMD %.8f seed.%llx\n",height,base,(double)fiatoshis/COIN,(double)safetoshis/COIN,(long long)*seedp);
+    safetoshis = safecoin_paxprice(seedp,height,base,(char *)"SAFE",(uint64_t)fiatoshis);
+    //printf("PAX_fiatdest ht.%d price %s %.8f -> SAFE %.8f seed.%llx\n",height,base,(double)fiatoshis/COIN,(double)safetoshis/COIN,(long long)*seedp);
     if ( bitcoin_addr2rmd160(&addrtype,rmd160,coinaddr) == 20 )
     {
         PAX_pubkey(1,pubkey33,&addrtype,rmd160,base,&shortflag,tosafecoin != 0 ? &safetoshis : &fiatoshis);

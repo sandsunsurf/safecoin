@@ -13,7 +13,7 @@
  *                                                                            *
  ******************************************************************************/
 
-// paxdeposit equivalent in reverse makes opreturn and KMD does the same in reverse
+// paxdeposit equivalent in reverse makes opreturn and SAFE does the same in reverse
 #include "safecoin_defs.h"
 
 /*#include "secp256k1/include/secp256k1.h"
@@ -209,7 +209,7 @@ int32_t safecoin_rwapproval(int32_t rwflag,uint8_t *opretbuf,struct pax_transact
     return(len);
 }
 
-int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64_t *values,int64_t *srcvalues,int32_t *kmdheights,int32_t *otherheights,int8_t *baseids,uint8_t *rmd160s,uint8_t *opretbuf,int32_t opretlen,int32_t issafecoin)
+int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64_t *values,int64_t *srcvalues,int32_t *safeheights,int32_t *otherheights,int8_t *baseids,uint8_t *rmd160s,uint8_t *opretbuf,int32_t opretlen,int32_t issafecoin)
 {
     struct pax_transaction p,*pax; int32_t i,n=0,j,len=0,incr,height,otherheight; uint8_t type,rmd160[20]; uint64_t fiatoshis; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN];
     //if ( SAFECOIN_PAX == 0 )
@@ -233,13 +233,13 @@ int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64
             {
                 memset(&p,0,sizeof(p));
                 len += safecoin_rwapproval(0,&opretbuf[len],&p);
-                if ( values != 0 && srcvalues != 0 && kmdheights != 0 && otherheights != 0 && baseids != 0 && rmd160s != 0 )
+                if ( values != 0 && srcvalues != 0 && safeheights != 0 && otherheights != 0 && baseids != 0 && rmd160s != 0 )
                 {
                     txids[n] = p.txid;
                     vouts[n] = p.vout;
-                    values[n] = (strcmp("KMD",base) == 0) ? p.safetoshis : p.fiatoshis;
-                    srcvalues[n] = (strcmp("KMD",base) == 0) ? p.fiatoshis : p.safetoshis;
-                    kmdheights[n] = p.height;
+                    values[n] = (strcmp("SAFE",base) == 0) ? p.safetoshis : p.fiatoshis;
+                    srcvalues[n] = (strcmp("SAFE",base) == 0) ? p.fiatoshis : p.safetoshis;
+                    safeheights[n] = p.height;
                     otherheights[n] = p.otherheight;
                     memcpy(&rmd160s[n * 20],p.rmd160,20);
                     baseids[n] = safecoin_baseid(p.source);
@@ -247,7 +247,7 @@ int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64
                     {
                         char coinaddr[64];
                         bitcoin_address(coinaddr,60,&rmd160s[n * 20],20);
-                        printf(">>>>>>> %s: (%s) fiat %.8f kmdheight.%d other.%d -> %s %.8f\n",type=='A'?"approvedA":"issuedX",baseids[n]>=0?CURRENCIES[baseids[n]]:"???",dstr(p.fiatoshis),kmdheights[n],otherheights[n],coinaddr,dstr(values[n]));
+                        printf(">>>>>>> %s: (%s) fiat %.8f safeheight.%d other.%d -> %s %.8f\n",type=='A'?"approvedA":"issuedX",baseids[n]>=0?CURRENCIES[baseids[n]]:"???",dstr(p.fiatoshis),safeheights[n],otherheights[n],coinaddr,dstr(values[n]));
                     }
                 }
             }
@@ -265,9 +265,9 @@ int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64
                 baseids[n] = safecoin_baseid(base);
                 if ( (pax= safecoin_paxfinds(txids[n],vouts[n])) != 0 )
                 {
-                    values[n] = (strcmp("KMD",base) == 0) ? pax->safetoshis : pax->fiatoshis;
-                    srcvalues[n] = (strcmp("KMD",base) == 0) ? pax->fiatoshis : pax->safetoshis;
-                    kmdheights[n] = pax->height;
+                    values[n] = (strcmp("SAFE",base) == 0) ? pax->safetoshis : pax->fiatoshis;
+                    srcvalues[n] = (strcmp("SAFE",base) == 0) ? pax->fiatoshis : pax->safetoshis;
+                    safeheights[n] = pax->height;
                     otherheights[n] = pax->otherheight;
                     memcpy(&rmd160s[n * 20],pax->rmd160,20);
                 }
@@ -278,7 +278,7 @@ int32_t safecoin_issued_opreturn(char *base,uint256 *txids,uint16_t *vouts,int64
     return(n);
 }
 
-int32_t safecoin_paxcmp(char *symbol,int32_t kmdheight,uint64_t value,uint64_t checkvalue,uint64_t seed)
+int32_t safecoin_paxcmp(char *symbol,int32_t safeheight,uint64_t value,uint64_t checkvalue,uint64_t seed)
 {
     int32_t ratio;
     if ( seed == 0 && checkvalue != 0 )
@@ -289,7 +289,7 @@ int32_t safecoin_paxcmp(char *symbol,int32_t kmdheight,uint64_t value,uint64_t c
         else
         {
             if ( ASSETCHAINS_SYMBOL[0] != 0 )
-                printf("ht.%d ignore mismatched %s value %lld vs checkvalue %lld -> ratio.%d\n",kmdheight,symbol,(long long)value,(long long)checkvalue,ratio);
+                printf("ht.%d ignore mismatched %s value %lld vs checkvalue %lld -> ratio.%d\n",safeheight,symbol,(long long)value,(long long)checkvalue,ratio);
             return(-1);
         }
     }
@@ -330,7 +330,7 @@ uint64_t safecoin_paxtotal()
                         basesp->issued += pax->fiatoshis;
                         pax->didstats = 1;
                         if ( strcmp(str,ASSETCHAINS_SYMBOL) == 0 )
-                            printf("########### %p issued %s += %.8f kmdheight.%d %.8f other.%d\n",basesp,str,dstr(pax->fiatoshis),pax->height,dstr(pax->safetoshis),pax->otherheight);
+                            printf("########### %p issued %s += %.8f safeheight.%d %.8f other.%d\n",basesp,str,dstr(pax->fiatoshis),pax->height,dstr(pax->safetoshis),pax->otherheight);
                         pax2->marked = pax->height;
                         pax->marked = pax->height;
                     }
@@ -338,7 +338,7 @@ uint64_t safecoin_paxtotal()
                 else if ( pax->type == 'W' )
                 {
                     //bitcoin_address(coinaddr,addrtype,rmd160,20);
-                    if ( (checktoshis= safecoin_paxprice(&seed,pax->height,pax->source,(char *)"KMD",(uint64_t)pax->fiatoshis)) != 0 )
+                    if ( (checktoshis= safecoin_paxprice(&seed,pax->height,pax->source,(char *)"SAFE",(uint64_t)pax->fiatoshis)) != 0 )
                     {
                         if ( safecoin_paxcmp(pax->source,pax->height,pax->safetoshis,checktoshis,seed) != 0 )
                         {
@@ -351,7 +351,7 @@ uint64_t safecoin_paxtotal()
                             //int32_t j; for (j=0; j<32; j++)
                             //    printf("%02x",((uint8_t *)&pax->txid)[j]);
                             //if ( strcmp(str,ASSETCHAINS_SYMBOL) == 0 )
-                            //    printf(" v%d %p got WITHDRAW.%s kmd.%d ht.%d %.8f -> %.8f/%.8f\n",pax->vout,pax,pax->source,pax->height,pax->otherheight,dstr(pax->fiatoshis),dstr(pax->safetoshis),dstr(checktoshis));
+                            //    printf(" v%d %p got WITHDRAW.%s safe.%d ht.%d %.8f -> %.8f/%.8f\n",pax->vout,pax,pax->source,pax->height,pax->otherheight,dstr(pax->fiatoshis),dstr(pax->safetoshis),dstr(checktoshis));
                         }
                     }
                 }
@@ -388,8 +388,8 @@ uint64_t safecoin_paxtotal()
                     else
                     {
                         seed = 0;
-                        checktoshis = safecoin_paxprice(&seed,pax->height,pax->source,(char *)"KMD",(uint64_t)pax->fiatoshis);
-                        //printf("paxtotal PAX_fiatdest ht.%d price %s %.8f -> KMD %.8f vs %.8f\n",pax->height,pax->symbol,(double)pax->fiatoshis/COIN,(double)pax->safetoshis/COIN,(double)checktoshis/COIN);
+                        checktoshis = safecoin_paxprice(&seed,pax->height,pax->source,(char *)"SAFE",(uint64_t)pax->fiatoshis);
+                        //printf("paxtotal PAX_fiatdest ht.%d price %s %.8f -> SAFE %.8f vs %.8f\n",pax->height,pax->symbol,(double)pax->fiatoshis/COIN,(double)pax->safetoshis/COIN,(double)checktoshis/COIN);
                         //printf(" v%d %.8f k.%d ht.%d\n",pax->vout,dstr(pax->safetoshis),pax->height,pax->otherheight);
                         if ( seed != 0 && checktoshis != 0 )
                         {
@@ -447,14 +447,14 @@ int32_t safecoin_pending_withdraws(char *opretstr) // todo: enforce deterministi
             else if ( (pax2= safecoin_paxfind(pax->txid,pax->vout,'X')) != 0 )
                 pax->approved = pax->height;
             //printf("pending_withdraw: pax %s marked.%u approved.%u validated.%llu\n",pax->symbol,pax->marked,pax->approved,(long long)pax->validated);
-            if ( pax->marked == 0 && pax->approved == 0 && pax->validated != 0 ) //strcmp((char *)"KMD",pax->symbol) == 0 &&
+            if ( pax->marked == 0 && pax->approved == 0 && pax->validated != 0 ) //strcmp((char *)"SAFE",pax->symbol) == 0 &&
             {
                 if ( n < sizeof(paxes)/sizeof(*paxes) )
                 {
                     paxes[n++] = pax;
                     //int32_t j; for (j=0; j<32; j++)
                     //    printf("%02x",((uint8_t *)&pax->txid)[j]);
-                    //printf(" %s.(kmdht.%d ht.%d marked.%u approved.%d validated %.8f) %.8f\n",pax->source,pax->height,pax->otherheight,pax->marked,pax->approved,dstr(pax->validated),dstr(pax->safetoshis));
+                    //printf(" %s.(safeht.%d ht.%d marked.%u approved.%d validated %.8f) %.8f\n",pax->source,pax->height,pax->otherheight,pax->marked,pax->approved,dstr(pax->validated),dstr(pax->safetoshis));
                 }
             }
         }
@@ -481,7 +481,7 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
     struct pax_transaction *pax,*tmp; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],dest[SAFECOIN_ASSETCHAIN_MAXLEN]; uint8_t *script,opcode,opret[16384*4],data[16384*4]; int32_t i,baseid,ht,len=0,opretlen=0,numvouts=1; struct safecoin_state *sp; uint64_t available,deposited,issued,withdrawn,approved,redeemed,mask,sum = 0;
     if ( SAFECOIN_PASSPORT_INITDONE == 0 )//SAFECOIN_PAX == 0 ||
         return(0);
-    struct safecoin_state *kmdsp = safecoin_stateptrget((char *)"KMD");
+    struct safecoin_state *safesp = safecoin_stateptrget((char *)"SAFE");
     sp = safecoin_stateptr(symbol,dest);
     strcpy(symbol,base);
     if ( ASSETCHAINS_SYMBOL[0] != 0 && safecoin_baseid(ASSETCHAINS_SYMBOL) < 0 )
@@ -517,14 +517,14 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
 #ifdef SAFECOIN_ASSETCHAINS_WAITNOTARIZE
             if ( pax->height > 236000 )
             {
-                if ( kmdsp != 0 && kmdsp->NOTARIZED_HEIGHT >= pax->height )
+                if ( safesp != 0 && safesp->NOTARIZED_HEIGHT >= pax->height )
                     pax->validated = pax->safetoshis;
-                else if ( kmdsp->CURRENT_HEIGHT > pax->height+30 )
+                else if ( safesp->CURRENT_HEIGHT > pax->height+30 )
                     pax->validated = pax->ready = 0;
             }
             else
             {
-                if ( kmdsp != 0 && (kmdsp->NOTARIZED_HEIGHT >= pax->height || kmdsp->CURRENT_HEIGHT > pax->height+30) ) // assumes same chain as notarize
+                if ( safesp != 0 && (safesp->NOTARIZED_HEIGHT >= pax->height || safesp->CURRENT_HEIGHT > pax->height+30) ) // assumes same chain as notarize
                     pax->validated = pax->safetoshis;
                 else pax->validated = pax->ready = 0;
             }
@@ -547,7 +547,7 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
         if ( ASSETCHAINS_SYMBOL[0] != 0 && (strcmp(pax->symbol,symbol) != 0 || pax->validated == 0 || pax->ready == 0) )
         {
             if ( strcmp(pax->symbol,ASSETCHAINS_SYMBOL) == 0 )
-                printf("pax->symbol.%s != %s or null pax->validated %.8f ready.%d ht.(%d %d)\n",pax->symbol,symbol,dstr(pax->validated),pax->ready,kmdsp->CURRENT_HEIGHT,pax->height);
+                printf("pax->symbol.%s != %s or null pax->validated %.8f ready.%d ht.(%d %d)\n",pax->symbol,symbol,dstr(pax->validated),pax->ready,safesp->CURRENT_HEIGHT,pax->height);
             pax->marked = pax->height;
             continue;
         }
@@ -555,7 +555,7 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
             continue;
         if ( pax->type == 'A' && ASSETCHAINS_SYMBOL[0] == 0 )
         {
-            if ( kmdsp != 0 )
+            if ( safesp != 0 )
             {
                 if ( (baseid= safecoin_baseid(pax->symbol)) < 0 || ((1LL << baseid) & sp->RTmask) == 0 )
                 {
@@ -604,7 +604,7 @@ int32_t safecoin_gateway_deposits(CMutableTransaction *txNew,char *base,int32_t 
     if ( numvouts > 1 )
     {
         if ( tosafecoin != 0 )
-            strcpy(symbol,(char *)"KMD");
+            strcpy(symbol,(char *)"SAFE");
         for (i=0; symbol[i]!=0; i++)
             data[len++] = symbol[i];
         data[len++] = 0;
@@ -683,7 +683,7 @@ void safecoin_passport_iteration();
 int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevtime) // verify above block is valid pax pricing
 {
     static uint256 array[64]; static int32_t numbanned,indallvouts;
-    int32_t i,j,k,n,ht,baseid,txn_count,activation,num,opretlen,offset=1,errs=0,notmatched=0,matched=0,kmdheights[256],otherheights[256]; uint256 hash,txids[256]; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],base[SAFECOIN_ASSETCHAIN_MAXLEN]; uint16_t vouts[256]; int8_t baseids[256]; uint8_t *script,opcode,rmd160s[256*20]; uint64_t total,subsidy,available,deposited,issued,withdrawn,approved,redeemed,seed; int64_t checktoshis,values[256],srcvalues[256]; struct pax_transaction *pax; struct safecoin_state *sp; CTransaction tx;
+    int32_t i,j,k,n,ht,baseid,txn_count,activation,num,opretlen,offset=1,errs=0,notmatched=0,matched=0,safeheights[256],otherheights[256]; uint256 hash,txids[256]; char symbol[SAFECOIN_ASSETCHAIN_MAXLEN],base[SAFECOIN_ASSETCHAIN_MAXLEN]; uint16_t vouts[256]; int8_t baseids[256]; uint8_t *script,opcode,rmd160s[256*20]; uint64_t total,subsidy,available,deposited,issued,withdrawn,approved,redeemed,seed; int64_t checktoshis,values[256],srcvalues[256]; struct pax_transaction *pax; struct safecoin_state *sp; CTransaction tx;
     activation = 235300;
     if ( *(int32_t *)&array[0] == 0 )
         numbanned = safecoin_bannedset(&indallvouts,array,(int32_t)(sizeof(array)/sizeof(*array)));
@@ -691,7 +691,7 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
     memset(values,0,sizeof(values));
     memset(srcvalues,0,sizeof(srcvalues));
     memset(rmd160s,0,sizeof(rmd160s));
-    memset(kmdheights,0,sizeof(kmdheights));
+    memset(safeheights,0,sizeof(safeheights));
     memset(otherheights,0,sizeof(otherheights));
     txn_count = block.vtx.size();
     if ( ASSETCHAINS_SYMBOL[0] == 0 )
@@ -817,7 +817,7 @@ int32_t safecoin_check_deposit(int32_t height,const CBlock& block,uint32_t prevt
 
 const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,int32_t opretlen,uint256 txid,uint16_t vout,char *source)
 {
-    uint8_t rmd160[20],rmd160s[64*20],addrtype,shortflag,pubkey33[33]; int32_t didstats,i,j,n,kvheight,len,tosafecoin,kmdheight,otherheights[64],kmdheights[64]; int8_t baseids[64]; char base[4],coinaddr[64],destaddr[64]; uint256 txids[64]; uint16_t vouts[64]; uint64_t convtoshis,seed; int64_t fee,fiatoshis,safetoshis,checktoshis,values[64],srcvalues[64]; struct pax_transaction *pax,*pax2; struct safecoin_state *basesp; double diff;
+    uint8_t rmd160[20],rmd160s[64*20],addrtype,shortflag,pubkey33[33]; int32_t didstats,i,j,n,kvheight,len,tosafecoin,safeheight,otherheights[64],safeheights[64]; int8_t baseids[64]; char base[4],coinaddr[64],destaddr[64]; uint256 txids[64]; uint16_t vouts[64]; uint64_t convtoshis,seed; int64_t fee,fiatoshis,safetoshis,checktoshis,values[64],srcvalues[64]; struct pax_transaction *pax,*pax2; struct safecoin_state *basesp; double diff;
     const char *typestr = "unknown";
     if ( ASSETCHAINS_SYMBOL[0] != 0 && safecoin_baseid(ASSETCHAINS_SYMBOL) < 0 && opretbuf[0] != 'K' )
     {
@@ -828,7 +828,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
     memset(values,0,sizeof(values));
     memset(srcvalues,0,sizeof(srcvalues));
     memset(rmd160s,0,sizeof(rmd160s));
-    memset(kmdheights,0,sizeof(kmdheights));
+    memset(safeheights,0,sizeof(safeheights));
     memset(otherheights,0,sizeof(otherheights));
     tosafecoin = (safecoin_is_issuer() == 0);
     if ( opretbuf[0] == 'K' && opretlen != 40 )
@@ -841,31 +841,31 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
     if ( opretbuf[0] == 'D' )
     {
         tosafecoin = 0;
-        if ( opretlen == 38 ) // any KMD tx
+        if ( opretlen == 38 ) // any SAFE tx
         {
-            iguana_rwnum(0,&opretbuf[34],sizeof(kmdheight),&kmdheight);
+            iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
             memset(base,0,sizeof(base));
             PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&fiatoshis);
             bitcoin_address(coinaddr,addrtype,rmd160,20);
-            checktoshis = PAX_fiatdest(&seed,tosafecoin,destaddr,pubkey33,coinaddr,kmdheight,base,fiatoshis);
-            if ( safecoin_paxcmp(base,kmdheight,value,checktoshis,kmdheight < 225000 ? seed : 0) != 0 )
+            checktoshis = PAX_fiatdest(&seed,tosafecoin,destaddr,pubkey33,coinaddr,safeheight,base,fiatoshis);
+            if ( safecoin_paxcmp(base,safeheight,value,checktoshis,safeheight < 225000 ? seed : 0) != 0 )
                 checktoshis = PAX_fiatdest(&seed,tosafecoin,destaddr,pubkey33,coinaddr,height,base,fiatoshis);
             typestr = "deposit";
             if ( 0 && strcmp("NOK",base) == 0 )
             {
-                printf("[%s] %s paxdeposit height.%d vs kmdheight.%d\n",ASSETCHAINS_SYMBOL,base,height,kmdheight);
-                printf("(%s) (%s) kmdheight.%d vs height.%d check %.8f vs %.8f tosafecoin.%d %d seed.%llx\n",ASSETCHAINS_SYMBOL,base,kmdheight,height,dstr(checktoshis),dstr(value),safecoin_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed);
+                printf("[%s] %s paxdeposit height.%d vs safeheight.%d\n",ASSETCHAINS_SYMBOL,base,height,safeheight);
+                printf("(%s) (%s) safeheight.%d vs height.%d check %.8f vs %.8f tosafecoin.%d %d seed.%llx\n",ASSETCHAINS_SYMBOL,base,safeheight,height,dstr(checktoshis),dstr(value),safecoin_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed);
                 for (i=0; i<32; i++)
                     printf("%02x",((uint8_t *)&txid)[i]);
                 printf(" <- txid.v%u ",vout);
                 for (i=0; i<33; i++)
                     printf("%02x",pubkey33[i]);
-                printf(" checkpubkey check %.8f v %.8f dest.(%s) kmdheight.%d height.%d\n",dstr(checktoshis),dstr(value),destaddr,kmdheight,height);
+                printf(" checkpubkey check %.8f v %.8f dest.(%s) safeheight.%d height.%d\n",dstr(checktoshis),dstr(value),destaddr,safeheight,height);
             }
-            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (kmdheight > 195000 || kmdheight <= height) )
+            if ( strcmp(base,ASSETCHAINS_SYMBOL) == 0 && (safeheight > 195000 || safeheight <= height) )
             {
                 didstats = 0;
-                if ( safecoin_paxcmp(base,kmdheight,value,checktoshis,kmdheight < 225000 ? seed : 0) == 0 )
+                if ( safecoin_paxcmp(base,safeheight,value,checktoshis,safeheight < 225000 ? seed : 0) == 0 )
                 {
                     if ( (pax= safecoin_paxfind(txid,vout,'D')) == 0 )
                     {
@@ -874,13 +874,13 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                             basesp->deposited += fiatoshis;
                             didstats = 1;
                             if ( 0 && strcmp(base,ASSETCHAINS_SYMBOL) == 0 )
-                                printf("########### %p deposited %s += %.8f kmdheight.%d %.8f\n",basesp,base,dstr(fiatoshis),kmdheight,dstr(value));
+                                printf("########### %p deposited %s += %.8f safeheight.%d %.8f\n",basesp,base,dstr(fiatoshis),safeheight,dstr(value));
                         } else printf("cant get stateptr.(%s)\n",base);
-                        safecoin_gateway_deposit(coinaddr,value,base,fiatoshis,rmd160,txid,vout,'D',kmdheight,height,(char *)"KMD",0);
+                        safecoin_gateway_deposit(coinaddr,value,base,fiatoshis,rmd160,txid,vout,'D',safeheight,height,(char *)"SAFE",0);
                     }
                     if ( (pax= safecoin_paxfind(txid,vout,'D')) != 0 )
                     {
-                        pax->height = kmdheight;
+                        pax->height = safeheight;
                         pax->validated = value;
                         pax->safetoshis = value;
                         pax->fiatoshis = fiatoshis;
@@ -891,7 +891,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                                 basesp->deposited += fiatoshis;
                                 didstats = 1;
                                 if ( 0 && strcmp(base,ASSETCHAINS_SYMBOL) == 0 )
-                                    printf("########### %p depositedB %s += %.8f/%.8f kmdheight.%d/%d %.8f/%.8f\n",basesp,base,dstr(fiatoshis),dstr(pax->fiatoshis),kmdheight,pax->height,dstr(value),dstr(pax->safetoshis));
+                                    printf("########### %p depositedB %s += %.8f/%.8f safeheight.%d/%d %.8f/%.8f\n",basesp,base,dstr(fiatoshis),dstr(pax->fiatoshis),safeheight,pax->height,dstr(value),dstr(pax->safetoshis));
                             }
                         } //
                         if ( didstats != 0 )
@@ -909,7 +909,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                                     basesp->issued += pax2->fiatoshis;
                                     pax2->didstats = 1;
                                     if ( 0 && strcmp(base,"USD") == 0 )
-                                        printf("########### %p issueda %s += %.8f kmdheight.%d %.8f other.%d [%d]\n",basesp,base,dstr(pax2->fiatoshis),pax2->height,dstr(pax2->safetoshis),pax2->otherheight,height);
+                                        printf("########### %p issueda %s += %.8f safeheight.%d %.8f other.%d [%d]\n",basesp,base,dstr(pax2->fiatoshis),pax2->height,dstr(pax2->safetoshis),pax2->otherheight,height);
                                 }
                             }
                         }
@@ -919,18 +919,18 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                 {
                     if ( (pax= safecoin_paxfind(txid,vout,'D')) != 0 )
                         pax->marked = checktoshis;
-                    if ( kmdheight > 238000 && (kmdheight > 214700 || strcmp(base,ASSETCHAINS_SYMBOL) == 0) ) //seed != 0 &&
-                        printf("pax %s deposit %.8f rejected kmdheight.%d %.8f KMD check %.8f seed.%llu\n",base,dstr(fiatoshis),kmdheight,dstr(value),dstr(checktoshis),(long long)seed);
+                    if ( safeheight > 238000 && (safeheight > 214700 || strcmp(base,ASSETCHAINS_SYMBOL) == 0) ) //seed != 0 &&
+                        printf("pax %s deposit %.8f rejected safeheight.%d %.8f SAFE check %.8f seed.%llu\n",base,dstr(fiatoshis),safeheight,dstr(value),dstr(checktoshis),(long long)seed);
                 }
-            } //else printf("[%s] %s paxdeposit height.%d vs kmdheight.%d\n",ASSETCHAINS_SYMBOL,base,height,kmdheight);
+            } //else printf("[%s] %s paxdeposit height.%d vs safeheight.%d\n",ASSETCHAINS_SYMBOL,base,height,safeheight);
         } //else printf("unsupported size.%d for opreturn D\n",opretlen);
     }
     else if ( opretbuf[0] == 'I' )
     {
         tosafecoin = 0;
-        if ( strncmp((char *)"KMD",(char *)&opretbuf[opretlen-4],3) != 0 && strncmp(ASSETCHAINS_SYMBOL,(char *)&opretbuf[opretlen-4],3) == 0 )
+        if ( strncmp((char *)"SAFE",(char *)&opretbuf[opretlen-4],3) != 0 && strncmp(ASSETCHAINS_SYMBOL,(char *)&opretbuf[opretlen-4],3) == 0 )
         {
-            if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,0)) > 0 )
+            if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,safeheights,otherheights,baseids,rmd160s,opretbuf,opretlen,0)) > 0 )
             {
                 for (i=0; i<n; i++)
                 {
@@ -963,7 +963,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                                     pax->height = pax2->height;
                                     pax->otherheight = height;
                                     if ( 1 && strcmp(CURRENCIES[baseids[i]],"USD") == 0 )
-                                        printf("########### %p issuedb %s += %.8f kmdheight.%d %.8f other.%d [%d]\n",basesp,CURRENCIES[baseids[i]],dstr(pax->fiatoshis),pax->height,dstr(pax->safetoshis),pax->otherheight,height);
+                                        printf("########### %p issuedb %s += %.8f safeheight.%d %.8f other.%d [%d]\n",basesp,CURRENCIES[baseids[i]],dstr(pax->fiatoshis),pax->height,dstr(pax->safetoshis),pax->otherheight,height);
                                 }
                             }
                         }
@@ -986,15 +986,15 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
             return(typestr);
         }
         tosafecoin = 1;
-        iguana_rwnum(0,&opretbuf[34],sizeof(kmdheight),&kmdheight);
+        iguana_rwnum(0,&opretbuf[34],sizeof(safeheight),&safeheight);
         memset(base,0,sizeof(base));
         PAX_pubkey(0,&opretbuf[1],&addrtype,rmd160,base,&shortflag,&safetoshis);
         bitcoin_address(coinaddr,addrtype,rmd160,20);
-        checktoshis = PAX_fiatdest(&seed,tosafecoin,destaddr,pubkey33,coinaddr,kmdheight,base,value);
+        checktoshis = PAX_fiatdest(&seed,tosafecoin,destaddr,pubkey33,coinaddr,safeheight,base,value);
         typestr = "withdraw";
-        //printf(" [%s] WITHDRAW %s.height.%d vs height.%d check %.8f/%.8f vs %.8f tosafecoin.%d %d seed.%llx -> (%s) len.%d\n",ASSETCHAINS_SYMBOL,base,kmdheight,height,dstr(checktoshis),dstr(safetoshis),dstr(value),safecoin_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed,coinaddr,opretlen);
+        //printf(" [%s] WITHDRAW %s.height.%d vs height.%d check %.8f/%.8f vs %.8f tosafecoin.%d %d seed.%llx -> (%s) len.%d\n",ASSETCHAINS_SYMBOL,base,safeheight,height,dstr(checktoshis),dstr(safetoshis),dstr(value),safecoin_is_issuer(),strncmp(ASSETCHAINS_SYMBOL,base,strlen(base)) == 0,(long long)seed,coinaddr,opretlen);
         didstats = 0;
-        //if ( safecoin_paxcmp(base,kmdheight,safetoshis,checktoshis,seed) == 0 )
+        //if ( safecoin_paxcmp(base,safeheight,safetoshis,checktoshis,seed) == 0 )
         {
             if ( value != 0 && ((pax= safecoin_paxfind(txid,vout,'W')) == 0 || pax->didstats == 0) )
             {
@@ -1006,19 +1006,19 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                         printf("########### %p withdrawn %s += %.8f check %.8f\n",basesp,base,dstr(value),dstr(checktoshis));
                 }
                 if ( 0 && strcmp(base,"RUB") == 0 && (pax == 0 || pax->approved == 0) )
-                    printf("notarize %s %.8f -> %.8f kmd.%d other.%d\n",ASSETCHAINS_SYMBOL,dstr(value),dstr(safetoshis),kmdheight,height);
+                    printf("notarize %s %.8f -> %.8f safe.%d other.%d\n",ASSETCHAINS_SYMBOL,dstr(value),dstr(safetoshis),safeheight,height);
             }
-            safecoin_gateway_deposit(coinaddr,0,(char *)"KMD",value,rmd160,txid,vout,'W',kmdheight,height,source,0);
+            safecoin_gateway_deposit(coinaddr,0,(char *)"SAFE",value,rmd160,txid,vout,'W',safeheight,height,source,0);
             if ( (pax= safecoin_paxfind(txid,vout,'W')) != 0 )
             {
                 pax->type = opretbuf[0];
                 strcpy(pax->source,base);
-                strcpy(pax->symbol,"KMD");
-                pax->height = kmdheight;
+                strcpy(pax->symbol,"SAFE");
+                pax->height = safeheight;
                 pax->otherheight = height;
                 pax->safetoshis = safetoshis;
             }
-        } // else printf("withdraw %s paxcmp ht.%d %d error value %.8f -> %.8f vs %.8f\n",base,kmdheight,height,dstr(value),dstr(safetoshis),dstr(checktoshis));
+        } // else printf("withdraw %s paxcmp ht.%d %d error value %.8f -> %.8f vs %.8f\n",base,safeheight,height,dstr(value),dstr(safetoshis),dstr(checktoshis));
         // need to allocate pax
     }
     else if ( height < 236000 && tosafecoin != 0 && opretbuf[0] == 'A' && ASSETCHAINS_SYMBOL[0] == 0 )
@@ -1030,13 +1030,13 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                 printf("%02x",opretbuf[i]);
             printf(" opret[%c] else path tosafecoin.%d ht.%d before %.8f opretlen.%d\n",opretbuf[0],tosafecoin,height,dstr(safecoin_paxtotal()),opretlen);
         }
-        if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
+        if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,safeheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
         {
             for (i=0; i<n; i++)
             {
                 //for (j=0; j<32; j++)
                 //    printf("%02x",((uint8_t *)&txids[i])[j]);
-                //printf(" v%d %.8f %.8f k.%d ht.%d base.%d\n",vouts[i],dstr(values[i]),dstr(srcvalues[i]),kmdheights[i],otherheights[i],baseids[i]);
+                //printf(" v%d %.8f %.8f k.%d ht.%d base.%d\n",vouts[i],dstr(values[i]),dstr(srcvalues[i]),safeheights[i],otherheights[i],baseids[i]);
                 if ( baseids[i] < 0 )
                 {
                     for (i=0; i<opretlen; i++)
@@ -1053,26 +1053,26 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                 }
                 didstats = 0;
                 seed = 0;
-                checktoshis = safecoin_paxprice(&seed,kmdheights[i],CURRENCIES[baseids[i]],(char *)"KMD",(uint64_t)values[i]);
-                //printf("PAX_fiatdest ht.%d price %s %.8f -> KMD %.8f vs %.8f\n",kmdheights[i],CURRENCIES[baseids[i]],(double)values[i]/COIN,(double)srcvalues[i]/COIN,(double)checktoshis/COIN);
+                checktoshis = safecoin_paxprice(&seed,safeheights[i],CURRENCIES[baseids[i]],(char *)"SAFE",(uint64_t)values[i]);
+                //printf("PAX_fiatdest ht.%d price %s %.8f -> SAFE %.8f vs %.8f\n",safeheights[i],CURRENCIES[baseids[i]],(double)values[i]/COIN,(double)srcvalues[i]/COIN,(double)checktoshis/COIN);
                 if ( srcvalues[i] == checktoshis )
                 {
                     if ( (pax= safecoin_paxfind(txids[i],vouts[i],'A')) == 0 )
                     {
                         bitcoin_address(coinaddr,60,&rmd160s[i*20],20);
-                        safecoin_gateway_deposit(coinaddr,srcvalues[i],CURRENCIES[baseids[i]],values[i],&rmd160s[i*20],txids[i],vouts[i],'A',kmdheights[i],otherheights[i],CURRENCIES[baseids[i]],kmdheights[i]);
+                        safecoin_gateway_deposit(coinaddr,srcvalues[i],CURRENCIES[baseids[i]],values[i],&rmd160s[i*20],txids[i],vouts[i],'A',safeheights[i],otherheights[i],CURRENCIES[baseids[i]],safeheights[i]);
                         if ( (pax= safecoin_paxfind(txids[i],vouts[i],'A')) == 0 )
                             printf("unexpected null pax for approve\n");
                         else pax->validated = checktoshis;
                         if ( (pax2= safecoin_paxfind(txids[i],vouts[i],'W')) != 0 )
-                            pax2->approved = kmdheights[i];
+                            pax2->approved = safeheights[i];
                         safecoin_paxmark(height,txids[i],vouts[i],'W',height);
                         //safecoin_paxmark(height,txids[i],vouts[i],'A',height);
                         if ( values[i] != 0 && (basesp= safecoin_stateptrget(CURRENCIES[baseids[i]])) != 0 )
                         {
                             basesp->approved += values[i];
                             didstats = 1;
-                            //printf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),kmdheights[i],otherheights[i]);
+                            //printf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),safeheights[i],otherheights[i]);
                         }
                         //printf(" i.%d (%s) <- %.8f ADDFLAG APPROVED\n",i,coinaddr,dstr(values[i]));
                     }
@@ -1082,18 +1082,18 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                         {
                             basesp->approved += values[i];
                             didstats = 1;
-                            //printf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),kmdheights[i],otherheights[i]);
+                            //printf("pax.%p ########### %p approved %s += %.8f -> %.8f/%.8f kht.%d %d\n",pax,basesp,CURRENCIES[baseids[i]],dstr(values[i]),dstr(srcvalues[i]),dstr(checktoshis),safeheights[i],otherheights[i]);
                         }
                     } //else printf(" i.%d of n.%d pax.%p baseids[] %d\n",i,n,pax,baseids[i]);
                     if ( (pax= safecoin_paxfind(txids[i],vouts[i],'A')) != 0 )
                     {
                         pax->type = opretbuf[0];
-                        pax->approved = kmdheights[i];
+                        pax->approved = safeheights[i];
                         pax->validated = checktoshis;
                         if ( didstats != 0 )
                             pax->didstats = 1;
                         //if ( strcmp(CURRENCIES[baseids[i]],ASSETCHAINS_SYMBOL) == 0 )
-                        //printf(" i.%d approved.%d <<<<<<<<<<<<< APPROVED %p\n",i,kmdheights[i],pax);
+                        //printf(" i.%d approved.%d <<<<<<<<<<<<< APPROVED %p\n",i,safeheights[i],pax);
                     }
                 }
             }
@@ -1103,14 +1103,14 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
     else if ( height < 236000 && opretbuf[0] == 'X' && ASSETCHAINS_SYMBOL[0] == 0 )
     {
         tosafecoin = 1;
-        if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,kmdheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
+        if ( (n= safecoin_issued_opreturn(base,txids,vouts,values,srcvalues,safeheights,otherheights,baseids,rmd160s,opretbuf,opretlen,1)) > 0 )
         {
             for (i=0; i<n; i++)
             {
                 if ( baseids[i] < 0 )
                     continue;
                 bitcoin_address(coinaddr,60,&rmd160s[i*20],20);
-                safecoin_gateway_deposit(coinaddr,0,0,0,0,txids[i],vouts[i],'X',height,0,(char *)"KMD",0);
+                safecoin_gateway_deposit(coinaddr,0,0,0,0,txids[i],vouts[i],'X',height,0,(char *)"SAFE",0);
                 safecoin_paxmark(height,txids[i],vouts[i],'W',height);
                 safecoin_paxmark(height,txids[i],vouts[i],'A',height);
                 safecoin_paxmark(height,txids[i],vouts[i],'X',height);
@@ -1125,7 +1125,7 @@ const char *safecoin_opreturn(int32_t height,uint64_t value,uint8_t *opretbuf,in
                         basesp->redeemed += value;
                         pax->didstats = 1;
                         if ( strcmp(CURRENCIES[baseids[i]],ASSETCHAINS_SYMBOL) == 0 )
-                            printf("ht.%d %.8f ########### %p redeemed %s += %.8f %.8f kht.%d ht.%d\n",height,dstr(value),basesp,CURRENCIES[baseids[i]],dstr(value),dstr(srcvalues[i]),kmdheights[i],otherheights[i]);
+                            printf("ht.%d %.8f ########### %p redeemed %s += %.8f %.8f kht.%d ht.%d\n",height,dstr(value),basesp,CURRENCIES[baseids[i]],dstr(value),dstr(srcvalues[i]),safeheights[i],otherheights[i]);
                     }
                 }
                 if ( (pax= safecoin_paxmark(height,txids[i],vouts[i],'W',height)) != 0 )
@@ -1228,8 +1228,8 @@ void safecoin_stateind_set(struct safecoin_state *sp,uint32_t *inds,int32_t n,ui
         }
     }
     printf("numR.%d numV.%d numN.%d count.%d\n",numR,numV,numN,count);
-    /*else if ( func == 'K' ) // KMD height: stop after 1st
-    else if ( func == 'T' ) // KMD height+timestamp: stop after 1st
+    /*else if ( func == 'K' ) // SAFE height: stop after 1st
+    else if ( func == 'T' ) // SAFE height+timestamp: stop after 1st
 
     else if ( func == 'N' ) // notarization, scan backwards 1440+ blocks;
     else if ( func == 'V' ) // price feed: can stop after 1440+
@@ -1431,7 +1431,7 @@ void safecoin_passport_iteration()
         lastinterest = safecoin_chainactive_timestamp();
     }
     refsp = safecoin_stateptr(symbol,dest);
-    if ( ASSETCHAINS_SYMBOL[0] == 0 || strcmp(ASSETCHAINS_SYMBOL,"KMDCC") == 0 )
+    if ( ASSETCHAINS_SYMBOL[0] == 0 || strcmp(ASSETCHAINS_SYMBOL,"SAFECC") == 0 )
     {
         refid = 33;
         limit = 10000000;
@@ -1466,7 +1466,7 @@ void safecoin_passport_iteration()
         //printf("PASSPORT %s baseid+1 %d refid.%d\n",ASSETCHAINS_SYMBOL,baseid+1,refid);
         if ( baseid+1 != refid ) // only need to import state from a different coin
         {
-            if ( baseid == 32 ) // only care about KMD's state
+            if ( baseid == 32 ) // only care about SAFE's state
             {
                 refsp->RTmask &= ~(1LL << baseid);
                 safecoin_statefname(fname,baseid<32?base:(char *)"",(char *)"safecoinstate");
@@ -1508,7 +1508,7 @@ void safecoin_passport_iteration()
                             n++;
                         }
                         lastpos[baseid] = ftell(fp);
-                        if ( 0 && lastpos[baseid] == 0 && strcmp(symbol,"KMD") == 0 )
+                        if ( 0 && lastpos[baseid] == 0 && strcmp(symbol,"SAFE") == 0 )
                             printf("from.(%s) lastpos[%s] %ld isrt.%d\n",ASSETCHAINS_SYMBOL,CURRENCIES[baseid],lastpos[baseid],safecoin_isrealtime(&ht));
                     } //else fprintf(stderr,"%s.%ld ",CURRENCIES[baseid],ftell(fp));
                     fclose(fp);
@@ -1575,7 +1575,7 @@ extern std::vector<uint8_t> Mineropret; // opreturn data set by the data gatheri
 
 #define issue_curl(cmdstr) bitcoind_RPC(0,(char *)"CBCOINBASE",cmdstr,0,0,0)
 
-const char *Cryptos[] = { "KMD", "ETH" }; // must be on binance (for now)
+const char *Cryptos[] = { "SAFE", "ETH" }; // must be on binance (for now)
 // "LTC", "BCHABC", "XMR", "IOTA", "ZEC", "WAVES",  "LSK", "DCR", "RVN", "DASH", "XEM", "BTS", "ICX", "HOT", "STEEM", "ENJ", "STRAT"
 const char *Forex[] =
 { "BGN","NZD","ILS","RUB","CAD","PHP","CHF","AUD","JPY","TRY","HKD","MYR","HRK","CZK","IDR","DKK","NOK","HUF","GBP","MXN","THB","ISK","ZAR","BRL","SGD","PLN","INR","KRW","RON","CNY","SEK","EUR"

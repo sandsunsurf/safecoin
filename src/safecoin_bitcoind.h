@@ -383,11 +383,11 @@ char *safecoin_issuemethod(char *userpass,char *method,char *params,uint16_t por
     return(retstr2);
 }
 
-int32_t notarizedtxid_height(char *dest,char *txidstr,int32_t *kmdnotarized_heightp)
+int32_t notarizedtxid_height(char *dest,char *txidstr,int32_t *safenotarized_heightp)
 {
     char *jsonstr,params[256],*userpass; uint16_t port; cJSON *json,*item; int32_t height = 0,txid_height = 0,txid_confirmations = 0;
     params[0] = 0;
-    *kmdnotarized_heightp = 0;
+    *safenotarized_heightp = 0;
     if ( strcmp(dest,"SAFE") == 0 )
     {
         port = SAFE_PORT;
@@ -409,7 +409,7 @@ int32_t notarizedtxid_height(char *dest,char *txidstr,int32_t *kmdnotarized_heig
                 if ( (item= jobj(json,(char *)"result")) != 0 )
                 {
                     height = jint(item,(char *)"blocks");
-                    *kmdnotarized_heightp = strcmp(dest,"SAFE") == 0 ? jint(item,(char *)"notarized") : height;
+                    *safenotarized_heightp = strcmp(dest,"SAFE") == 0 ? jint(item,(char *)"notarized") : height;
                 }
                 free_json(json);
             }
@@ -1082,18 +1082,18 @@ int32_t safecoin_is_special(uint8_t pubkeys[66][33],int32_t mids[66],uint32_t bl
     return(0);
 }
 
-int32_t safecoin_MoM(int32_t *notarized_heightp,uint256 *MoMp,uint256 *kmdtxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip)
+int32_t safecoin_MoM(int32_t *notarized_heightp,uint256 *MoMp,uint256 *safetxidp,int32_t nHeight,uint256 *MoMoMp,int32_t *MoMoMoffsetp,int32_t *MoMoMdepthp,int32_t *safestartip,int32_t *safeendip)
 {
-    int32_t depth,notarized_ht; uint256 MoM,kmdtxid;
-    depth = safecoin_MoMdata(&notarized_ht,&MoM,&kmdtxid,nHeight,MoMoMp,MoMoMoffsetp,MoMoMdepthp,safestartip,safeendip);
+    int32_t depth,notarized_ht; uint256 MoM,safetxid;
+    depth = safecoin_MoMdata(&notarized_ht,&MoM,&safetxid,nHeight,MoMoMp,MoMoMoffsetp,MoMoMdepthp,safestartip,safeendip);
     memset(MoMp,0,sizeof(*MoMp));
-    memset(kmdtxidp,0,sizeof(*kmdtxidp));
+    memset(safetxidp,0,sizeof(*safetxidp));
     *notarized_heightp = 0;
     if ( depth != 0 && notarized_ht > 0 && nHeight > notarized_ht-depth && nHeight <= notarized_ht )
     {
         *MoMp = MoM;
         *notarized_heightp = notarized_ht;
-        *kmdtxidp = kmdtxid;
+        *safetxidp = safetxid;
     }
     return(depth);
 }
@@ -1209,12 +1209,12 @@ int32_t safecoin_nextheight()
     else return(safecoin_longestchain() + 1);
 }
 
-int32_t safecoin_isrealtime(int32_t *kmdheightp)
+int32_t safecoin_isrealtime(int32_t *safeheightp)
 {
     struct safecoin_state *sp; CBlockIndex *pindex;
     if ( (sp= safecoin_stateptrget((char *)"SAFE")) != 0 )
-        *kmdheightp = sp->CURRENT_HEIGHT;
-    else *kmdheightp = 0;
+        *safeheightp = sp->CURRENT_HEIGHT;
+    else *safeheightp = 0;
     if ( (pindex= chainActive.LastTip()) != 0 && pindex->GetHeight() >= (int32_t)safecoin_longestchain() )
         return(1);
     else return(0);
@@ -2130,7 +2130,7 @@ bool safecoin_appendACscriptpub()
     return false;
 }
 
-void GetKomodoEarlytxidScriptPub()
+void GetSafecoinEarlytxidScriptPub()
 {
     if ( SAFECOIN_EARLYTXID == zeroid )
     {

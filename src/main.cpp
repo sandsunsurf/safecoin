@@ -140,7 +140,7 @@ static void CheckBlockIndex();
 /** Constant stuff for coinbase transactions we create: */
 CScript COINBASE_FLAGS;
 
-const string strMessageMagic = "Komodo Signed Message:\n";
+const string strMessageMagic = "Safecoin Signed Message:\n";
 
 // Internal stuff
 namespace {
@@ -639,7 +639,7 @@ CBlockIndex* FindForkInGlobalIndex(const CChain& chain, const CBlockLocator& loc
 CCoinsViewCache *pcoinsTip = NULL;
 CBlockTreeDB *pblocktree = NULL;
 
-// Komodo globals
+// Safecoin globals
 
 #define SAFECOIN_ZCASH
 #include "safecoin.h"

@@ -30,8 +30,8 @@ struct safecoin_event *safecoin_eventadd(struct safecoin_state *sp,int32_t heigh
         strcpy(ep->symbol,symbol);
         if ( datalen != 0 )
             memcpy(ep->space,data,datalen);
-        sp->Komodo_events = (struct safecoin_event **)realloc(sp->Komodo_events,(1 + sp->Komodo_numevents) * sizeof(*sp->Komodo_events));
-        sp->Komodo_events[sp->Komodo_numevents++] = ep;
+        sp->Safecoin_events = (struct safecoin_event **)realloc(sp->Safecoin_events,(1 + sp->Safecoin_numevents) * sizeof(*sp->Safecoin_events));
+        sp->Safecoin_events[sp->Safecoin_numevents++] = ep;
         portable_mutex_unlock(&safecoin_mutex);
     }
     return(ep);
@@ -138,49 +138,49 @@ void safecoin_event_rewind(struct safecoin_state *sp,char *symbol,int32_t height
             SAFECOIN_LASTMINED = prevSAFECOIN_LASTMINED;
             prevSAFECOIN_LASTMINED = 0;
         }
-        while ( sp->Komodo_events != 0 && sp->Komodo_numevents > 0 )
+        while ( sp->Safecoin_events != 0 && sp->Safecoin_numevents > 0 )
         {
-            if ( (ep= sp->Komodo_events[sp->Komodo_numevents-1]) != 0 )
+            if ( (ep= sp->Safecoin_events[sp->Safecoin_numevents-1]) != 0 )
             {
                 if ( ep->height < height )
                     break;
                 //printf("[%s] undo %s event.%c ht.%d for rewind.%d\n",ASSETCHAINS_SYMBOL,symbol,ep->type,ep->height,height);
                 safecoin_event_undo(sp,ep);
-                sp->Komodo_numevents--;
+                sp->Safecoin_numevents--;
             }
         }
     }
 }
 
-void safecoin_setkmdheight(struct safecoin_state *sp,int32_t kmdheight,uint32_t timestamp)
+void safecoin_setsafeheight(struct safecoin_state *sp,int32_t safeheight,uint32_t timestamp)
 {
     if ( sp != 0 )
     {
-        if ( kmdheight > sp->SAVEDHEIGHT )
+        if ( safeheight > sp->SAVEDHEIGHT )
         {
-            sp->SAVEDHEIGHT = kmdheight;
+            sp->SAVEDHEIGHT = safeheight;
             sp->SAVEDTIMESTAMP = timestamp;
         }
-        if ( kmdheight > sp->CURRENT_HEIGHT )
-            sp->CURRENT_HEIGHT = kmdheight;
+        if ( safeheight > sp->CURRENT_HEIGHT )
+            sp->CURRENT_HEIGHT = safeheight;
     }
 }
 
-void safecoin_eventadd_kmdheight(struct safecoin_state *sp,char *symbol,int32_t height,int32_t kmdheight,uint32_t timestamp)
+void safecoin_eventadd_safeheight(struct safecoin_state *sp,char *symbol,int32_t height,int32_t safeheight,uint32_t timestamp)
 {
     uint32_t buf[2];
-    if ( kmdheight > 0 )
+    if ( safeheight > 0 )
     {
-        buf[0] = (uint32_t)kmdheight;
+        buf[0] = (uint32_t)safeheight;
         buf[1] = timestamp;
         safecoin_eventadd(sp,height,symbol,SAFECOIN_EVENT_SAFEHEIGHT,(uint8_t *)buf,sizeof(buf));
         if ( sp != 0 )
-            safecoin_setkmdheight(sp,kmdheight,timestamp);
+            safecoin_setsafeheight(sp,safeheight,timestamp);
     }
     else
     {
-        //fprintf(stderr,"REWIND kmdheight.%d\n",kmdheight);
-        kmdheight = -kmdheight;
+        //fprintf(stderr,"REWIND safeheight.%d\n",safeheight);
+        safeheight = -safeheight;
         safecoin_eventadd(sp,height,symbol,SAFECOIN_EVENT_REWIND,(uint8_t *)&height,sizeof(height));
         if ( sp != 0 )
             safecoin_event_rewind(sp,symbol,height);
@@ -188,13 +188,13 @@ void safecoin_eventadd_kmdheight(struct safecoin_state *sp,char *symbol,int32_t 
 }
 
 
-/*void safecoin_eventadd_deposit(int32_t actionflag,char *symbol,int32_t height,uint64_t safetoshis,char *fiat,uint64_t fiatoshis,uint8_t rmd160[20],bits256 kmdtxid,uint16_t kmdvout,uint64_t price)
+/*void safecoin_eventadd_deposit(int32_t actionflag,char *symbol,int32_t height,uint64_t safetoshis,char *fiat,uint64_t fiatoshis,uint8_t rmd160[20],bits256 safetxid,uint16_t safevout,uint64_t price)
  {
  uint8_t opret[512]; uint16_t opretlen;
- safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_DEPOSIT,kmdtxid,safetoshis,kmdvout,opret,opretlen);
+ safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_DEPOSIT,safetxid,safetoshis,safevout,opret,opretlen);
  }
  
- void safecoin_eventadd_issued(int32_t actionflag,char *symbol,int32_t height,int32_t fiatheight,bits256 fiattxid,uint16_t fiatvout,bits256 kmdtxid,uint16_t kmdvout,uint64_t fiatoshis)
+ void safecoin_eventadd_issued(int32_t actionflag,char *symbol,int32_t height,int32_t fiatheight,bits256 fiattxid,uint16_t fiatvout,bits256 safetxid,uint16_t safevout,uint64_t fiatoshis)
  {
  uint8_t opret[512]; uint16_t opretlen;
  safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_ISSUED,fiattxid,fiatoshis,fiatvout,opret,opretlen);
@@ -206,10 +206,10 @@ void safecoin_eventadd_kmdheight(struct safecoin_state *sp,char *symbol,int32_t 
  safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_WITHDRAW,fiattxid,fiatoshis,fiatvout,opret,opretlen);
  }
  
- void safecoin_eventadd_redeemed(int32_t actionflag,char *symbol,int32_t height,bits256 kmdtxid,uint16_t kmdvout,int32_t fiatheight,bits256 fiattxid,uint16_t fiatvout,uint64_t safetoshis)
+ void safecoin_eventadd_redeemed(int32_t actionflag,char *symbol,int32_t height,bits256 safetxid,uint16_t safevout,int32_t fiatheight,bits256 fiattxid,uint16_t fiatvout,uint64_t safetoshis)
  {
  uint8_t opret[512]; uint16_t opretlen;
- safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_REDEEMED,kmdtxid,safetoshis,kmdvout,opret,opretlen);
+ safecoin_eventadd_opreturn(symbol,height,SAFECOIN_OPRETURN_REDEEMED,safetxid,safetoshis,safevout,opret,opretlen);
  }*/
 
 // process events

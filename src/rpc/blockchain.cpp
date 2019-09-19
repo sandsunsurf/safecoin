@@ -952,7 +952,7 @@ UniValue kvsearch(const UniValue& params, bool fHelp)
     LOCK(cs_main);
     if ( (keylen= (int32_t)strlen(params[0].get_str().c_str())) > 0 )
     {
-        ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "KMD" : ASSETCHAINS_SYMBOL)));
+        ret.push_back(Pair("coin",(char *)(ASSETCHAINS_SYMBOL[0] == 0 ? "SAFE" : ASSETCHAINS_SYMBOL)));
         ret.push_back(Pair("currentheight", (int64_t)chainActive.LastTip()->GetHeight()));
         ret.push_back(Pair("key",params[0].get_str()));
         ret.push_back(Pair("keylen",keylen));
@@ -1008,19 +1008,19 @@ UniValue minerids(const UniValue& params, bool fHelp)
             }
             for (i=0; i<64; i++)
             {
-                UniValue item(UniValue::VOBJ); std::string hex,kmdaddress; char *hexstr,kmdaddr[64],*ptr; int32_t m;
+                UniValue item(UniValue::VOBJ); std::string hex,safeaddress; char *hexstr,safeaddr[64],*ptr; int32_t m;
                 hex.resize(66);
                 hexstr = (char *)hex.data();
                 for (j=0; j<33; j++)
                     sprintf(&hexstr[j*2],"%02x",pubkeys[i][j]);
                 item.push_back(Pair("notaryid", i));
 
-                bitcoin_address(kmdaddr,60,pubkeys[i],33);
-                m = (int32_t)strlen(kmdaddr);
-                kmdaddress.resize(m);
-                ptr = (char *)kmdaddress.data();
-                memcpy(ptr,kmdaddr,m);
-                item.push_back(Pair("KMDaddress", kmdaddress));
+                bitcoin_address(safeaddr,60,pubkeys[i],33);
+                m = (int32_t)strlen(safeaddr);
+                safeaddress.resize(m);
+                ptr = (char *)safeaddress.data();
+                memcpy(ptr,safeaddr,m);
+                item.push_back(Pair("SAFEaddress", safeaddress));
 
                 item.push_back(Pair("pubkey", hex));
                 item.push_back(Pair("blocks", tally[i]));
@@ -1039,7 +1039,7 @@ UniValue minerids(const UniValue& params, bool fHelp)
 
 UniValue notaries(const UniValue& params, bool fHelp)
 {
-    UniValue a(UniValue::VARR); uint32_t timestamp=0; UniValue ret(UniValue::VOBJ); int32_t i,j,n,m; char *hexstr;  uint8_t pubkeys[64][33]; char btcaddr[64],kmdaddr[64],*ptr;
+    UniValue a(UniValue::VARR); uint32_t timestamp=0; UniValue ret(UniValue::VOBJ); int32_t i,j,n,m; char *hexstr;  uint8_t pubkeys[64][33]; char btcaddr[64],safeaddr[64],*ptr;
     if ( fHelp || (params.size() != 1 && params.size() != 2) )
         throw runtime_error("notaries height timestamp\n");
     LOCK(cs_main);
@@ -1063,7 +1063,7 @@ UniValue notaries(const UniValue& params, bool fHelp)
         for (i=0; i<n; i++)
         {
             UniValue item(UniValue::VOBJ);
-            std::string btcaddress,kmdaddress,hex;
+            std::string btcaddress,safeaddress,hex;
             hex.resize(66);
             hexstr = (char *)hex.data();
             for (j=0; j<33; j++)
@@ -1077,12 +1077,12 @@ UniValue notaries(const UniValue& params, bool fHelp)
             memcpy(ptr,btcaddr,m);
             item.push_back(Pair("BTCaddress", btcaddress));
 
-            bitcoin_address(kmdaddr,60,pubkeys[i],33);
-            m = (int32_t)strlen(kmdaddr);
-            kmdaddress.resize(m);
-            ptr = (char *)kmdaddress.data();
-            memcpy(ptr,kmdaddr,m);
-            item.push_back(Pair("KMDaddress", kmdaddress));
+            bitcoin_address(safeaddr,60,pubkeys[i],33);
+            m = (int32_t)strlen(safeaddr);
+            safeaddress.resize(m);
+            ptr = (char *)safeaddress.data();
+            memcpy(ptr,safeaddr,m);
+            item.push_back(Pair("SAFEaddress", safeaddress));
             a.push_back(item);
         }
     }
@@ -1499,8 +1499,8 @@ UniValue gettxout(const UniValue& params, bool fHelp)
             "     \"hex\" : \"hex\",        (string) \n"
             "     \"reqSigs\" : n,          (numeric) Number of required signatures\n"
             "     \"type\" : \"pubkeyhash\", (string) The type, eg pubkeyhash\n"
-            "     \"addresses\" : [          (array of string) array of Komodo addresses\n"
-            "        \"safecoindoaddress\"        (string) Komodo address\n"
+            "     \"addresses\" : [          (array of string) array of Safecoin addresses\n"
+            "        \"safecoindoaddress\"        (string) Safecoin address\n"
             "        ,...\n"
             "     ]\n"
             "  },\n"

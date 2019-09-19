@@ -55,7 +55,7 @@ struct safecoin_ccdata_entry *safecoin_allMoMs(int32_t *nump,uint256 *MoMoMp,int
             }
             allMoMs[num].MoM = ccdata->MoMdata.MoM;
             allMoMs[num].notarized_height = ccdata->MoMdata.notarized_height;
-            allMoMs[num].kmdheight = ccdata->MoMdata.height;
+            allMoMs[num].safeheight = ccdata->MoMdata.height;
             allMoMs[num].txi = ccdata->MoMdata.txi;
             strcpy(allMoMs[num].symbol,ccdata->symbol);
             num++;
@@ -97,7 +97,7 @@ int32_t safecoin_addpair(struct safecoin_ccdataMoMoM *mdata,int32_t notarized_he
     return(maxpairs);
 }
 
-int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t kmdheight,int32_t notarized_height)
+int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMoMoM *mdata,char *symbol,int32_t safeheight,int32_t notarized_height)
 {
     uint8_t hexdata[8192]; struct safecoin_ccdata *ccdata,*tmpptr; int32_t len,maxpairs,i,retval=-1,depth,starti,endi,CCid=0; struct safecoin_ccdata_entry *allMoMs;
     starti = endi = depth = len = maxpairs = 0;
@@ -111,9 +111,9 @@ int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMo
     portable_mutex_lock(&SAFECOIN_CC_mutex);
     DL_FOREACH_SAFE(CC_data,ccdata,tmpptr)
     {
-        if ( ccdata->MoMdata.height < kmdheight )
+        if ( ccdata->MoMdata.height < safeheight )
         {
-            //fprintf(stderr,"%s notarized.%d kmd.%d\n",ccdata->symbol,ccdata->MoMdata.notarized_height,ccdata->MoMdata.height);
+            //fprintf(stderr,"%s notarized.%d safe.%d\n",ccdata->symbol,ccdata->MoMdata.notarized_height,ccdata->MoMdata.height);
             if ( strcmp(ccdata->symbol,symbol) == 0 )
             {
                 if ( endi == 0 )
@@ -157,7 +157,7 @@ int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMo
                 {
                     if ( len + sizeof(uint32_t)*2 > sizeof(hexdata) )
                     {
-                        fprintf(stderr,"%s %d %d i.%d of %d exceeds hexdata.%d\n",symbol,kmdheight,notarized_height,i,mdata->numpairs,(int32_t)sizeof(hexdata));
+                        fprintf(stderr,"%s %d %d i.%d of %d exceeds hexdata.%d\n",symbol,safeheight,notarized_height,i,mdata->numpairs,(int32_t)sizeof(hexdata));
                         break;
                     }
                     len += iguana_rwnum(1,&hexdata[len],sizeof(uint32_t),(uint8_t *)&mdata->pairs[i].notarized_height);
@@ -168,7 +168,7 @@ int32_t safecoin_MoMoMdata(char *hexstr,int32_t hexsize,struct safecoin_ccdataMo
                     init_hexbytes_noT(hexstr,hexdata,len);
                     //fprintf(stderr,"hexstr.(%s)\n",hexstr);
                     retval = 0;
-                } else fprintf(stderr,"%s %d %d too much hexdata[%d] for hexstr[%d]\n",symbol,kmdheight,notarized_height,len,hexsize);
+                } else fprintf(stderr,"%s %d %d too much hexdata[%d] for hexstr[%d]\n",symbol,safeheight,notarized_height,len,hexsize);
             }
             free(allMoMs);
         }
