@@ -122,6 +122,7 @@ map<string, vector<string> > mapMultiArgs;
 bool fDebug = false;
 bool fPrintToConsole = false;
 bool fPrintToDebugLog = true;
+bool fLimitDebugLogSize = true;
 bool fDaemon = false;
 bool fServer = false;
 string strMiscWarning;
@@ -224,6 +225,11 @@ static void DebugPrintInit()
     vMsgsBeforeOpenLog = new list<string>;
 }
 
+boost::filesystem::path GetDebugLogPath()
+{
+    return GetDataDir() / "debug.log";
+}
+
 void OpenDebugLog()
 {
     boost::call_once(&DebugPrintInit, debugPrintInitFlag);
@@ -324,6 +330,9 @@ int LogPrintStr(const std::string &str)
         }
         else
         {
+            // prevent log from endless growth
+            if (fLimitDebugLogSize)
+                ShrinkDebugFile();
             // reopen the log file, if requested
             if (fReopenDebugLog) {
                 fReopenDebugLog = false;

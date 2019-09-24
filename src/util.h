@@ -63,6 +63,7 @@ extern std::map<std::string, std::vector<std::string> > mapMultiArgs;
 extern bool fDebug;
 extern bool fPrintToConsole;
 extern bool fPrintToDebugLog;
+extern bool fLimitDebugLogSize;
 extern bool fServer;
 extern std::string strMiscWarning;
 extern bool fLogTimestamps;
@@ -264,7 +265,7 @@ void RenameThread(const char* name);
  */
 template <typename Callable> void TraceThread(const char* name,  Callable func)
 {
-    std::string s = strprintf("zcash-%s", name);
+    std::string s = strprintf("safecoin-%s", name);
     RenameThread(s.c_str());
     try
     {
