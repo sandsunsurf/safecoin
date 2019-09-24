@@ -3866,13 +3866,28 @@ bool CWallet::CreateTransaction(const vector<CRecipient>& vecSend, CWalletTx& wt
 
                         // Reserve a new key pair from key pool
                         CPubKey vchPubKey;
-                        extern int32_t USE_EXTERNAL_PUBKEY; extern std::string NOTARY_PUBKEY;
+                        extern int32_t USE_EXTERNAL_PUBKEY;
+                        extern std::string NOTARY_PUBKEY;
+                        
+                        // give priority to manually set change address
+                        std::string tchangeaddress = GetArg("-tchangeaddress", "");
+                        //printf("tchangeaddress = %s\n", tchangeaddress.c_str());
+                        CTxDestination change_dest = DecodeDestination(tchangeaddress);
+                        bool is_valid_change_dest = IsValidDestination(change_dest);
+                        
                         if ( USE_EXTERNAL_PUBKEY == 0 )
                         {
-                            bool ret;
-                            ret = reservekey.GetReservedKey(vchPubKey);
-                            assert(ret); // should never fail, as we just unlocked
-                            scriptChange = GetScriptForDestination(vchPubKey.GetID());
+                            if (is_valid_change_dest)
+                            {
+								scriptChange = GetScriptForDestination(change_dest);
+							}
+							else			
+							{
+								bool ret;
+								ret = reservekey.GetReservedKey(vchPubKey);
+								assert(ret); // should never fail, as we just unlocked
+								scriptChange = GetScriptForDestination(vchPubKey.GetID());
+							}
                         }
                         else
                         {
