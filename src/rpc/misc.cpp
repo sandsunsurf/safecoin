@@ -28,6 +28,8 @@
 #include "timedata.h"
 #include "txmempool.h"
 #include "util.h"
+#include "safecoin_defs.h"
+#include "safecoin_structs.h"
 #include "notaries_staked.h"
 #include "cc/eval.h"
 #include "cc/CCinclude.h"
@@ -87,6 +89,10 @@ extern uint64_t ASSETCHAINS_COMMISSION,ASSETCHAINS_SUPPLY;
 extern int32_t ASSETCHAINS_LWMAPOS,ASSETCHAINS_SAPLING,ASSETCHAINS_STAKED;
 extern uint64_t ASSETCHAINS_ENDSUBSIDY[],ASSETCHAINS_REWARD[],ASSETCHAINS_HALVING[],ASSETCHAINS_DECAY[],ASSETCHAINS_NOTARY_PAY[];
 extern std::string NOTARY_PUBKEY,NOTARY_ADDRESS; extern uint8_t NOTARY_PUBKEY33[];
+extern std::vector<std::string> vs_safecoin_notaries(int32_t height, uint32_t timestamp);
+extern std::string str_safe_address(std::string pubkey);
+extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
 
 int32_t getera(int timestamp)
 {
@@ -1096,6 +1102,91 @@ UniValue getaddressutxos(const UniValue& params, bool fHelp)
     }
 }
 
+
+UniValue listutxos(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 1 || params.size() > 2)
+        throw runtime_error(
+            "listutxos \"address\" ( minconf )\n"
+            "\nReturns all unspent outputs for an address (requires addressindex to be enabled).\n"
+            "\nArguments:\n"
+            "1. \"address\"  (string) The base58check encoded address\n"
+            "2. minconf (number) Minimum number of confirmations\n"
+            "}\n"
+            "\nResult\n"
+            "[\n"
+            "  {\n"
+            "    \"address\"  (string) The address base58check encoded\n"
+            "    \"txid\"  (string) The output txid\n"
+            "    \"height\"  (number) The block height\n"
+            "    \"outputIndex\"  (number) The output index\n"
+            "    \"script\"  (strin) The script hex encoded\n"
+            "    \"satoshis\"  (number) The number of satoshis of the output\n"
+            "  }\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listutxos", "\"RY5LccmGiX9bUHYGtSWQouNy1yFhc5rM87\" 100")
+            + HelpExampleRpc("listutxos", "\"RY5LccmGiX9bUHYGtSWQouNy1yFhc5rM87\" 100")
+            );
+	
+	std::string str_address = params[0].get_str();
+	uint32_t minconf = (params.size() == 2) ? params[1].get_int() : 1;
+	
+	CBitcoinAddress address(str_address);
+    uint160 hashBytes;
+    int type = 0;
+    std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+    
+    if (!address.GetIndexKey(hashBytes, type, false))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid addresses");
+    }
+
+    if (!GetAddressUnspent(hashBytes, type, unspentOutputs))
+    {
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for address");
+    }
+
+    std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+
+    
+    UniValue uv_result(UniValue::VOBJ);
+    UniValue uv_utxos(UniValue::VARR);
+    UniValue uv_balance(UniValue::VOBJ);
+	int64_t balance_satoshis = 0;
+	
+    for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+    {
+        UniValue output(UniValue::VOBJ);
+        std::string tmp_address;
+        if (!getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address)) {
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Unknown address type");
+        }
+		
+		uint32_t confirmations = chainActive.Height() - it->second.blockHeight;
+		
+		if (confirmations >= minconf)
+		{
+			output.push_back(Pair("address", tmp_address));
+			output.push_back(Pair("txid", it->first.txhash.GetHex()));
+			output.push_back(Pair("outputIndex", (int)it->first.index));
+			output.push_back(Pair("script", HexStr(it->second.script.begin(), it->second.script.end())));
+			output.push_back(Pair("satoshis", it->second.satoshis));
+			output.push_back(Pair("height", it->second.blockHeight));
+			output.push_back(Pair("confirmations", (int32_t)confirmations));
+			uv_utxos.push_back(output);
+			balance_satoshis += it->second.satoshis;
+		}
+    }
+    
+    uv_result.push_back(Pair("utxos", uv_utxos));
+    uv_result.push_back(Pair("balance_satoshis", balance_satoshis));
+	//uv_result.push_back(uv_balance);
+	
+	return uv_result;
+}
+
+
 UniValue getaddressdeltas(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() > 2 || params.size() == 0 || !params[0].isObject())
@@ -1522,6 +1613,170 @@ UniValue getaddresstxids(const UniValue& params, bool fHelp)
 
 }
 
+UniValue listfromto(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2)
+        throw runtime_error(
+            "\nlistfromto \"src-address\" \"dst-address\" ( start-height )\n"
+            "\nReturns payments txids from src-address to dst-address (requires addressindex to be enabled).\n"
+            "\nResult:\n"
+            "[\n"
+            "  {\n"
+            "    \"height\"         (numeric) Transaction block height\n"
+            "    \"timestamp\"      (numeric) Transaction timestamp\n"
+            "    \"txid\"           (string)  Transaction id\n"
+            "    \"received_SAFE\"  (numeric) Amount received by dst-address in SAFE\n"
+            "  }\n"
+            "  , ...\n"
+            "]\n"
+            "\nExamples:\n"
+            + HelpExampleCli("listfromto", "\"RsaEqW1sbbANmjbqD51zHfDJxGP1xMVoVG\" \"RjvitJRxtkeLYe9cvDdrWKrUCVSWk29Hmp\" 683820")
+            + HelpExampleRpc("listfromto", "\"RsaEqW1sbbANmjbqD51zHfDJxGP1xMVoVG\", \"RjvitJRxtkeLYe9cvDdrWKrUCVSWk29Hmp\", 683820")
+        );
+    
+    std::string str_src_address = params[0].get_str();
+    std::string str_dst_address = params[1].get_str();
+	
+	uint32_t start_height = (params.size() == 3) ? params[2].get_int() : 1;
+	uint32_t end_height = chainActive.LastTip()->GetHeight();
+	
+	LOCK(cs_main);
+	
+	CBitcoinAddress src_address(str_src_address);
+	CBitcoinAddress dst_address(str_dst_address);
+    uint160 src_hash_bytes, dst_hash_bytes;
+    int src_type = 0, dst_type = 0;
+    
+	if (!src_address.GetIndexKey(src_hash_bytes, src_type, false))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid source address");
+    }
+    
+    if (!dst_address.GetIndexKey(dst_hash_bytes, dst_type, false))
+    {
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid destination address");
+    }
+    
+    if (start_height > end_height)
+    {
+		throw JSONRPCError(RPC_INVALID_PARAMETER, "Start height above the current chain tip");
+	}
+
+ 
+	std::vector<std::pair<CAddressIndexKey, CAmount> > src_address_index;
+	std::vector<std::pair<CAddressIndexKey, CAmount> > dst_address_index;
+
+	if (!GetAddressIndex(src_hash_bytes, src_type, src_address_index, start_height, end_height))
+	{
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for source address");
+	}
+	
+	if (!GetAddressIndex(dst_hash_bytes, dst_type, dst_address_index, start_height, end_height))
+	{
+		throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "No information available for destination address");
+	}
+ 
+    std::set<std::pair<int, std::string> > src_txids, dst_txids, intersect_txids;
+    
+    for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it=src_address_index.begin(); it!=src_address_index.end(); it++)
+	{
+        int height = it->first.blockHeight;
+        std::string txid = it->first.txhash.GetHex();
+		src_txids.insert(std::make_pair(height, txid));
+    }
+    
+    for (std::vector<std::pair<CAddressIndexKey, CAmount> >::const_iterator it=dst_address_index.begin(); it!=dst_address_index.end(); it++)
+	{
+        int height = it->first.blockHeight;
+        std::string txid = it->first.txhash.GetHex();
+		dst_txids.insert(std::make_pair(height, txid));
+    }
+    
+    std::set_intersection(src_txids.begin(), src_txids.end(),
+                          dst_txids.begin(), dst_txids.end(),
+                          std::inserter(intersect_txids, intersect_txids.end()));
+
+	UniValue result(UniValue::VARR);
+	for (auto const &p: intersect_txids)
+	{
+	    uint32_t height = p.first;
+	    std::string str_txid = p.second;
+	    uint256 hash = ParseHashV(str_txid, "txid");
+
+		CTransaction tx;
+		uint256 hashBlock;
+		int nBlockTime = 0;
+
+		if (GetTransaction(hash, tx, hashBlock, true))
+		{
+			if (!tx.IsCoinBase()) // skip coinbase transactions
+			{
+							
+				BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
+				if (mi != mapBlockIndex.end() && (*mi).second)
+				{
+					CBlockIndex* pindex = (*mi).second;
+					nBlockTime = pindex->GetBlockTime();
+				}
+
+				// we want all inputs to be from src address
+				bool flag_good_src = true;
+				for (const CTxIn& txin : tx.vin)
+				{
+					uint256 prevout_hash;
+					CTransaction prevout_tx;
+					CTxDestination prevout_address;
+					
+					if (GetTransaction(txin.prevout.hash, prevout_tx, prevout_hash, false))
+					{
+						if (ExtractDestination(prevout_tx.vout[txin.prevout.n].scriptPubKey, prevout_address))
+						{
+							flag_good_src = flag_good_src && (CBitcoinAddress(prevout_address) == src_address);
+						}
+						else flag_good_src = false;
+					}
+					else flag_good_src = false;
+					
+					// no need to wait end of the loop if we already know the result
+					if (!flag_good_src) break;	
+				
+				}
+				
+				if (flag_good_src)
+				{
+					// we want at least one output to be dst address
+					int good_vout_count = 0;
+					CAmount received_satoshis = 0;
+					for (const CTxOut& txout : tx.vout)
+					{
+						CTxDestination out_address;
+						if (ExtractDestination(txout.scriptPubKey, out_address))
+						{
+							if (CBitcoinAddress(out_address) == dst_address)
+							{
+								good_vout_count++;
+								received_satoshis += txout.nValue; // only dst address received amount matters
+							}
+						}
+					}
+					
+					if (good_vout_count > 0)
+					{
+						UniValue item(UniValue::VOBJ);
+						item.push_back(Pair("height", (int64_t)height));
+						item.push_back(Pair("timestamp", nBlockTime));
+						item.push_back(Pair("txid", str_txid));
+						item.push_back(Pair("received_SAFE", ValueFromAmount(received_satoshis)));
+						result.push_back(item);
+					}
+				}
+			}
+		}
+	}
+	
+    return result;
+}
+
 UniValue getspentinfo(const UniValue& params, bool fHelp)
 {
 
@@ -1662,10 +1917,469 @@ UniValue decodeccopret(const UniValue& params, bool fHelp)
     return result;
 }
 
+UniValue getnodeinfo(const UniValue& params, bool fHelp)
+{
+    uint256 notarized_hash,notarized_desttxid; int32_t prevMoMheight,notarized_height,longestchain,safenotarized_height,txid_height;
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getnodeinfo\n"
+            "Returns an object containing various SafeNode info.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"executable_version\": (string) executable version with last commit number\n"
+            "  \"protocolversion\":    (numeric) the protocol version\n"
+            "  \"SAFE_version\":       (string) Safecoin daemon version\n"
+            "  \"parentkey\":          (numeric) notary SafeNode pubkey\n"
+            "  \"safekey\":            (numeric) SafeNode pubkey\n"
+            "  \"SAFE_address\":       (string) SAFE address derived from safekey as a pubkey\n"
+			"  \"safeheight\":         (string) safeheight\n"
+			"  \"is_valid\":           (bool) safenode params validity\n"
+            "  \"errors\":             (array) all error messages\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getnodeinfo", "")
+            + HelpExampleRpc("getnodeinfo", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+	
+	bool safenode_valid = true; // presumption of innocence 
+	
+	std::string parentkey = GetArg("-parentkey", "");
+	std::string safekey = GetArg("-safekey", "");
+	std::string safeheight = GetArg("-safeheight", "");
+	
+	uint32_t timestamp = 0;
+	int32_t height = chainActive.LastTip()->GetHeight();
+	CBlockIndex *pblockindex = chainActive[height];
+    if ( pblockindex != 0 ) timestamp = pblockindex->GetBlockTime();
+	
+    // checking parentkey
+    std::vector<std::string> notaries = vs_safecoin_notaries(height, timestamp);
+    std::vector<std::string>::iterator it = std::find(notaries.begin(), notaries.end(), parentkey);
+    if (it == notaries.end())
+    {
+		errors.push_back("Invalid parentkey, should be a valid notary pubkey !");
+		safenode_valid = false;
+	}
+	
+	// checking safekey
+	std::string safe_address = str_safe_address(safekey);
+    if (safe_address == "invalid")
+    {
+		errors.push_back("Invalid safekey, should be a valid safenode pubkey !");
+		safenode_valid = false;
+	}
+	
+	// checking safeheight
+	int32_t i_safeheight = 0; // presumption of guilt
+	try 
+	{
+		i_safeheight = std::stoi(safeheight);
+		if (i_safeheight < 750000) throw i_safeheight;
+		if (i_safeheight > height) throw i_safeheight;
+	}
+	catch (...)
+	{
+		errors.push_back("Invalid safeheight, should be a number >= 750000 and <= current height !");
+		safenode_valid = false;
+	}
+	
+	
+	
+	
+    obj.push_back(Pair("executable_version", FormatFullVersion()));
+    obj.push_back(Pair("protocolversion", PROTOCOL_VERSION));
+    obj.push_back(Pair("SAFE_version", SAFECOIN_VERSION));
+    obj.push_back(Pair("parentkey", parentkey));
+    obj.push_back(Pair("safekey", safekey));
+    obj.push_back(Pair("SAFE_address", safe_address));
+    obj.push_back(Pair("safeheight", safeheight));
+    obj.push_back(Pair("is_valid", safenode_valid));
+   
+    UniValue gri_params;
+	gri_params.clear();
+	UniValue uv_registration_info = getregistrationinfo(gri_params, false);
+	UniValue uv_last_reg_height = find_value(uv_registration_info, "last_reg_height");
+	UniValue uv_valid_thru_height = find_value(uv_registration_info, "valid_thru_height");
+	UniValue uv_reg_errors = find_value(uv_registration_info, "errors");
+	
+	if (uv_last_reg_height.isNull())
+	{
+		for (int i=0; i< uv_reg_errors.size(); i++)	errors.push_back(uv_reg_errors[i]);
+	}
+	else
+	{
+		obj.push_back(Pair("last_reg_height", uv_last_reg_height));
+		obj.push_back(Pair("valid_thru_height", uv_valid_thru_height));
+	}
+    
+    extern bool fAddressIndex;
+    
+    if (fAddressIndex)
+    {
+		UniValue params;
+		params.clear();
+		UniValue uv_collateral_info = getcollateralinfo(params, false);
+		UniValue uv_collateral = find_value(uv_collateral_info, "collateral");
+		UniValue uv_balance = find_value(uv_collateral_info, "current_balance");
+		UniValue uv_tier = find_value(uv_collateral_info, "tier");
+		obj.push_back(Pair("balance", uv_balance));
+		obj.push_back(Pair("collateral", uv_collateral));
+		obj.push_back(Pair("tier", uv_tier));
+	}
+    
+    obj.push_back(Pair("errors", errors));
+    
+    return obj;
+}
+
+UniValue getcollateralinfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getcollateralinfo {safekey}\n"
+            "Returns an object containing info about SafeNode collateral.\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"collateral\":       (float) mature collateral value\n"
+            "  \"balance\":          (float) current balance / immature collateral value\n"
+            "  \"tier\":             (numeric) Tier eligibility according to collateral\n"
+            "  \"errors\":           (array) all error messages\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getcollateralinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+            + HelpExampleRpc("getcollateralinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+
+	int32_t height = chainActive.LastTip()->GetHeight(); 
+
+	std::string safe_key, safe_address;
+	bool is_valid = true; 
+	
+	// Check if address index is enabled
+	extern bool fAddressIndex;
+	bool address_index_enabled = fAddressIndex;
+	
+	if (!address_index_enabled)
+	{
+		errors.push_back("Address index disabled !");
+		is_valid = false;
+	} 
+	
+	if (is_valid)
+	{
+		if (params.size() == 0)
+		{
+			// use safekey from conf
+			safe_key = GetArg("-safekey", "");
+		}
+		else
+		{
+			// use safekey from param
+			safe_key = params[0].get_str();
+		}
+		
+		if (safe_key.length() != 66)
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		} 
+	}
+	
+	if (is_valid)
+	{
+		safe_address = str_safe_address(safe_key);
+		if (safe_address == "invalid")
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		}
+	}
+	
+	int64_t balance_satoshis = 0;
+	int64_t collateral_satoshis = 0;
+	
+	if (is_valid)
+	{
+		uint32_t minconf = COLLATERAL_MATURITY; 
+		int type = 0;
+		
+		CBitcoinAddress address(safe_address);
+
+		uint160 hashBytes;
+		std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+		if (address.GetIndexKey(hashBytes, type, false))
+		{
+			if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+			{
+				std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+				for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+				{
+					std::string tmp_address;
+					if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+					{
+						uint32_t confirmations = height - it->second.blockHeight;
+						balance_satoshis += it->second.satoshis;
+						if (confirmations > minconf) collateral_satoshis += it->second.satoshis;
+					}
+					else
+					{
+						errors.push_back("Unknown address type !");
+						is_valid = false;
+					} 
+				}
+			}
+			else
+			{
+				errors.push_back("No information for address !");
+				is_valid = false;
+			} 
+		}
+		else
+		{
+			errors.push_back("Invalid address !");
+			is_valid = false;
+		}		
+	}
+		
+	if (is_valid)
+	{
+		obj.push_back(Pair("safekey", safe_key));
+		obj.push_back(Pair("SAFE_address", safe_address));
+		obj.push_back(Pair("height", height));
+		obj.push_back(Pair("current_balance", ValueFromAmount(balance_satoshis)));
+		obj.push_back(Pair("collateral", ValueFromAmount(collateral_satoshis)));
+		int tier = 0;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_1 * 1e8)) tier = 1;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_2 * 1e8)) tier = 2;
+		if (collateral_satoshis >= (int64_t)(COLLATERAL_MIN_TIER_3 * 1e8)) tier = 3;
+		obj.push_back(Pair("tier", tier));
+		if (!tier)
+		{
+			errors.push_back("Insufficient collateral !");
+		}
+	}
+		
+	obj.push_back(Pair("errors", errors));
+	
+    return obj;
+}
+
+UniValue getregistrationinfo(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() > 1)
+        throw runtime_error(
+            "getregistrationinfo {safekey}\n"
+            "Returns an object containing info about SafeNode registration.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getregistrationinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+            + HelpExampleRpc("getregistrationinfo", "03caeaa88e6ab615ed85135fc5e6ef4a1ccb8cc1142389bbb64607fb47aeb492f0")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue errors(UniValue::VARR);
+
+	int32_t current_height = chainActive.LastTip()->GetHeight(); 
+
+	std::string safe_key, safe_address;
+	bool is_valid = true; 
+	
+	if (params.size() == 0)
+	{
+		// use safekey from conf
+		safe_key = GetArg("-safekey", "");
+	}
+	else
+	{
+		// use safekey from param
+		safe_key = params[0].get_str();
+	}
+	
+	if (safe_key.length() != 66)
+	{
+		errors.push_back("Invalid safekey !");
+		is_valid = false;
+	} 
+	
+	if (is_valid)
+	{
+		safe_address = str_safe_address(safe_key);
+		if (safe_address == "invalid")
+		{
+			errors.push_back("Invalid safekey !");
+			is_valid = false;
+		}
+	}
+	
+	int32_t last_reg_height = 0;
+	int32_t last_reg_duration = 0;
+	
+	if (is_valid)
+	{
+        obj.push_back(Pair("safekey", safe_key));
+		obj.push_back(Pair("SAFE_address", safe_address));
+        
+		struct safecoin_kv *s;
+		extern struct safecoin_kv *SAFECOIN_KV;
+		extern pthread_mutex_t SAFECOIN_KV_mutex;
+		
+		pthread_mutex_lock(&SAFECOIN_KV_mutex);
+		
+		for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+		{
+			uint8_t *value_ptr = s->value;
+			uint16_t value_size = s->valuesize;
+			
+			// skip checking against records with invalid safeid size
+			if (value_size == 66)
+			{
+				std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
+				if (s->height > last_reg_height && str_saved_safeid == safe_key)
+				{
+					last_reg_height = s->height;
+					last_reg_duration = ((s->flags >> 2) + 1) * SAFECOIN_KVDURATION;
+				}
+			} 
+		}
+		
+		pthread_mutex_unlock(&SAFECOIN_KV_mutex);
+
+		if (last_reg_height > 0)
+		{
+			obj.push_back(Pair("current_height", current_height));
+			obj.push_back(Pair("last_reg_height", last_reg_height));
+			obj.push_back(Pair("valid_thru_height", last_reg_height + last_reg_duration));
+		}
+		else
+		{
+			errors.push_back("No registration found !");
+			is_valid = false;
+		}
+		
+	}
+			
+	obj.push_back(Pair("errors", errors));
+	
+    return obj;
+}
+
+UniValue getactivenodes(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getactivenodes\n"
+            "Returns an object containing list of all active SafeNodes.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getactivenodes", "")
+            + HelpExampleRpc("getactivenodes", "")
+        );
+
+    LOCK(cs_main);
+	
+	UniValue obj(UniValue::VOBJ);
+    UniValue uv_safenodes(UniValue::VARR);
+
+	int32_t current_height = chainActive.LastTip()->GetHeight(); 
+
+	std::vector<std::string> vs_safekeys;
+	std::vector<std::string>::iterator it;
+	
+	struct safecoin_kv *s;
+	extern struct safecoin_kv *SAFECOIN_KV;
+	extern pthread_mutex_t SAFECOIN_KV_mutex;
+	
+	pthread_mutex_lock(&SAFECOIN_KV_mutex);
+	
+	for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+	{
+		uint8_t *value_ptr = s->value;
+		uint16_t value_size = s->valuesize;
+		
+		// skip checking against records with invalid safeid size
+		if (value_size == 66)
+		{
+			std::string str_saved_safeid = std::string((char*)value_ptr, 66);
+			it = std::find(vs_safekeys.begin(), vs_safekeys.end(), str_saved_safeid);
+			if (it == vs_safekeys.end())
+			{
+				vs_safekeys.push_back(str_saved_safeid);
+			}
+		} 
+	}
+	
+	pthread_mutex_unlock(&SAFECOIN_KV_mutex);
+	
+	int node_count = 0;
+	int tier_0_count = 0;
+	int tier_1_count = 0;
+	int tier_2_count = 0;
+	int tier_3_count = 0;
+	double collateral_total = 0;
+	extern bool fAddressIndex;
+	
+	for (int i = 0; i < vs_safekeys.size(); i++)
+	{
+		UniValue uv_one_node(UniValue::VOBJ), params(UniValue::VARR);
+		params.push_back(vs_safekeys.at(i));
+		UniValue uv_registration_info = getregistrationinfo(params, false);
+		UniValue uv_safe_address = find_value(uv_registration_info, "SAFE_address");
+		UniValue uv_last_reg_height = find_value(uv_registration_info, "last_reg_height");
+		UniValue uv_valid_thru_height = find_value(uv_registration_info, "valid_thru_height");
+		
+		if (!uv_last_reg_height.isNull() && uv_valid_thru_height.get_int() >= current_height)
+		{
+			uv_one_node.push_back(Pair("safekey", vs_safekeys.at(i)));
+			uv_one_node.push_back(Pair("SAFE_address", uv_safe_address));
+			node_count++;
+			if (fAddressIndex)
+			{
+				UniValue uv_collateral_info = getcollateralinfo(params, false);
+				UniValue uv_collateral = find_value(uv_collateral_info, "collateral");
+				UniValue uv_balance = find_value(uv_collateral_info, "current_balance");
+				UniValue uv_tier = find_value(uv_collateral_info, "tier");
+				uv_one_node.push_back(Pair("balance", uv_balance));
+				uv_one_node.push_back(Pair("collateral", uv_collateral));
+				collateral_total += uv_collateral.get_real();
+				uv_one_node.push_back(Pair("tier", uv_tier));
+				if (uv_tier.get_int() == 0) tier_0_count++;
+				if (uv_tier.get_int() == 1) tier_1_count++;
+				if (uv_tier.get_int() == 2) tier_2_count++;
+				if (uv_tier.get_int() == 3) tier_3_count++;
+			}	
+			uv_safenodes.push_back(uv_one_node);
+		}
+	}
+	
+	obj.push_back(Pair("SafeNodes", uv_safenodes));
+	obj.push_back(Pair("node_count", node_count));
+	obj.push_back(Pair("tier_0_count", tier_0_count));
+	obj.push_back(Pair("tier_1_count", tier_1_count));
+	obj.push_back(Pair("tier_2_count", tier_2_count));
+	obj.push_back(Pair("tier_3_count", tier_3_count));
+	obj.push_back(Pair("collateral_total", collateral_total));
+	
+    return obj;
+}
+
 static const CRPCCommand commands[] =
 { //  category              name                      actor (function)         okSafeMode
   //  --------------------- ------------------------  -----------------------  ----------
     { "control",            "getinfo",                &getinfo,                true  }, /* uses wallet if enabled */
+    { "control",            "getnodeinfo",            &getnodeinfo,            true  }, 
+    { "control",            "getcollateralinfo",      &getcollateralinfo,      true  },
+    { "control",            "getregistrationinfo",    &getregistrationinfo,    true  }, 
+    { "control",            "getactivenodes",         &getactivenodes,         true  }, 
     { "util",               "validateaddress",        &validateaddress,        true  }, /* uses wallet if enabled */
     { "util",               "z_validateaddress",      &z_validateaddress,      true  }, /* uses wallet if enabled */
     { "util",               "createmultisig",         &createmultisig,         true  },

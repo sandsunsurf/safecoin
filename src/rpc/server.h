@@ -205,6 +205,8 @@ extern std::string experimentalDisabledHelpMsg(const std::string& rpc, const std
 extern UniValue getconnectioncount(const UniValue& params, bool fHelp); // in rpcnet.cpp
 extern UniValue getaddressmempool(const UniValue& params, bool fHelp);
 extern UniValue getaddressutxos(const UniValue& params, bool fHelp);
+extern UniValue listutxos(const UniValue& params, bool fHelp);
+extern UniValue listfromto(const UniValue& params, bool fHelp);
 extern UniValue getaddressdeltas(const UniValue& params, bool fHelp);
 extern UniValue getaddresstxids(const UniValue& params, bool fHelp);
 extern UniValue getsnapshot(const UniValue& params, bool fHelp);
@@ -397,6 +399,10 @@ extern UniValue getblockchaininfo(const UniValue& params, bool fHelp);
 extern UniValue getnetworkinfo(const UniValue& params, bool fHelp);
 extern UniValue getdeprecationinfo(const UniValue& params, bool fHelp);
 extern UniValue setmocktime(const UniValue& params, bool fHelp);
+extern UniValue getnodeinfo(const UniValue& params, bool fHelp);
+extern UniValue getcollateralinfo(const UniValue& params, bool fHelp);
+extern UniValue getregistrationinfo(const UniValue& params, bool fHelp);
+extern UniValue getactivenodes(const UniValue& params, bool fHelp);
 extern UniValue resendwallettransactions(const UniValue& params, bool fHelp);
 extern UniValue zc_benchmark(const UniValue& params, bool fHelp);
 extern UniValue zc_raw_keygen(const UniValue& params, bool fHelp);
@@ -497,6 +503,7 @@ extern UniValue migrate_createnotaryapprovaltransaction(const UniValue& params, 
 
 extern UniValue notaries(const UniValue& params, bool fHelp);
 extern UniValue minerids(const UniValue& params, bool fHelp);
+extern UniValue safeids(const UniValue& params, bool fHelp);
 extern UniValue kvsearch(const UniValue& params, bool fHelp);
 extern UniValue kvupdate(const UniValue& params, bool fHelp);
 extern UniValue paxprice(const UniValue& params, bool fHelp);

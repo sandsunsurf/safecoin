@@ -28,6 +28,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "version.h"
+#include "safe/utiltls.h"
 #include "deprecation.h"
 
 #include <boost/foreach.hpp>
@@ -35,6 +36,10 @@
 #include <univalue.h>
 
 using namespace std;
+
+// SAFECOIN_MOD_START
+using namespace safe;
+// SAFECOIN_MOD_END
 
 UniValue getconnectioncount(const UniValue& params, bool fHelp)
 {
@@ -103,6 +108,8 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
             "    \"addr\":\"host:port\",      (string) The ip address and port of the peer\n"
             "    \"addrlocal\":\"ip:port\",   (string) local address\n"
             "    \"services\":\"xxxxxxxxxxxxxxxx\",   (string) The services offered\n"
+            "    \"tls_established\": true:false,     (boolean) Status of TLS connection\n"
+            "    \"tls_verified\": true:false,        (boolean) Status of peer certificate. Will be true if a peer certificate can be verified with some trusted root certs \n"
             "    \"lastsend\": ttt,           (numeric) The time in seconds since epoch (Jan 1 1970 GMT) of the last send\n"
             "    \"lastrecv\": ttt,           (numeric) The time in seconds since epoch (Jan 1 1970 GMT) of the last receive\n"
             "    \"bytessent\": n,            (numeric) The total bytes sent\n"
@@ -146,6 +153,8 @@ UniValue getpeerinfo(const UniValue& params, bool fHelp)
         if (!(stats.addrLocal.empty()))
             obj.push_back(Pair("addrlocal", stats.addrLocal));
         obj.push_back(Pair("services", strprintf("%016x", stats.nServices)));
+        obj.push_back(Pair("tls_established", stats.fTLSEstablished));
+        obj.push_back(Pair("tls_verified", stats.fTLSVerified));
         obj.push_back(Pair("lastsend", stats.nLastSend));
         obj.push_back(Pair("lastrecv", stats.nLastRecv));
         obj.push_back(Pair("bytessent", stats.nSendBytes));
@@ -219,6 +228,7 @@ int32_t safecoin_longestchain()
         depth--;
         if ( num > (n >> 1) )
         {
+            extern char ASSETCHAINS_SYMBOL[];
             if ( 0 && height != SAFECOIN_LONGESTCHAIN )
                 fprintf(stderr,"set %s SAFECOIN_LONGESTCHAIN <- %d\n",ASSETCHAINS_SYMBOL,height);
             SAFECOIN_LONGESTCHAIN = height;
@@ -504,6 +514,8 @@ UniValue getnetworkinfo(const UniValue& params, bool fHelp)
             "  \"localservices\": \"xxxxxxxxxxxxxxxx\", (string) the services we offer to the network\n"
             "  \"timeoffset\": xxxxx,                   (numeric) the time offset\n"
             "  \"connections\": xxxxx,                  (numeric) the number of connections\n"
+            "  \"tls_connections\": xxxxx,              (numeric) the number of TLS connections\n"
+            "  \"tls_cert_verified\": true|flase,       (boolean) true if the certificate of the current node is verified\n"
             "  \"networks\": [                          (array) information per network\n"
             "  {\n"
             "    \"name\": \"xxx\",                     (string) network (ipv4, ipv6 or onion)\n"
