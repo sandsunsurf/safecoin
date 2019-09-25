@@ -18,6 +18,8 @@
 
 #include "safecoin_defs.h"
 
+extern std::vector<std::string> vs_safecoin_notaries(int32_t height, uint32_t timestamp);
+
 int32_t safecoin_kvcmp(uint8_t *refvalue,uint16_t refvaluesize,uint8_t *value,uint16_t valuesize)
 {
     if ( refvalue == 0 && value == 0 )
@@ -101,8 +103,8 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
 {
     static uint256 zeroes;
     uint32_t flags; uint256 pubkey,refpubkey,sig; int32_t i,refvaluesize,hassig,coresize,haspubkey,height,kvheight; uint16_t keylen,valuesize,newflag = 0; uint8_t *key,*valueptr,keyvalue[IGUANA_MAXSCRIPTSIZE*8]; struct safecoin_kv *ptr; char *transferpubstr,*tstr; uint64_t fee;
-    if ( ASSETCHAINS_SYMBOL[0] == 0 ) // disable KV for SAFE
-        return;
+    //    if ( ASSETCHAINS_SYMBOL[0] == 0 ) // disable KV for SAFE
+    //        return;
     iguana_rwnum(0,&opretbuf[1],sizeof(keylen),&keylen);
     iguana_rwnum(0,&opretbuf[3],sizeof(valuesize),&valuesize);
     iguana_rwnum(0,&opretbuf[5],sizeof(height),&height);
@@ -116,7 +118,33 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
         return;
     }
     valueptr = &key[keylen];
+    
+    // resource non-expensive checks first 
+    // first eliminatory check for the exact keyname size: 66 + 7 + 1 = 74
+    if (keylen != 74)
+		return;
+    
+    std::string str_keyname((char*)key, (int)keylen);
+    std::string parentkey = str_keyname.substr(0, 66);
+    std::string safe_height = str_keyname.substr(66, 7);
+    std::string one = str_keyname.substr(73, 1);    
+    std::string sid = std::string((char *)valueptr, (int)valuesize);
+    
+    // second eliminatory check for the exact keyname termination character: 1
+    if (one != "1")
+		return;
+    
+    // third eliminatory check for the parent pubkey validity 
+    std::vector<std::string> vs_notaries = vs_safecoin_notaries(height, 0);
+    std::vector<std::string>::iterator it;
+    it = find (vs_notaries.begin(), vs_notaries.end(), parentkey);
+    if (it == vs_notaries.end())
+		return;
+    
+    // initial checks passed, keep going
+        
     fee = safecoin_kvfee(flags,opretlen,keylen);
+
     //fprintf(stderr,"fee %.8f vs %.8f flags.%d keylen.%d valuesize.%d height.%d (%02x %02x %02x) (%02x %02x %02x)\n",(double)fee/COIN,(double)value/COIN,flags,keylen,valuesize,height,key[0],key[1],key[2],valueptr[0],valueptr[1],valueptr[2]);
     if ( value >= fee )
     {
@@ -125,28 +153,145 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
         {
             memset(&pubkey,0,sizeof(pubkey));
             memset(&sig,0,sizeof(sig));
+            
             if ( (haspubkey= (opretlen >= coresize+sizeof(uint256))) != 0 )
             {
                 for (i=0; i<32; i++)
                     ((uint8_t *)&pubkey)[i] = opretbuf[coresize+i];
             }
+            
             if ( (hassig= (opretlen == coresize+sizeof(uint256)*2)) != 0 )
             {
                 for (i=0; i<32; i++)
                     ((uint8_t *)&sig)[i] = opretbuf[coresize+sizeof(uint256)+i];
             }
+            
             memcpy(keyvalue,key,keylen);
-            if ( (refvaluesize= safecoin_kvsearch((uint256 *)&refpubkey,height,&flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
+            
+            uint32_t tmp_flags = flags;
+            
+            if ( (refvaluesize = safecoin_kvsearch((uint256 *)&refpubkey,height,&tmp_flags,&kvheight,&keyvalue[keylen],key,keylen)) >= 0 )
             {
                 if ( memcmp(&zeroes,&refpubkey,sizeof(refpubkey)) != 0 )
                 {
                     if ( safecoin_kvsigverify(keyvalue,keylen+refvaluesize,refpubkey,sig) < 0 )
                     {
-                        //fprintf(stderr,"safecoin_kvsigverify error [%d]\n",coresize-13);
+                        // fprintf(stderr,"safecoin_kvsigverify error [%d]\n",coresize-13);
                         return;
                     }
                 }
             }
+            
+            
+            bool is_valid_beacon_kv = true;
+
+            // CHECK FOR DUPLICATES
+            portable_mutex_lock(&SAFECOIN_KV_mutex);
+            int32_t current_height = height;
+            struct safecoin_kv *s;
+            
+            for(s = SAFECOIN_KV; s != NULL; s = (safecoin_kv*)s->hh.next)
+            {
+                int32_t saved_on_height = s->height;
+                uint8_t *value_ptr = s->value;
+                uint16_t value_size = s->valuesize;
+                
+                // skip checking against records with invalid safeid size or height too much in the past
+                if (value_size == 66 && (current_height - saved_on_height <= REGISTRATION_GAP))
+                {
+                    std::string str_saved_safeid = std::string((char*)value_ptr, (int)value_size);
+                    // LogPrintf("COMPARATION: SAVED_SID %s VS SID %s\n", str_saved_safeid.c_str(), sid.c_str());
+                    if (sid == str_saved_safeid)
+                    {
+                        // same safeid saved within the search range
+                        is_valid_beacon_kv = false;
+                        if (LogAcceptCategory("safenodes"))
+                        {
+                            LogPrint("safenodes", "SAFENODES: Premature safeid registration renewal rejected at block height %u: safeid %s found at block height %u\n", current_height, sid.c_str(), saved_on_height);
+                        }
+                        break;
+                    }
+                } 
+            }
+            
+            portable_mutex_unlock(&SAFECOIN_KV_mutex);
+            
+            if (is_valid_beacon_kv && 0) // we are skipping collateral check for now
+            {
+				// COLLATERAL CHECK
+				
+				std::string safeid_address = str_safe_address(sid);
+		
+				// Check if address index is enabled
+				bool address_index_enabled = false;
+				pblocktree->ReadFlag("addressindex", address_index_enabled);
+				
+				if (address_index_enabled)
+				{
+					extern bool getAddressFromIndex(const int &type, const uint160 &hash, std::string &address);
+					extern bool heightSort(std::pair<CAddressUnspentKey, CAddressUnspentValue> a, std::pair<CAddressUnspentKey, CAddressUnspentValue> b);
+					int64_t balance_satoshis = 0;
+					uint32_t minconf = COLLATERAL_MATURITY; 
+					int type = 0;
+					
+					CBitcoinAddress address(safeid_address);
+
+					uint160 hashBytes;
+					std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue> > unspentOutputs;
+					if (address.GetIndexKey(hashBytes, type, false))
+					{
+						if (GetAddressUnspent(hashBytes, type, unspentOutputs))
+						{
+							std::sort(unspentOutputs.begin(), unspentOutputs.end(), heightSort);
+							for (std::vector<std::pair<CAddressUnspentKey, CAddressUnspentValue>>::const_iterator it = unspentOutputs.begin(); it != unspentOutputs.end(); it++)
+							{
+								std::string tmp_address;
+								if (getAddressFromIndex(it->first.type, it->first.hashBytes, tmp_address))
+								{
+									uint32_t confirmations = height - it->second.blockHeight;
+									if (confirmations > minconf) balance_satoshis += it->second.satoshis;
+								}
+								else
+								{
+									is_valid_beacon_kv = false;
+									if (LogAcceptCategory("safenodes"))
+									{
+										LogPrint("safenodes", "SAFENODES: Unknown address type %s\n", tmp_address.c_str());
+									}
+								} 
+							}
+						}
+						else
+						{
+							is_valid_beacon_kv = false;
+							if (LogAcceptCategory("safenodes"))
+							{
+								LogPrint("safenodes", "SAFENODES: No information available for address %s\n", str_safe_address(sid).c_str());
+							}
+						} 
+					}
+					else
+					{
+						is_valid_beacon_kv = false;
+						if (LogAcceptCategory("safenodes"))
+						{
+						   LogPrint("safenodes", "SAFENODES: Invalid address \"%s\"\n", str_safe_address(sid).c_str()); 
+						}
+					} 
+
+					if (is_valid_beacon_kv && balance_satoshis < (int64_t)(COLLATERAL_MIN_TIER_1 * 1e8))
+					{
+						is_valid_beacon_kv = false;
+						if (LogAcceptCategory("safenodes"))
+						{
+							LogPrint("safenodes", "SAFENODES: Insufficient collateral for safeid %s\n", str_safe_address(sid).c_str());
+						}                  
+					}
+				}				
+			}
+			
+            if (!is_valid_beacon_kv) return;
+            
             portable_mutex_lock(&SAFECOIN_KV_mutex);
             HASH_FIND(hh,SAFECOIN_KV,key,keylen,ptr);
             if ( ptr != 0 )
@@ -166,36 +311,51 @@ void safecoin_kvupdate(uint8_t *opretbuf,int32_t opretlen,uint64_t value)
             }
             else if ( ptr == 0 )
             {
-                ptr = (struct safecoin_kv *)calloc(1,sizeof(*ptr));
-                ptr->key = (uint8_t *)calloc(1,keylen);
-                ptr->keylen = keylen;
-                memcpy(ptr->key,key,keylen);
-                newflag = 1;
-                HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
-                //fprintf(stderr,"KV add.(%s) (%s)\n",ptr->key,valueptr);
-            }
-            if ( newflag != 0 || (ptr->flags & SAFECOIN_KVPROTECTED) == 0 )
-            {
-                if ( ptr->value != 0 )
-                    free(ptr->value), ptr->value = 0;
-                if ( (ptr->valuesize= valuesize) != 0 )
-                {
-                    ptr->value = (uint8_t *)calloc(1,valuesize);
-                    memcpy(ptr->value,valueptr,valuesize);
-                }
-            } else fprintf(stderr,"newflag.%d zero or protected %d\n",newflag,(ptr->flags & SAFECOIN_KVPROTECTED));
-            /*for (i=0; i<32; i++)
-                printf("%02x",((uint8_t *)&ptr->pubkey)[i]);
-            printf(" <- ");
-            for (i=0; i<32; i++)
-                printf("%02x",((uint8_t *)&pubkey)[i]);
-            printf(" new pubkey\n");*/
-            memcpy(&ptr->pubkey,&pubkey,sizeof(ptr->pubkey));
-            ptr->height = height;
-            ptr->flags = flags; // jl777 used to or in KVPROTECTED
+				ptr = (struct safecoin_kv *)calloc(1,sizeof(*ptr));
+				ptr->key = (uint8_t *)calloc(1,keylen);
+				ptr->keylen = keylen;
+				memcpy(ptr->key,key,keylen);
+				newflag = 1;
+                 
+				HASH_ADD_KEYPTR(hh,SAFECOIN_KV,ptr->key,ptr->keylen,ptr);
+				// Added by Pop
+				printf("KV add.(%s) (%s)\n",ptr->key,valueptr);
+				//LogPrintf("KV add.(%s) (%s)\n",ptr->key,valueptr);
+			}
+				
+			if ( newflag != 0 || (ptr->flags & SAFECOIN_KVPROTECTED) == 0 )
+			{
+				if ( ptr->value != 0 )
+					free(ptr->value), ptr->value = 0;
+				if ( (ptr->valuesize= valuesize) != 0 )
+				{
+					ptr->value = (uint8_t *)calloc(1,valuesize);
+					memcpy(ptr->value,valueptr,valuesize);
+				}
+			}
+			else
+			{
+				//fprintf(stderr,"newflag.%d zero or protected %d\n",newflag,(ptr->flags & SAFECOIN_KVPROTECTED));
+			} 
+			/*for (i=0; i<32; i++)
+				printf("%02x",((uint8_t *)&ptr->pubkey)[i]);
+			printf(" <- ");
+			for (i=0; i<32; i++)
+				printf("%02x",((uint8_t *)&pubkey)[i]);
+			printf(" new pubkey\n");*/
+			memcpy(&ptr->pubkey,&pubkey,sizeof(ptr->pubkey));
+			ptr->height = height;
+			ptr->flags = flags; // jl777 used to or in KVPROTECTED
+            
             portable_mutex_unlock(&SAFECOIN_KV_mutex);
-        } else fprintf(stderr,"KV update size mismatch %d vs %d\n",opretlen,coresize);
-    } else fprintf(stderr,"not enough fee\n");
+           
+        }
+        else
+            fprintf(stderr,"KV update size mismatch %d vs %d\n",opretlen,coresize);
+    }
+    else
+        if (height > 754230)
+            fprintf(stderr,"not enough fee\n");
 }
 
 #endif
