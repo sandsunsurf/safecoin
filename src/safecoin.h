@@ -371,7 +371,7 @@ void safecoin_stateupdate(int32_t height,uint8_t notarypubs[][33],uint8_t numnot
     //printf("[%s] (%s) -> (%s)\n",ASSETCHAINS_SYMBOL,symbol,dest);
     if ( fp == 0 )
     {
-        safecoin_statefname(fname,ASSETCHAINS_SYMBOL,(char *)"saefcoinstate");
+        safecoin_statefname(fname,ASSETCHAINS_SYMBOL,(char *)"safecoinstate");
         if ( (fp= fopen(fname,"rb+")) != 0 )
         {
             if ( (retval= safecoin_faststateinit(sp,fname,symbol,dest)) > 0 )
@@ -595,7 +595,7 @@ int32_t safecoin_voutupdate(bool fJustCheck,int32_t *isratificationp,int32_t not
         }
         opoffset = len;
         matched = 0;
-        if ( ASSETCHAINS_SYMBOL[0] == 0 )
+        if ( ASSETCHAINS_SYMBOL[0] == 0 &&  scriptbuf[len] != 'K')
         {
             if ( strcmp("SAFE",(char *)&scriptbuf[len+32 * 2 + 4]) == 0 )
                 matched = 1;
@@ -825,7 +825,7 @@ int32_t safecoin_connectblock(bool fJustCheck, CBlockIndex *pindex,CBlock& block
     SAFECOIN_INITDONE = (uint32_t)time(NULL);
     if ( (sp= safecoin_stateptr(symbol,dest)) == 0 )
     {
-        fprintf(stderr,"unexpected null saefcoinstateptr.[%s]\n",ASSETCHAINS_SYMBOL);
+        fprintf(stderr,"unexpected null safecoinstateptr.[%s]\n",ASSETCHAINS_SYMBOL);
         return(0);
     }
     //fprintf(stderr,"%s connect.%d\n",ASSETCHAINS_SYMBOL,pindex->nHeight);
