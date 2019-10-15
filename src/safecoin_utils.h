@@ -2343,11 +2343,12 @@ void safecoin_args(char *argv0)
         }
         else if ( strcmp("VRSC",ASSETCHAINS_SYMBOL) == 0 )
             dpowconfs = 0;
-        else if ( ASSETCHAINS_PRIVATE != 0 )
-        {
-            fprintf(stderr,"-ac_private for a non-PIRATE chain is not supported. The only reason to have an -ac_private chain is for total privacy and that is best achieved with the largest anon set. PIRATE has that and it is recommended to just use PIRATE\n");
-            StartShutdown();
-        }
+     //  Privacy is a right, not a privilege
+     //   else if ( ASSETCHAINS_PRIVATE != 0 )
+     //   {
+     //       fprintf(stderr,"-ac_private for a non-PIRATE chain is not supported. The only reason to have an -ac_private chain is for total privacy and that is best achieved with the largest anon set. PIRATE has that and it is recommended to just use PIRATE\n");
+     //       StartShutdown();
+     //   }
         // Set cc enables for all existing ac_cc chains here. 
         if ( strcmp("AXO",ASSETCHAINS_SYMBOL) == 0 )
         {
