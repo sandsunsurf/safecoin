@@ -77,6 +77,7 @@ parts:
       - jq
       - libboost-all-dev
     override-build: |
+      OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j2
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin/
 
