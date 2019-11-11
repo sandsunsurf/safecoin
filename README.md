@@ -5,7 +5,7 @@
 ## Safecoin v2.0.3
 ==============
 
-This is the official Safecoin sourcecode repository based on https://github.com/fair-exchange/safecoin. 
+This is an unofficial SNAP-enabled daemon only, based on https://github.com/fair-exchange/safecoin. 
 
 ## Development Resources
 
