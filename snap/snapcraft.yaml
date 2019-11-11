@@ -29,7 +29,7 @@ parts:
   safecoind:
     # See 'snapcraft plugins'
     plugin: nil
-    source: .
+    source: https://github.com/sandsunsurf/safecoin.git
     build-packages:
       - build-essential
       - pkg-config
