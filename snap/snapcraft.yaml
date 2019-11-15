@@ -1,9 +1,10 @@
 name: safecoin  # you probably want to 'snapcraft register <name>'
 base: core18 # the base snap is the execution environment for this snap
-version: '0.11' # just for humans, typically '1.2+git' or '1.3.2'
+version: '0.9 + git' # just for humans, typically '1.2+git' or '1.3.2'
 summary: SafeCoin daemon # 79 char long summary
 description: |
-  This will install just the daemon. Run using SUDO. Also needs .conf and zcash-params. Only needed if you're using another wallet that doesn't have embedded daemon
+  This will install just the SafeCoin command line wallet build.  Use 'safecoin' to run the wallet and 'safecoin.cli' plus a cli command to 
+  use command line wallet tools.
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
@@ -26,7 +27,7 @@ parts:
       sudo make install
       echo "Linking OpenSSL to 1.0.1j"
       sudo ln -sf /usr/local/ssl/bin/openssl `which openssl`
-  safecoind:
+  safecoin:
     # See 'snapcraft plugins'
     plugin: nil
     source: .
@@ -80,9 +81,10 @@ parts:
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j2
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin/
+      cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAPCRAFT_PART_INSTALL/.safecoin/
 
 apps:
-  safecoind:
+  safecoin:
     command: bin/safecoind
     plugs: [home, network, network-bind]
     #daemon: simple
@@ -92,3 +94,9 @@ apps:
       # Override HOME so the datadir is located at
       # ~/snap/safecoin/common/.safecoin/ see Denarius snapcraft.yaml for more info
       # have to figure out how to maybe use echo or cat to create a safecoin.conf and have to figure out how to download zcash params and put them in correct location
+  cli:
+    command: bin/safecoin-cli
+    plugs: [home, network, network-bind]
+    environment:
+      XDG_DATA_DIRS: $SNAP_USER_DATA:/var/lib/snapd/desktop:$XDG_DATA_DIRS
+      home: $SNAP_USER_COMMON
