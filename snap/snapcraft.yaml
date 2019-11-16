@@ -80,15 +80,7 @@ parts:
     override-build: |
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j2
-      cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin/
-  conf-files:
-    plugin: dump
-    source: .
-    #organize:
-      #contrib/debian/examples/safecoin.conf: .safecoin/safecoin.conf
-    override-build:
-      sudo mkdir $SNAP_PART_PRIME/.safecoin
-      cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAP_PART_PRIME/.safecoin/
+      echo "#edit safecoin.conf for setup of safenodes" >> $SNAP_PART_PRIME/.safecoin/safecoin.conf
 
 apps:
   safecoin:
