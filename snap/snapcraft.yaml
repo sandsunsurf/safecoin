@@ -84,10 +84,10 @@ parts:
   conf-files:
     plugin: dump
     source: .
-    organize:
-      contrib/debian/examples/safecoin.conf: .safecoin/safecoin.conf
-    prime:
-      - .safecoin
+    #organize:
+      #contrib/debian/examples/safecoin.conf: .safecoin/safecoin.conf
+    override-prime:
+      cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAP_PART_PRIME/.safecoin/
 
 apps:
   safecoin:
