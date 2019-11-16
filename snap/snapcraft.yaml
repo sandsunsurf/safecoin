@@ -86,7 +86,8 @@ parts:
     source: .
     #organize:
       #contrib/debian/examples/safecoin.conf: .safecoin/safecoin.conf
-    override-prime:
+    override-build:
+      sudo mkdir $SNAP_PART_PRIME/.safecoin
       cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAP_PART_PRIME/.safecoin/
 
 apps:
