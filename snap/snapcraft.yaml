@@ -81,7 +81,7 @@ parts:
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j2
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin/
-      cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAPCRAFT_PART_INSTALL/.safecoin/
+      sudo cp $SNAPCRAFT_PART_BUILD/contrib/debian/examples/safecoin.conf $SNAPCRAFT_PART_INSTALL/.safecoin/
 
 apps:
   safecoin:
