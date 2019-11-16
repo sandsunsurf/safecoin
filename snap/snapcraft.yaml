@@ -80,8 +80,8 @@ parts:
     override-build: |
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j2
-    override-prime: |
-      echo "#edit safecoin.conf for setup of safenodes" >> root/prime/.safecoin/safecoin.conf
+    #override-prime: |
+      #echo "#edit safecoin.conf for setup of safenodes" >> root/prime/.safecoin/safecoin.conf
 
 apps:
   safecoin:
