@@ -64,28 +64,28 @@ parts:
       - jq
       - libboost-all-dev
     stage-packages:
-      #- build-essential
-      #- pkg-config
-      #- libc6-dev
-      #- m4
-      #- g++-multilib
-      #- autoconf
+      - build-essential
+      - pkg-config
+      - libc6-dev
+      - m4
+      - g++-multilib
+      - autoconf
       - libtool
-      #- ncurses-dev
-      #- unzip
-      #- git
-      #- python
-      #- python-zmq
-      #- zlib1g-dev
+      - ncurses-dev
+      - unzip
+      - git
+      - python
+      - python-zmq
+      - zlib1g-dev
       - wget
-      #- libcurl4-gnutls-dev
-      #- bsdmainutils
-      #- automake
+      - libcurl4-gnutls-dev
+      - bsdmainutils
+      - automake
       - curl
-      #- bc 
-      #- dc 
-      #- jq
-      #- libboost-all-dev
+      - bc 
+      - dc 
+      - jq
+      - libboost-all-dev
     override-build: |
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j4
