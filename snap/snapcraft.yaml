@@ -100,13 +100,13 @@ parts:
     source: hooks/
     organize:
       bin/: snap/hooks/
-hooks:
-  install:
-    plugs: [network, network-bind]
-  post-refresh:
-    plugs: [network, network-bind]
-  configure:
-    plugs: [network, network-bind]
+#hooks:
+  #install:
+    #plugs: [network, network-bind]
+  #post-refresh:
+    #plugs: [network, network-bind]
+  #configure:
+    #plugs: [network, network-bind]
 apps:
   safecoin:
     command: bin/safecoind
