@@ -64,38 +64,49 @@ parts:
       - jq
       - libboost-all-dev
     stage-packages:
-      - build-essential
-      - pkg-config
-      - libc6-dev
-      - m4
-      - g++-multilib
-      - autoconf
+      #- build-essential
+      #- pkg-config
+      #- libc6-dev
+      #- m4
+      #- g++-multilib
+      #- autoconf
       - libtool
-      - ncurses-dev
-      - unzip
-      - git
-      - python
-      - python-zmq
-      - zlib1g-dev
+      #- ncurses-dev
+      #- unzip
+      #- git
+      #- python
+      #- python-zmq
+      #- zlib1g-dev
       - wget
-      - libcurl4-gnutls-dev
-      - bsdmainutils
-      - automake
+      #- libcurl4-gnutls-dev
+      #- bsdmainutils
+      #- automake
       - curl
-      - bc 
-      - dc 
-      - jq
-      - libboost-all-dev
+      #- bc 
+      #- dc 
+      #- jq
+      #- libboost-all-dev
     override-build: |
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
       ./zcutil/build.sh -j4
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin
       cp $SNAPCRAFT_PART_BUILD/src/safecoin-cli $SNAPCRAFT_PART_INSTALL/bin
-      cp @SNAPCRAFT_PART_BUILD/zcutil/fetch-params.sh $SNAPCRAFT_PART_INSTALL/bin
+      cp zcutil/fetch-params.sh $SNAPCRAFT_PART_INSTALL/bin
     # note 11/16/2019 2015 hours, still figuring out how to build safecoin.conf in a location that the snap can access
     #override-prime: |
       #echo "#edit safecoin.conf for setup of safenodes" >> root/prime/.safecoin/safecoin.conf
-
+  hooks:
+    plugin: dump
+    source: hooks/
+    organize:
+      bin/: snap/hooks/
+hooks:
+  install:
+    plugs: [network, network-bind]
+  post-refresh:
+    plugs: [network, network-bind]
+  configure:
+    plugs: [network, network-bind]
 apps:
   safecoin:
     command: bin/safecoind
