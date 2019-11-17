@@ -1,10 +1,19 @@
-name: safecoin  # you probably want to 'snapcraft register <name>'
-base: core18 # the base snap is the execution environment for this snap
-version: '0.9' # just for humans, typically '1.2+git' or '1.3.2'
-summary: SafeCoin daemon # 79 char long summary
+# This build needs at least 4Gb of memory. To tell snapcraft build environment (multipass) to make more ram in the vm, use
+# the following commands at the command prompt (in the build subdir, in this case /safecoin
+#  export SNAPCRAFT_BUILD_ENVIRONMENT_MEMORY=8G
+#  sudo -E snapcraft
+# also you must have a "clean" vm, so either delete and purge the vm instance in multipass or 
+# use "snapcraft clean" before setting this variable
+
+name: safecoin  
+base: core18 
+version: '1.0' 
+summary: SafeCoin daemon and CLI wallet
 description: |
-  This will install just the SafeCoin command line wallet build.  Use 'safecoin' to run the wallet and 'safecoin.cli' plus a cli command to 
-  use command line wallet tools.
+  This will install just the SafeCoin command line wallet build.  Use 'safecoin' to run the wallet and 'safecoin.cli'
+  plus a cli command to use command line wallet tools.
+  You MUST run "safecoin.fetch" after the first install of this Snap in order to download the zcash parameters
+  into a location that the Snap can access.
 
 grade: devel # must be 'stable' to release into candidate/stable channels
 confinement: devmode # use 'strict' once you have the right plugs and slots
@@ -79,11 +88,11 @@ parts:
       - libboost-all-dev
     override-build: |
       OPENSSL_INCLUDE_PATH=/usr/local/ssl/include OPENSSL_LIB_PATH=/usr/local/ssl/lib
-      ./zcutil/build.sh -j2
+      ./zcutil/build.sh -j4
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin
       cp $SNAPCRAFT_PART_BUILD/src/safecoin-cli $SNAPCRAFT_PART_INSTALL/bin
       cp @SNAPCRAFT_PART_BUILD/zcutil/fetch-params.sh $SNAPCRAFT_PART_INSTALL/bin
-      
+    # note 11/16/2019 2015 hours, still figuring out how to build safecoin.conf in a location that the snap can access
     #override-prime: |
       #echo "#edit safecoin.conf for setup of safenodes" >> root/prime/.safecoin/safecoin.conf
 
