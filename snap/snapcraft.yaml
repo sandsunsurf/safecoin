@@ -82,6 +82,8 @@ parts:
       ./zcutil/build.sh -j2
       cp $SNAPCRAFT_PART_BUILD/src/safecoind $SNAPCRAFT_PART_INSTALL/bin
       cp $SNAPCRAFT_PART_BUILD/src/safecoin-cli $SNAPCRAFT_PART_INSTALL/bin
+      cp @SNAPCRAFT_PART_BUILD/zcutil/fetch-params.sh $SNAPCRAFT_PART_INSTALL/bin
+      
     #override-prime: |
       #echo "#edit safecoin.conf for setup of safenodes" >> root/prime/.safecoin/safecoin.conf
 
@@ -102,3 +104,7 @@ apps:
     environment:
       XDG_DATA_DIRS: $SNAP_USER_DATA:/var/lib/snapd/desktop:$XDG_DATA_DIRS
       home: $SNAP_USER_COMMON
+  fetch:
+    command: bin/fetch-params.sh
+    home: $SNAP_USER_COMMON
+    XDG_DATA_DIRS: $SNAP_USER_DATA:/var/lib/snapd/desktop:$XDG_DATA_DIRS
